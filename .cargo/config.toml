@@ -1,2 +1,6 @@
 [alias]
 xtask = "run --quiet --locked --package xtask --"
+
+[env]
+# Keep compiler and rustdoc scratch files on the workspace filesystem.
+TMPDIR = { value = ".cargo/tmp", relative = true }
