@@ -17,6 +17,8 @@ pub mod object;
 pub mod records;
 pub mod snapshot;
 
+pub mod certification;
+
 pub use authority::{
     AuthorityTransaction, AuthorityTransactionStore, DomainRepositoryFactory,
     SupportsAtomicAuthorityCommit,

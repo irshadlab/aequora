@@ -1,6 +1,6 @@
 //! Neutral release-verification manifests, evidence, waivers, and invariant coverage.
 
-use aequora_invariants::InvariantId;
+use aequora_types::invariants::InvariantId;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 use thiserror::Error;

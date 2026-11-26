@@ -1,8 +1,8 @@
 //! Public adapter conformance factory contracts and bounded runners.
 
 use crate::AdapterError;
-use aequora_conformance::{TestObservation, TestStatus};
-use aequora_registry_types::ConformanceTestId;
+use crate::certification::{TestObservation, TestStatus};
+use aequora_registry::types::ConformanceTestId;
 use async_trait::async_trait;
 use std::collections::BTreeMap;
 

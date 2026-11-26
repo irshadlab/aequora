@@ -6,7 +6,7 @@
 
 pub mod verification;
 
-use aequora_registry_types::{CertificationTierId, ConformanceProfileId, ConformanceTestId};
+use aequora_registry::types::{CertificationTierId, ConformanceProfileId, ConformanceTestId};
 use serde::{Deserialize, Serialize};
 use std::{
     collections::{BTreeMap, BTreeSet},
