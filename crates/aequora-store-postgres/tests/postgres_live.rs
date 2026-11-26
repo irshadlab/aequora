@@ -1,3 +1,4 @@
+use aequora_authority::{AuthorityCommitContext, AuthorityController, AuthorityPromotionPolicy};
 use aequora_protocol::ChangeKind;
 use aequora_store::{AuditOffset, CommitOperation, CommitOutcome};
 use aequora_store_postgres::{
@@ -65,6 +66,15 @@ async fn neon_pooled_runtime_and_direct_migration_endpoints_are_real() {
 
 async fn exercise_backend(backend: &SqlxPostgresBackend) {
     verify_schema(backend).await;
+    let authority = backend
+        .load_authority_state()
+        .await
+        .unwrap_or_else(|error| panic!("{error}"))
+        .map(|state| {
+            AuthorityController::new(state, AuthorityPromotionPolicy::default())
+                .authorize_write()
+                .unwrap_or_else(|error| panic!("{error}"))
+        });
     let tenant = TenantId::new();
     let scope = SyncScopeId::new();
     let operation_id = OperationId::new();
@@ -79,7 +89,7 @@ async fn exercise_backend(backend: &SqlxPostgresBackend) {
         node: NodeId::new(),
     };
     let commit = CommitOperation {
-        authority: None,
+        authority,
         operation_id,
         event_id: EventId::new(),
         operation_lineage: LineageContext::root(),
@@ -146,13 +156,14 @@ async fn exercise_backend(backend: &SqlxPostgresBackend) {
     assert_eq!(durable_intents, 1);
 
     verify_data_path(backend, tenant, scope, operation_id, entity, payload).await;
-    verify_mid_transaction_failure_rolls_back(backend, tenant, scope).await;
+    verify_mid_transaction_failure_rolls_back(backend, tenant, scope, authority).await;
 }
 
 async fn verify_mid_transaction_failure_rolls_back(
     backend: &SqlxPostgresBackend,
     tenant: TenantId,
     scope: SyncScopeId,
+    authority: Option<AuthorityCommitContext>,
 ) {
     let operation_id = OperationId::new();
     let entity = EntityRef {
@@ -161,7 +172,7 @@ async fn verify_mid_transaction_failure_rolls_back(
     };
     let payload = b"must roll back".to_vec();
     let commit = CommitOperation {
-        authority: None,
+        authority,
         operation_id,
         event_id: EventId::new(),
         operation_lineage: LineageContext::root(),

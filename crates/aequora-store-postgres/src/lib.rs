@@ -7,6 +7,7 @@ pub mod audit;
 pub mod capabilities;
 pub mod config;
 pub mod device;
+pub mod epoch_witness;
 pub mod errors;
 pub mod governance;
 pub mod health;
@@ -37,8 +38,9 @@ pub use retention::{PostgresRetentionDecision, PostgresRetentionLease};
 use aequora_adapter_sdk as adapter_sdk;
 use aequora_authority::executor::CurrentEntity;
 use aequora_authority::{
-    AuthorityRole, AuthorityRuntimeMode, AuthorityState, AuthorityTransitionManifest,
-    PromotionClass, TransitionReason,
+    AuthorityController, AuthorityPromotionPolicy, AuthorityRole, AuthorityRuntimeMode,
+    AuthorityState, AuthorityTransitionManifest, ExternalEpochRegistry, PromotionClass,
+    RecoveryVerification, TransitionReason,
 };
 use aequora_live::{HintBroker, HintSubscription, LiveError, LiveFailureKind, SyncHint};
 use aequora_protocol::integrity::{
@@ -1066,9 +1068,14 @@ impl SqlxPostgresBackend {
             .map_err(|error| corrupt(error.to_string()))?;
         if replacement.authority_id != expected.authority_id
             || manifest.authority_id != expected.authority_id
+            || manifest.old_epoch != expected.epoch
             || replacement.transition_id != manifest.transition_id
             || replacement.epoch != manifest.new_epoch
             || replacement.fence_token != manifest.fence_token
+            || replacement.fence_token.get() <= expected.fence_token.get()
+            || replacement.last_promotion_class != manifest.promotion_class
+            || replacement.role != AuthorityRole::Primary
+            || replacement.runtime_mode != AuthorityRuntimeMode::ReadOnlyVerification
         {
             return Err(corrupt(
                 "authority replacement state does not match its transition manifest",
@@ -1407,6 +1414,61 @@ impl SqlxPostgresBackend {
         }
         self.persist_authority_transition(expected, replacement, manifest)
             .await
+    }
+
+    /// Enables writes after verification for the exact durable restored authority transition.
+    ///
+    /// # Errors
+    /// Rejects incomplete verification, an unavailable or mismatched witness, a stale
+    /// transition or fence, and failed database updates.
+    pub async fn complete_restore_recovery(
+        &self,
+        expected: AuthorityState,
+        verification: RecoveryVerification,
+        registry: Arc<dyn ExternalEpochRegistry>,
+        updated_at_unix_ms: u64,
+    ) -> Result<AuthorityState, StoreError> {
+        if expected.role != AuthorityRole::Primary
+            || expected.runtime_mode != AuthorityRuntimeMode::ReadOnlyVerification
+            || expected.last_promotion_class != PromotionClass::RestoredTimeline
+            || updated_at_unix_ms < expected.updated_at_unix_ms
+        {
+            return Err(corrupt("invalid authority state for restore completion"));
+        }
+        let controller = AuthorityController::new(expected, AuthorityPromotionPolicy::default())
+            .with_epoch_registry(registry);
+        controller
+            .complete_recovery(verification, updated_at_unix_ms)
+            .map_err(|error| StoreError::leadership_lost(error.to_string()))?;
+        let serving = controller
+            .state()
+            .map_err(|error| corrupt(error.to_string()))?;
+        let changed = sqlx::query(
+            "UPDATE aequora_authority_state SET runtime_mode='serving',updated_at_unix_ms=$1
+             WHERE singleton=TRUE AND authority_id=$2 AND authority_epoch=$3
+               AND authority_instance_id=$4 AND fence_token=$5 AND transition_id=$6
+               AND role='primary' AND runtime_mode='read_only_verification'
+               AND promotion_class='restored_timeline' AND updated_at_unix_ms=$7",
+        )
+        .bind(to_i64(updated_at_unix_ms, "recovery completion timestamp")?)
+        .bind(expected.authority_id.as_uuid())
+        .bind(to_i64(expected.epoch.get(), "witnessed restore epoch")?)
+        .bind(expected.instance_id.as_uuid())
+        .bind(to_i64(expected.fence_token.get(), "restore fence token")?)
+        .bind(expected.transition_id.as_uuid())
+        .bind(to_i64(
+            expected.updated_at_unix_ms,
+            "restore verification timestamp",
+        )?)
+        .execute(&self.pool)
+        .await
+        .map_err(postgres_error)?;
+        if changed.rows_affected() == 1 || self.load_authority_state().await? == Some(serving) {
+            return Ok(serving);
+        }
+        Err(StoreError::leadership_lost(
+            "restore recovery lost its authority compare-and-swap",
+        ))
     }
 
     /// Verifies that the runtime pool can acquire a healthy connection, the schema is current,
@@ -1932,13 +1994,13 @@ async fn prepare_commit_in_transaction(
     commit: &CommitOperation,
 ) -> Result<Option<CommitOutcome>, StoreError> {
     if let Some(authority) = commit.authority {
-        let current: bool = sqlx::query_scalar(
-            "SELECT EXISTS(
-                SELECT 1 FROM aequora_authority_state
-                 WHERE singleton=TRUE AND authority_id=$1 AND authority_epoch=$2
-                   AND authority_instance_id=$3 AND fence_token=$4
-                   AND role='primary' AND runtime_mode='serving'
-             )",
+        // Keep the validated fence stable until Tx B commits. Multiple writers can hold a
+        // shared row lock; an authority transition must wait for all admitted transactions.
+        let current: Option<i32> = sqlx::query_scalar(
+            "SELECT 1 FROM aequora_authority_state
+             WHERE singleton=TRUE AND authority_id=$1 AND authority_epoch=$2
+               AND authority_instance_id=$3 AND fence_token=$4
+               AND role='primary' AND runtime_mode='serving' FOR SHARE",
         )
         .bind(authority.authority_id.as_uuid())
         .bind(to_i64(authority.epoch.get(), "commit authority epoch")?)
@@ -1947,12 +2009,29 @@ async fn prepare_commit_in_transaction(
             authority.fence_token.get(),
             "commit authority fence token",
         )?)
+        .fetch_optional(&mut **transaction)
+        .await
+        .map_err(postgres_error)?;
+        if current.is_none() {
+            return Err(StoreError::leadership_lost(
+                "authoritative commit presented a stale database authority fence",
+            ));
+        }
+    } else {
+        // Serialize the legacy, uninitialized path against first-time authority initialization.
+        sqlx::query("LOCK TABLE aequora_authority_state IN SHARE MODE")
+            .execute(&mut **transaction)
+            .await
+            .map_err(postgres_error)?;
+        let initialized: bool = sqlx::query_scalar(
+            "SELECT EXISTS(SELECT 1 FROM aequora_authority_state WHERE singleton=TRUE)",
+        )
         .fetch_one(&mut **transaction)
         .await
         .map_err(postgres_error)?;
-        if !current {
+        if initialized {
             return Err(StoreError::leadership_lost(
-                "authoritative commit presented a stale database authority fence",
+                "authoritative commit omitted the database authority fence",
             ));
         }
     }
