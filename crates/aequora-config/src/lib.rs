@@ -9,7 +9,7 @@ use aequora_adapter_sdk::certification::{
     DeploymentCertificationPolicy, DeploymentDecision, EnforcementMode, TrustLevel,
     evaluate_deployment,
 };
-use aequora_authority::admission::AdmissionPolicy;
+use aequora_authority::admission::{AdmissionPolicy, HierarchicalAdmission};
 use aequora_authority::performance::{PerformancePolicy, PerformanceProfile};
 use aequora_authority::validator::ProtocolLimits;
 use aequora_client::{
@@ -829,6 +829,16 @@ impl AequoraConfig {
         })
     }
 
+    /// Builds the shared admission controller for the exchange service and host pressure sampler.
+    ///
+    /// # Errors
+    /// Returns an error when the configuration or admission policy is invalid.
+    pub fn admission_controller(&self) -> Result<HierarchicalAdmission, ConfigError> {
+        self.validate()?;
+        HierarchicalAdmission::new(self.admission.clone())
+            .map_err(|_| ConfigError::Invalid("admission policy is inconsistent"))
+    }
+
     /// Produces HTTP server framing limits.
     ///
     /// # Errors
@@ -1097,6 +1107,27 @@ mod tests {
         config.observability.queue_capacity = 0;
         assert!(config.validate().is_err());
         assert!(AequoraConfig::from_ron("(admission: (unknown: 1))").is_err());
+    }
+
+    #[test]
+    fn admission_controller_uses_configured_pressure_thresholds() -> Result<(), ConfigError> {
+        use aequora_authority::admission::{LoadSignals, LoadState};
+
+        let config = AequoraConfig::from_ron(
+            "(admission: (load: (thresholds: (elevated_enter: 780, minimum_dwell_ms: 100))))",
+        )?;
+        let admission = config.admission_controller()?;
+        let signals = |database| LoadSignals {
+            database,
+            ..LoadSignals::default()
+        };
+        assert_eq!(admission.observe_load(0, signals(760)), LoadState::Healthy);
+        assert_eq!(admission.observe_load(1, signals(790)), LoadState::Elevated);
+        assert_eq!(
+            admission.observe_load(101, signals(900)),
+            LoadState::Overloaded
+        );
+        Ok(())
     }
 
     #[cfg(feature = "axum")]
