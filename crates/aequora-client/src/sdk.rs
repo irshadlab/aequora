@@ -5,7 +5,7 @@ use aequora_adapter_sdk::{
     ConflictSummary, CredentialProvider, DomainId, DurableClientStatus, ExchangeContext,
     NoopObservationSink, ObservationSink, OperationSnapshot, SyncTransport,
 };
-use aequora_operation::{
+use aequora_protocol::operation::{
     EncodedOperation, MutationReceipt, Operation, OperationEncodingError, OperationState,
     OperationUpdate,
 };
@@ -982,7 +982,7 @@ impl DiagnosticsHandle {
 mod tests {
     use super::*;
     use aequora_adapter_sdk::{Credential, ExchangeSummary};
-    use aequora_operation::{LocalCommitStatus, OperationKind, OperationSchemaVersion};
+    use aequora_protocol::operation::{LocalCommitStatus, OperationKind, OperationSchemaVersion};
     use aequora_types::{DeviceId, TenantId};
     use async_trait::async_trait;
     use std::{collections::BTreeMap, sync::Mutex};

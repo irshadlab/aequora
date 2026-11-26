@@ -1,9 +1,9 @@
 use std::{sync::Arc, time::Duration};
 
 use aequora_client::{ClientConfig, ClientError, ClientSyncEngineBuilder};
+use aequora_protocol::transport::{SyncTransport, TransportError};
 use aequora_protocol::{SessionMetadata, SyncRequest};
 use aequora_testkit::InMemoryLocalStore;
-use aequora_transport::{SyncTransport, TransportError};
 use aequora_types::scheduler::{
     BatchController, DeferralReason, SchedulerPolicy, SchedulingContext, SyncProfile,
 };

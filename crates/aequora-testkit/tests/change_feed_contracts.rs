@@ -1,11 +1,11 @@
 use aequora_authority::admin::{
     AdminCommand, AdminQuery, AdminTarget, AssuranceLevel, PermissionId, RiskClass,
 };
-use aequora_feed::{
+use aequora_protocol::feed::{
     ConsumerRegistration, ConsumerRetentionPolicy, FEED_INVARIANTS, RetentionDecision,
     evaluate_retention,
 };
-use aequora_journal::{CompactionInputs, plan_compaction};
+use aequora_protocol::journal::{CompactionInputs, plan_compaction};
 use aequora_types::invariants::InvariantId;
 use aequora_types::{AuthorityEpoch, AuthorityId, Sequence};
 use std::collections::BTreeSet;
@@ -41,7 +41,7 @@ fn pinning_consumer_constrains_journal_compaction() {
 #[test]
 fn rebuildable_consumer_below_floor_does_not_guess_history() {
     let registration = registration();
-    let cursor = aequora_feed::ConsumerCursor {
+    let cursor = aequora_protocol::feed::ConsumerCursor {
         consumer_id: registration.consumer_id,
         authority_id: AuthorityId::LOCAL_DEVELOPMENT,
         authority_epoch: AuthorityEpoch::INITIAL,

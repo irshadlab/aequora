@@ -10,7 +10,7 @@ pub use aequora_client::{
     OperationHandle, OperationRef, RetryClass, ScopeHandle, ScopeSubscriptionState, SyncEvent,
     SyncNextAction, SyncReason, SyncResult, SyncStatus,
 };
-pub use aequora_operation::{
+pub use aequora_protocol::operation::{
     EntityRef, LocalCommitStatus, MutationReceipt, Operation, OperationEncodingError,
     OperationKind, OperationSchemaVersion, OperationState, OperationUpdate,
 };

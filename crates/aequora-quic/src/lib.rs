@@ -8,14 +8,14 @@ use aequora_codec::{
     Compression, DecodeLimits, EncodeOptions, MessageKind, decode_frame, decode_with_limits,
     encode_with_options,
 };
+use aequora_protocol::transport::{
+    SnapshotPageStream, StreamingSyncTransport, SyncTransport, TransportError,
+};
 use aequora_protocol::{
     BootstrapRequest, BootstrapResponse, Capability, PushHint, SyncRequest, SyncResponse,
 };
 use aequora_server::{ExchangeService, ServerError};
 use aequora_store::StoreErrorKind;
-use aequora_transport::{
-    SnapshotPageStream, StreamingSyncTransport, SyncTransport, TransportError,
-};
 use aequora_types::{OperationalErrorCode, ProtocolVersion};
 use async_trait::async_trait;
 use quinn::{Connection, ConnectionError, RecvStream, SendStream};
@@ -618,11 +618,11 @@ fn transient(error: impl std::fmt::Display) -> TransportError {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use aequora_protocol::transport::TransportErrorKind;
     use aequora_protocol::{
         ClientLimits, PushHintReason, SessionMetadata, SnapshotEntity, SnapshotLimits,
         SyncDirective,
     };
-    use aequora_transport::TransportErrorKind;
     use aequora_types::{
         ActorId, Cursor, DeviceId, EntityId, EntityRef, EntityType, EntityVersion, HybridTimestamp,
         NodeId, RequestId, Sequence, SessionId, SyncScopeId, TenantId,

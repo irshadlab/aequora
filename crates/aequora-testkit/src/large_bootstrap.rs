@@ -1,10 +1,10 @@
 //! Fault-injecting reference sink for large-bootstrap adapter certification.
 
-use aequora_bootstrap::{
+use aequora_protocol::SnapshotEntity;
+use aequora_protocol::bootstrap::{
     ActivationOutcome, BootstrapJob, BootstrapStoreError, BootstrapStoreErrorKind, ChunkDescriptor,
     PendingIntentPlan, ReplicaGeneration, SnapshotManifest, SnapshotSink, VerifiedActivation,
 };
-use aequora_protocol::SnapshotEntity;
 use aequora_types::{EntityRef, Sequence};
 use async_trait::async_trait;
 use std::{
@@ -242,7 +242,7 @@ fn lock<T>(mutex: &Mutex<T>) -> MutexGuard<'_, T> {
 }
 
 #[allow(clippy::needless_pass_by_value)]
-fn validation(error: aequora_bootstrap::BootstrapError) -> BootstrapStoreError {
+fn validation(error: aequora_protocol::bootstrap::BootstrapError) -> BootstrapStoreError {
     permanent(&error.to_string())
 }
 

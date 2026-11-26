@@ -8,20 +8,10 @@ description.workspace = true
 repository.workspace = true
 
 [dependencies]
-aequora-bootstrap = { version = "0.1.1", path = "../aequora-bootstrap" }
-aequora-conflict = { version = "0.1.1", path = "../aequora-conflict" }
-aequora-compat = { version = "0.1.1", path = "../aequora-compat" }
-aequora-feed = { version = "0.1.1", path = "../aequora-feed" }
-aequora-integrity = { version = "0.1.1", path = "../aequora-integrity" }
-aequora-legacy = { version = "0.1.1", path = "../aequora-legacy" }
-aequora-region = { version = "0.1.1", path = "../aequora-region" }
-aequora-queue = { version = "0.1.1", path = "../aequora-queue" }
-aequora-scope = { version = "0.1.1", path = "../aequora-scope" }
-aequora-transport = { version = "0.1.1", path = "../aequora-transport" }
+aequora-protocol = { version = "0.1.1", path = "../aequora-protocol" }
 blake3.workspace = true
 aequora-adapter-sdk = { version = "0.1.1", path = "../aequora-adapter-sdk" }
 aequora-authority = { version = "0.1.1", path = "../aequora-authority" }
-aequora-protocol = { version = "0.1.1", path = "../aequora-protocol" }
 aequora-client = { version = "0.1.1", path = "../aequora-client" }
 aequora-types = { version = "0.1.1", path = "../aequora-types" }
 aequora-config = { version = "0.1.1", path = "../aequora-config" }
@@ -48,12 +38,11 @@ thiserror.workspace = true
 uuid.workspace = true
 
 [dev-dependencies]
-aequora-journal = { version = "0.1.1", path = "../aequora-journal" }
+aequora-protocol = { version = "0.1.1", path = "../aequora-protocol" }
 aequora-desktop = { version = "0.1.1", path = "../aequora-desktop", features = ["platform-test-support"] }
 aequora-mobile = { version = "0.1.1", path = "../aequora-mobile", features = ["platform-test-support"] }
 ron.workspace = true
 aequora-codec = { version = "0.1.1", path = "../aequora-codec" }
-aequora-protocol = { version = "0.1.1", path = "../aequora-protocol" }
 aequora-types = { version = "0.1.1", path = "../aequora-types" }
 aequora-authority = { version = "0.1.1", path = "../aequora-authority" }
 criterion.workspace = true

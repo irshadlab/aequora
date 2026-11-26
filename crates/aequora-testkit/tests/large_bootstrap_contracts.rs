@@ -1,10 +1,10 @@
-use aequora_bootstrap::{
+use aequora_protocol::SnapshotEntity;
+use aequora_protocol::bootstrap::{
     ActivationEvidence, AuthorityEpoch, BootstrapJob, BootstrapMutationPolicy, BootstrapState,
     ChunkState, ChunkingConfig, PendingIntentPlan, ProjectionSchemaVersion, ReplicaGeneration,
     SnapshotBoundary, SnapshotLease, SnapshotManifest, SnapshotSink, verify_activation,
 };
-use aequora_protocol::SnapshotEntity;
-use aequora_scope::{ScopeGeneration, ScopeVersion};
+use aequora_protocol::scope::{ScopeGeneration, ScopeVersion};
 use aequora_testkit::large_bootstrap::{BootstrapFailpoint, FaultInjectingSnapshotSink};
 use aequora_types::{
     AuthorityId, EntityId, EntityRef, EntityType, EntityVersion, OperationId, Sequence, SnapshotId,

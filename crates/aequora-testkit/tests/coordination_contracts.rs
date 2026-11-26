@@ -2,9 +2,9 @@ use aequora_client::{
     ClientConfig, ClientSyncEngineBuilder, MultiProcessCoordinatorConfig, SyncCoordinator,
     SyncCoordinatorConfig, SyncTrigger,
 };
+use aequora_protocol::transport::{SyncTransport, TransportError};
 use aequora_protocol::{SessionMetadata, SyncRequest};
 use aequora_testkit::{InMemoryLocalStore, contracts::verify_local_coordination};
-use aequora_transport::{SyncTransport, TransportError};
 use aequora_types::{ActorId, DeviceId, SessionId, SyncScopeId, TenantId};
 use async_trait::async_trait;
 use std::{sync::Arc, time::Duration};

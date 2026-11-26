@@ -1,16 +1,16 @@
 use std::collections::BTreeSet;
 
 use aequora_client::{ClientConfig, ClientSyncEngineBuilder};
-use aequora_protocol::{
-    OperationEnvelope, OperationKind, OperationMetadata, SessionMetadata, SyncRequest,
-};
-use aequora_scope::{
+use aequora_protocol::scope::{
     MembershipRecord, ProjectionVersion, ResolvedScope, ScopeCursor, ScopeDefinitionId,
     ScopeDescriptor, ScopeGeneration, ScopeTransition, ScopeTransitionId, ScopeTransitionKind,
     ScopeVersion, Subscription, SubscriptionId, SubscriptionState,
 };
+use aequora_protocol::transport::{SyncTransport, TransportError};
+use aequora_protocol::{
+    OperationEnvelope, OperationKind, OperationMetadata, SessionMetadata, SyncRequest,
+};
 use aequora_testkit::{InMemoryLocalStore, contracts::verify_scope_state_store};
-use aequora_transport::{SyncTransport, TransportError};
 use aequora_types::{
     ActorId, DeviceId, EntityId, EntityRef, EntityType, HybridTimestamp, NodeId, OperationId,
     ProtocolVersion, SchemaVersion, Sequence, SessionId, SyncScopeId, TenantId,

@@ -20,11 +20,6 @@ use aequora_authority::{
     AuthorityState, CheckpointComparison, JournalCheckpoint, PromotionEvidence,
     RecoveryVerification, compare_checkpoints,
 };
-use aequora_bootstrap::{BootstrapError, BootstrapJob, SnapshotManifest};
-use aequora_compat::{
-    ClientHello, CompatibilityError, CompatibilityPolicy, CompatibilityRegistry,
-    CompatibilityResult, ServerAuthorityContext, SupportStatus, canonical_registry, negotiate,
-};
 use aequora_config::{
     AdapterCapabilities, ConfigSource, RawDeploymentConfig, diff_effective, explain_setting,
 };
@@ -33,21 +28,26 @@ use aequora_diagnostics::{
     DiagnosticError, DiagnosticPolicy, IncidentBundleManifest, OperationExplanationInput,
     explain_operation,
 };
-use aequora_feed::{ConsumerRegistration, FEED_INVARIANTS, FeedError};
-use aequora_integrity::{
+use aequora_observability::{INITIAL_METRICS, ObservabilityConfig};
+use aequora_protocol::bootstrap::{BootstrapError, BootstrapJob, SnapshotManifest};
+use aequora_protocol::compat::{
+    ClientHello, CompatibilityError, CompatibilityPolicy, CompatibilityRegistry,
+    CompatibilityResult, ServerAuthorityContext, SupportStatus, canonical_registry, negotiate,
+};
+use aequora_protocol::feed::{ConsumerRegistration, FEED_INVARIANTS, FeedError};
+use aequora_protocol::integrity::{
     CURRENT_HASH_SCHEMA, CURRENT_INTEGRITY_GENERATION, IntegrityError, IntegritySnapshot,
     PartitionScheme, RepairPlan,
 };
-use aequora_legacy::{
+use aequora_protocol::legacy::{
     BridgeHealth, CutoverReadiness, CutoverVerification, LegacyMigrationManifest,
     LegacyRetirementManifest, LegacySystemManifest, ShadowMatch, ShadowResult,
 };
-use aequora_observability::{INITIAL_METRICS, ObservabilityConfig};
-use aequora_queue::{
+use aequora_protocol::queue::{
     CompactionPlan as QueueCompactionPlan, MutationMutability, OptimizationRegistry, QueueEntry,
     QueueError, plan_compaction,
 };
-use aequora_region::{
+use aequora_protocol::region::{
     AuthorityLocation, RegionError, RegionalReadRequest, RegionalRouter, RegionalRouterConfig,
     ReplicaObservation,
 };

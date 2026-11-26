@@ -1,6 +1,6 @@
 #![no_main]
 
-use aequora_conflict::FieldSet;
+use aequora_protocol::conflict::FieldSet;
 use libfuzzer_sys::fuzz_target;
 
 fuzz_target!(|data: &[u8]| {

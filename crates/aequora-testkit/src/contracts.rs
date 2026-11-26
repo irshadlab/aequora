@@ -3,19 +3,19 @@
 //! These checks mutate their input stores. Callers must supply isolated stores and fixture IDs
 //! that have never previously been used in those stores.
 
-use aequora_integrity::{
+use aequora_protocol::integrity::{
     CanonicalEntity, IntegrityComparison, IntegrityGeneration, IntegritySnapshot, IntegritySupport,
     PartitionScheme, RepairPlan,
 };
-use aequora_protocol::{
-    ChangeKind, OperationAck, OperationEnvelope, OperationKind, OperationMetadata, RemoteChange,
-    SyncDirective, SyncResponse,
-};
-use aequora_scope::{
+use aequora_protocol::scope::{
     LocalScopeState, MembershipRecord, ProjectionVersion, ResolvedScope, ScopeCursor,
     ScopeDefinitionId, ScopeDescriptor, ScopeGeneration, ScopeTransition, ScopeTransitionId,
     ScopeTransitionKind, ScopeTransitionOutcome, ScopeVersion, Subscription, SubscriptionId,
     SubscriptionState,
+};
+use aequora_protocol::{
+    ChangeKind, OperationAck, OperationEnvelope, OperationKind, OperationMetadata, RemoteChange,
+    SyncDirective, SyncResponse,
 };
 use aequora_store::{
     AuditLog, AuditOffset, AuthoritativeIntegritySource, AuthoritativeStore, ChangeJournal,
@@ -71,8 +71,8 @@ pub struct LocalCoordinationContractReport {
 /// Evidence returned after a local adapter passes dynamic-scope compliance.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ScopeStateContractReport {
-    pub subscription: aequora_scope::SubscriptionId,
-    pub transition: aequora_scope::ScopeTransitionId,
+    pub subscription: aequora_protocol::scope::SubscriptionId,
+    pub transition: aequora_protocol::scope::ScopeTransitionId,
     pub quarantined_operation: OperationId,
 }
 
@@ -82,11 +82,12 @@ pub struct ScopeStateContractReport {
 ///
 /// Returns a typed scope error only if a built-in non-zero fixture identifier is invalid.
 pub fn scope_state_contract_fixture()
--> Result<(Subscription, ScopeTransition, OperationEnvelope), aequora_scope::ScopeError> {
+-> Result<(Subscription, ScopeTransition, OperationEnvelope), aequora_protocol::scope::ScopeError> {
     let tenant = TenantId::new();
     let scope_id = SyncScopeId::new();
     let entity = EntityRef {
-        entity_type: EntityType::new(81).map_err(|_| aequora_scope::ScopeError::ZeroIdentity)?,
+        entity_type: EntityType::new(81)
+            .map_err(|_| aequora_protocol::scope::ScopeError::ZeroIdentity)?,
         entity_id: EntityId::new(),
     };
     let definition = ScopeDefinitionId::new(1)?;
@@ -222,13 +223,13 @@ where
         ));
     }
     let revocation = ScopeTransition {
-        transition_id: aequora_scope::ScopeTransitionId::new(),
+        transition_id: aequora_protocol::scope::ScopeTransitionId::new(),
         subscription_id: current.subscription_id,
         from_version: current.scope.version,
         from_generation: current.scope.generation,
         target: None,
         boundary: None,
-        kind: aequora_scope::ScopeTransitionKind::Revocation,
+        kind: aequora_protocol::scope::ScopeTransitionKind::Revocation,
         additions: Vec::new(),
         removals: Vec::new(),
         affected_pending_operations: vec![operation.operation_id],

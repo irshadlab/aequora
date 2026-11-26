@@ -22,18 +22,11 @@ name = "generated_server_starter"
 path = "templates/server.rs"
 
 [dependencies]
-aequora-bootstrap = { version = "0.1.1", path = "../aequora-bootstrap" }
-aequora-compat = { version = "0.1.1", path = "../aequora-compat" }
-aequora-feed = { version = "0.1.1", path = "../aequora-feed" }
-aequora-integrity = { version = "0.1.1", path = "../aequora-integrity" }
-aequora-legacy = { version = "0.1.1", path = "../aequora-legacy" }
-aequora-queue = { version = "0.1.1", path = "../aequora-queue" }
-aequora-region = { version = "0.1.1", path = "../aequora-region" }
+aequora-protocol = { version = "0.1.1", path = "../aequora-protocol" }
 aequora-registry = { version = "0.1.1", path = "../aequora-registry", features = ["codegen"] }
 aequora-testkit = { version = "0.1.1", path = "../aequora-testkit" }
 serde_json.workspace = true
 aequora-authority = { version = "0.1.1", path = "../aequora-authority" }
-aequora-protocol = { version = "0.1.1", path = "../aequora-protocol" }
 aequora-config = { version = "0.1.1", path = "../aequora-config" }
 aequora-diagnostics = { version = "0.1.1", path = "../aequora-diagnostics" }
 aequora-deployment = { version = "0.1.1", path = "../aequora-deployment" }

@@ -29,19 +29,21 @@ pub use capabilities::{
 };
 
 use aequora_adapter_sdk as adapter_sdk;
-use aequora_integrity::{
+use aequora_protocol::integrity::{
     CURRENT_HASH_SCHEMA, CanonicalEntity, IntegrityGeneration, IntegritySnapshot, IntegritySupport,
     PartitionScheme, RepairPlan, RepairStrategy,
 };
-use aequora_protocol::{
-    BootstrapResponse, Conflict, OperationEnvelope, SnapshotEntity, SyncResponse,
-};
-use aequora_queue::{
+use aequora_protocol::queue::{
     CompactionPlan as QueueCompactionPlan, LocalOperationSeq, MutationMutability,
     OptimizationRegistry, QueueEntry, RebasePlan, RebaseTarget, SupersessionReason,
     plan_compaction, plan_rebase, semantic_envelope_hash,
 };
-use aequora_scope::{LocalScopeState, ScopeTransition, ScopeTransitionOutcome, Subscription};
+use aequora_protocol::scope::{
+    LocalScopeState, ScopeTransition, ScopeTransitionOutcome, Subscription,
+};
+use aequora_protocol::{
+    BootstrapResponse, Conflict, OperationEnvelope, SnapshotEntity, SyncResponse,
+};
 use aequora_store::{
     AdapterCapabilities, AdapterManifest, AdapterManifestProvider, AdapterRole, AdapterTier,
     ConflictInbox, ConflictRecord, ConflictResolution, CursorStore, IntegrityCapabilityProvider,
@@ -1801,10 +1803,10 @@ fn store_scope_state_transaction(
     Ok(())
 }
 
-fn quarantine_disposition(kind: &aequora_scope::ScopeTransitionKind) -> &'static str {
+fn quarantine_disposition(kind: &aequora_protocol::scope::ScopeTransitionKind) -> &'static str {
     match kind {
-        aequora_scope::ScopeTransitionKind::Revocation => "scope_revoked",
-        aequora_scope::ScopeTransitionKind::Contraction { .. } => "scope_removed",
+        aequora_protocol::scope::ScopeTransitionKind::Revocation => "scope_revoked",
+        aequora_protocol::scope::ScopeTransitionKind::Contraction { .. } => "scope_removed",
         _ => "authorization_lost",
     }
 }
@@ -3642,11 +3644,11 @@ mod tests {
         boundary: Cursor,
         entity: EntityRef,
         payload: &[u8],
-    ) -> aequora_integrity::IntegritySnapshot {
-        aequora_integrity::IntegritySnapshot::build(
+    ) -> aequora_protocol::integrity::IntegritySnapshot {
+        aequora_protocol::integrity::IntegritySnapshot::build(
             scope,
             boundary,
-            aequora_integrity::CURRENT_INTEGRITY_GENERATION,
+            aequora_protocol::integrity::CURRENT_INTEGRITY_GENERATION,
             PartitionScheme::new(8).unwrap_or_else(|error| panic!("{error}")),
             [CanonicalEntity {
                 entity,
@@ -3664,11 +3666,11 @@ mod tests {
         let mut registry = OptimizationRegistry::default();
         registry.register(
             aequora_protocol::OperationKind(kind),
-            aequora_queue::OperationOptimization {
-                compaction: aequora_queue::CompactionPolicy::ReplaceLatest,
-                rebase: aequora_queue::RebasePolicy::ReapplyIntent,
-                operation_class: aequora_queue::OperationClassId(kind),
-                ..aequora_queue::OperationOptimization::default()
+            aequora_protocol::queue::OperationOptimization {
+                compaction: aequora_protocol::queue::CompactionPolicy::ReplaceLatest,
+                rebase: aequora_protocol::queue::RebasePolicy::ReapplyIntent,
+                operation_class: aequora_protocol::queue::OperationClassId(kind),
+                ..aequora_protocol::queue::OperationOptimization::default()
             },
         );
         registry
@@ -4728,7 +4730,7 @@ mod tests {
             .capture_local_integrity(
                 scope,
                 boundary,
-                aequora_integrity::CURRENT_INTEGRITY_GENERATION,
+                aequora_protocol::integrity::CURRENT_INTEGRITY_GENERATION,
                 PartitionScheme::new(8).unwrap_or_else(|error| panic!("{error}")),
                 100,
             )
@@ -4761,7 +4763,7 @@ mod tests {
             .capture_local_integrity(
                 scope,
                 boundary,
-                aequora_integrity::CURRENT_INTEGRITY_GENERATION,
+                aequora_protocol::integrity::CURRENT_INTEGRITY_GENERATION,
                 PartitionScheme::new(8).unwrap_or_else(|error| panic!("{error}")),
                 100,
             )

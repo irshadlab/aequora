@@ -1,5 +1,5 @@
-use aequora_conflict::{FieldSet, FieldValue};
-use aequora_journal::{CompactionInputs, plan_compaction};
+use aequora_protocol::conflict::{FieldSet, FieldValue};
+use aequora_protocol::journal::{CompactionInputs, plan_compaction};
 use aequora_protocol::{
     ChangeKind, OperationAck, OperationEnvelope, OperationKind, OperationMetadata, RemoteChange,
     SnapshotEntity, SyncDirective, SyncResponse,

@@ -1,5 +1,5 @@
 use aequora_client::ClientReadSession;
-use aequora_region::{
+use aequora_protocol::region::{
     AssignmentTrust, AuthorityLocation, AuthorityShardId, DirectoryGeneration, EndpointReadPolicy,
     ReadConsistency, ReadFallbackPolicy, ReadTarget, RegionError, RegionHealth, RegionMode,
     RegionalCopyId, RegionalCopyKind, RegionalCopyRecord, RegionalGovernanceRegistry,

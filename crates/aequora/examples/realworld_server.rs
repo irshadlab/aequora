@@ -11,9 +11,9 @@ use aequora_axum::{
     AuthenticationFailure, AxumConfig, HttpAuthenticator, PresentedCredential, ReadinessProbe,
     router_with_authenticator,
 };
-use aequora_conflict::RejectConflicts;
 use aequora_observability::NoopObserver;
 use aequora_protocol::clock::TestClock;
+use aequora_protocol::conflict::RejectConflicts;
 use aequora_protocol::{ChangeKind, OperationEnvelope, SessionMetadata};
 use aequora_server::{ExchangeService, SyncServer};
 use aequora_testkit::InMemoryAuthoritativeStore;

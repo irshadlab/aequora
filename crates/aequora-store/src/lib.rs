@@ -12,18 +12,20 @@ pub mod storage_maintenance;
 pub mod storage_profile;
 
 use aequora_authority::executor::CurrentEntity;
-use aequora_integrity::{
+use aequora_protocol::integrity::{
     CanonicalEntity, IntegrityGeneration, IntegritySnapshot, IntegritySupport, PartitionScheme,
     RepairPlan,
+};
+use aequora_protocol::queue::{
+    CompactionPlan as QueueCompactionPlan, OptimizationRegistry, RebasePlan, RebaseTarget,
+};
+use aequora_protocol::scope::{
+    LocalScopeState, ScopeTransition, ScopeTransitionOutcome, Subscription,
 };
 use aequora_protocol::{
     BootstrapResponse, OperationAck, OperationEnvelope, OperationRejection, Partition,
     RemoteChange, SnapshotEntity, SyncResponse,
 };
-use aequora_queue::{
-    CompactionPlan as QueueCompactionPlan, OptimizationRegistry, RebasePlan, RebaseTarget,
-};
-use aequora_scope::{LocalScopeState, ScopeTransition, ScopeTransitionOutcome, Subscription};
 use aequora_types::coordination::{
     CoordinationSnapshot, FencingToken, LeaseGrant, LeaseRequest, LocalCoordinationSupport,
     LocalStoreGeneration,

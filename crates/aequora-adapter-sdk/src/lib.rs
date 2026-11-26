@@ -49,7 +49,9 @@ pub use records::{
 };
 pub use snapshot::{SnapshotStore, SupportsAtomicSnapshotActivation};
 
-use aequora_operation::{EncodedOperation, LocalCommitStatus, OperationKind, OperationState};
+use aequora_protocol::operation::{
+    EncodedOperation, LocalCommitStatus, OperationKind, OperationState,
+};
 use aequora_types::{DeviceId, OperationId, SyncScopeId, TenantId};
 use async_trait::async_trait;
 use std::{fmt, sync::Arc, time::Duration};

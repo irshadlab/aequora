@@ -1,6 +1,6 @@
 #![no_main]
 
-use aequora_compat::{ClientHello, ExtensionSection, validate_extensions};
+use aequora_protocol::compat::{ClientHello, ExtensionSection, validate_extensions};
 use libfuzzer_sys::fuzz_target;
 use std::collections::BTreeSet;
 

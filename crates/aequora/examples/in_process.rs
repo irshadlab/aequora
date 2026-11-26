@@ -1,7 +1,7 @@
 use aequora_authority::executor::AuthContext;
 use aequora_client::{ClientConfig, ClientSyncEngine};
-use aequora_conflict::RejectConflicts;
 use aequora_protocol::clock::TestClock;
+use aequora_protocol::conflict::RejectConflicts;
 use aequora_protocol::{OperationEnvelope, OperationKind, OperationMetadata, SessionMetadata};
 use aequora_server::{ExchangeService, SyncServer};
 use aequora_store::OutboxStore;

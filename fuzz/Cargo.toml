@@ -8,10 +8,8 @@ publish = false
 cargo-fuzz = true
 
 [dependencies]
-aequora-compat = { path = "../crates/aequora-compat" }
-aequora-conflict = { path = "../crates/aequora-conflict" }
-aequora-codec = { path = "../crates/aequora-codec", features = ["zstd"] }
 aequora-protocol = { path = "../crates/aequora-protocol" }
+aequora-codec = { path = "../crates/aequora-codec", features = ["zstd"] }
 aequora-security = { path = "../crates/aequora-security", features = ["crypto"] }
 aequora-authority = { path = "../crates/aequora-authority" }
 aequora-types = { path = "../crates/aequora-types" }

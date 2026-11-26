@@ -16,10 +16,10 @@ pub use capabilities::{
 pub use config::{SQLiteConfig, SQLitePlatform};
 
 use aequora_adapter_sdk as adapter_sdk;
+use aequora_protocol::queue::OptimizationRegistry;
 use aequora_protocol::{
     BootstrapResponse, ChangeKind, OperationEnvelope, SnapshotEntity, SyncResponse,
 };
-use aequora_queue::OptimizationRegistry;
 use aequora_store::{
     AdapterCapabilities, AdapterManifest, AdapterManifestProvider, AdapterRole, AdapterTier,
     ConflictInbox, ConflictRecord, ConflictResolution, CursorStore, OutboxState, OutboxStateStore,
@@ -566,8 +566,8 @@ impl OutboxStore for SQLiteDatabase {
         &self,
         _registry: &OptimizationRegistry,
         _max_operations: usize,
-    ) -> Result<aequora_queue::CompactionPlan, StoreError> {
-        Ok(aequora_queue::CompactionPlan::default())
+    ) -> Result<aequora_protocol::queue::CompactionPlan, StoreError> {
+        Ok(aequora_protocol::queue::CompactionPlan::default())
     }
 }
 

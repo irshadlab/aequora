@@ -8,7 +8,7 @@ description = "Stable extension contracts for third-party Aequora adapters"
 repository.workspace = true
 
 [dependencies]
-aequora-operation = { version = "0.1.1", path = "../aequora-operation" }
+aequora-protocol = { version = "0.1.1", path = "../aequora-protocol" }
 aequora-types = { version = "0.1.1", path = "../aequora-types" }
 blake3.workspace = true
 hex.workspace = true

@@ -1,4 +1,4 @@
-use aequora_compat::{
+use aequora_protocol::compat::{
     BlockedBuildRange, CapabilityAvailability, CapabilityRequirementKind, CapabilitySet,
     ClientBuildId, ClientBuildPolicy, ClientCompatibilityRuntime, ClientHello,
     ClientSecurityPolicy, CompatibilityFailureCode, CompatibilityMode, CompatibilityPolicy,
@@ -188,7 +188,7 @@ fn retry_only_accepts_only_the_ledger_identical_historical_operation() {
         OperationAdmission::RejectNewCreation
     );
 
-    let operation = aequora_compat::PossiblySentOperation::new(
+    let operation = aequora_protocol::compat::PossiblySentOperation::new(
         OperationId::new(),
         OperationKindId(8),
         SchemaVersion(1),
@@ -223,7 +223,10 @@ impl OperationUpcaster for AppendVersion {
         SchemaVersion(self.from.0 + 1)
     }
 
-    fn upcast(&self, payload: &[u8]) -> Result<Vec<u8>, aequora_compat::CompatibilityError> {
+    fn upcast(
+        &self,
+        payload: &[u8],
+    ) -> Result<Vec<u8>, aequora_protocol::compat::CompatibilityError> {
         let mut next = payload.to_vec();
         next.push(u8::try_from(self.to().0).unwrap_or(u8::MAX));
         Ok(next)

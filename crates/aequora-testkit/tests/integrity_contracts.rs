@@ -1,13 +1,13 @@
-use aequora_integrity::{
+use aequora_protocol::integrity::{
     CURRENT_HASH_SCHEMA, CURRENT_INTEGRITY_GENERATION, CanonicalEntity, PartitionScheme,
     RepairPlan, RepairStrategy,
 };
-use aequora_protocol::{
-    ChangeKind, OperationEnvelope, OperationKind, OperationMetadata, SyncDirective, SyncResponse,
-};
-use aequora_queue::{
+use aequora_protocol::queue::{
     CompactionPolicy, OperationClassId, OperationOptimization, OptimizationRegistry, RebasePolicy,
     RebaseTarget,
+};
+use aequora_protocol::{
+    ChangeKind, OperationEnvelope, OperationKind, OperationMetadata, SyncDirective, SyncResponse,
 };
 use aequora_store::{
     ChangeJournal, CommitOperation, CommitOutcome, OperationLedger, OutboxStore,

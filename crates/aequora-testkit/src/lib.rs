@@ -23,20 +23,25 @@ use aequora_authority::executor::{
     ExecutableOperation, ExecutionError, OperationExecutor,
 };
 use aequora_client::{ClientError, ClientSyncEngine, SyncOutcome};
-use aequora_integrity::{
+use aequora_protocol::integrity::{
     CURRENT_HASH_SCHEMA, CanonicalEntity, IntegrityGeneration, IntegritySnapshot, IntegritySupport,
     PartitionScheme, RepairPlan, RepairStrategy,
+};
+use aequora_protocol::queue::{
+    CompactionPlan as QueueCompactionPlan, LocalOperationSeq, MutationMutability,
+    OptimizationRegistry, QueueEntry, RebasePlan, RebaseTarget, Supersession, plan_compaction,
+    plan_rebase, semantic_envelope_hash,
+};
+use aequora_protocol::scope::{
+    LocalScopeState, ScopeTransition, ScopeTransitionOutcome, Subscription,
+};
+use aequora_protocol::transport::{
+    SnapshotPageStream, StreamingSyncTransport, SyncTransport, TransportError,
 };
 use aequora_protocol::{
     BootstrapRequest, BootstrapResponse, Conflict, OperationAck, OperationEnvelope,
     OperationRejection, Partition, RemoteChange, SnapshotEntity, SyncRequest, SyncResponse,
 };
-use aequora_queue::{
-    CompactionPlan as QueueCompactionPlan, LocalOperationSeq, MutationMutability,
-    OptimizationRegistry, QueueEntry, RebasePlan, RebaseTarget, Supersession, plan_compaction,
-    plan_rebase, semantic_envelope_hash,
-};
-use aequora_scope::{LocalScopeState, ScopeTransition, ScopeTransitionOutcome, Subscription};
 use aequora_server::{ExchangeService, ServerError};
 use aequora_store::{
     AuditLog, AuditOffset, AuditPage, AuditRecord, AuthoritativeIntegritySource, ChangeJournal,
@@ -47,9 +52,6 @@ use aequora_store::{
     RetryMetadata, ScopeStateStore, SnapshotDescriptor, SnapshotPage, SnapshotProgress,
     SnapshotStore, StoreError, StoreErrorKind, TransactionCapabilities,
     TransactionCapabilityProvider,
-};
-use aequora_transport::{
-    SnapshotPageStream, StreamingSyncTransport, SyncTransport, TransportError,
 };
 use aequora_types::coordination::{
     CoordinationError, CoordinationSnapshot, LeaseGrant, LeaseRequest, LeaseState,

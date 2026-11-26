@@ -8,7 +8,6 @@ description = "Validated aggregate and operation consistency profiles for Aequor
 repository.workspace = true
 
 [dependencies]
-aequora-queue = { version = "0.1.1", path = "../aequora-queue" }
 aequora-protocol = { version = "0.1.1", path = "../aequora-protocol" }
 aequora-store = { version = "0.1.1", path = "../aequora-store" }
 blake3.workspace = true

@@ -47,9 +47,9 @@ pub mod prelude {
         AuthorityController, AuthorityPromotionPolicy, AuthorityRole, AuthorityRuntimeMode,
         AuthorityState,
     };
-    pub use aequora_conflict::{ConflictResolver, RejectConflicts};
     pub use aequora_protocol::clock::{Clock, SystemClock};
-    pub use aequora_region::{
+    pub use aequora_protocol::conflict::{ConflictResolver, RejectConflicts};
+    pub use aequora_protocol::region::{
         ReadResponseMetadata, RegionError, RegionalReadRequest, ReplicaObservation,
     };
     pub use aequora_store::{
@@ -75,21 +75,21 @@ use aequora_authority::{
     AuthorityRuntimeMode, AuthorityState, CursorDisposition, validate_cursor,
 };
 use aequora_compute::{ComputeError, ComputePool};
-use aequora_conflict::{
-    ConflictResolver, MergeDecision, MergeError, MergeInput, VersionCheck, check_version,
-};
 use aequora_observability::{
     MetricEvent, NoopObserver, Observer, OutcomeKind, ServerPhaseKind, TraceContext,
     TransactionOutcomeKind,
 };
 use aequora_protocol::clock::Clock;
+use aequora_protocol::conflict::{
+    ConflictResolver, MergeDecision, MergeError, MergeInput, VersionCheck, check_version,
+};
+use aequora_protocol::region::{
+    ReadResponseMetadata, RegionError, RegionalReadRequest, ReplicaObservation, ReplicaReadGuard,
+};
 use aequora_protocol::{
     BootstrapRequest, BootstrapResponse, ClientLimits, Conflict, ConflictPolicy, OperationAck,
     OperationEnvelope, OperationRejection, RejectionCode, ResyncReason, SessionMetadata,
     SyncDirective, SyncRequest, SyncResponse,
-};
-use aequora_region::{
-    ReadResponseMetadata, RegionError, RegionalReadRequest, ReplicaObservation, ReplicaReadGuard,
 };
 use aequora_store::{
     AdapterCompatibilityError, AdapterManifestProvider, AdapterRequirements, AuthoritativeStore,

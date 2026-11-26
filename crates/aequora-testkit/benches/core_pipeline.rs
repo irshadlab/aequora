@@ -2,8 +2,8 @@ use aequora_authority::executor::plan_dependencies;
 use aequora_authority::validator::{ProtocolLimits, validate_request};
 use aequora_codec::MessageKind;
 use aequora_compute::{ComputeConfig, ComputePool};
-use aequora_conflict::check_version;
-use aequora_journal::{CompactionInputs, plan_compaction};
+use aequora_protocol::conflict::check_version;
+use aequora_protocol::journal::{CompactionInputs, plan_compaction};
 use aequora_protocol::{
     Capability, ClientLimits, OperationEnvelope, OperationKind, OperationMetadata, SessionMetadata,
     SyncDirective, SyncRequest, SyncResponse,

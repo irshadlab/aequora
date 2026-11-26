@@ -2,8 +2,8 @@
 
 use aequora_codec::{Compression, DecodeLimits, EncodeOptions, MessageKind};
 use aequora_observability::{MetricEvent, NoopObserver, Observer};
+use aequora_protocol::transport::{SyncTransport, TransportError};
 use aequora_protocol::{BootstrapRequest, BootstrapResponse, SyncRequest, SyncResponse};
-use aequora_transport::{SyncTransport, TransportError};
 use aequora_types::{OPERATIONAL_ERROR_CODE_HEADER, OperationalErrorCode};
 use async_trait::async_trait;
 use http::{HeaderMap, HeaderValue, header::ACCEPT, header::CONTENT_TYPE, header::RETRY_AFTER};
@@ -379,9 +379,9 @@ fn permanent(error: impl std::fmt::Display) -> TransportError {
 mod tests {
     use super::*;
     use aequora_authority::executor::AuthContext;
+    use aequora_protocol::transport::TransportErrorKind;
     use aequora_protocol::{ClientLimits, SessionMetadata, SyncDirective};
     use aequora_server::{ExchangeService, ServerError};
-    use aequora_transport::TransportErrorKind;
     use aequora_types::{
         ActorId, Cursor, DeviceId, HybridTimestamp, NodeId, ProtocolVersion, RequestId, Sequence,
         SessionId, SyncScopeId, TenantId,

@@ -1,6 +1,6 @@
 use aequora_authority::admin::{AdminActionKind, AdminReasonCode, PermissionId};
 use aequora_codec::MessageKind;
-use aequora_compat::ids as compatibility_ids;
+use aequora_protocol::compat::ids as compatibility_ids;
 use aequora_registry::{RegistryDomain, ids, resolve};
 use aequora_types::OperationalErrorCode;
 

@@ -9,8 +9,7 @@ description = "Token-efficient dependency context and architecture checks for Ae
 publish = false
 
 [dependencies]
-aequora-feed = { version = "0.1.1", path = "../aequora-feed" }
-aequora-scope = { version = "0.1.1", path = "../aequora-scope" }
+aequora-protocol = { version = "0.1.1", path = "../aequora-protocol" }
 aequora-authority = { version = "0.1.1", path = "../aequora-authority" }
 aequora-types = { version = "0.1.1", path = "../aequora-types" }
 aequora-security = { version = "0.1.1", path = "../aequora-security", features = ["crypto"] }

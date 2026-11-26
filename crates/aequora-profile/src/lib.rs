@@ -4,8 +4,8 @@
 //! scope, retry, and adapter requirements into one semantic contract. They are not database
 //! isolation levels, scheduler classes, authorization roles, or UI modes.
 
+use aequora_protocol::queue::{CompactionPolicy, RebasePolicy};
 use aequora_protocol::{ConflictPolicy, OperationKind};
-use aequora_queue::{CompactionPolicy, RebasePolicy};
 use aequora_store::{DurabilityMode, TransactionCapabilities, TransactionGuarantees};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};

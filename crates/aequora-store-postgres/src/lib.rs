@@ -40,11 +40,11 @@ use aequora_authority::{
     AuthorityRole, AuthorityRuntimeMode, AuthorityState, AuthorityTransitionManifest,
     PromotionClass, TransitionReason,
 };
-use aequora_integrity::{
+use aequora_live::{HintBroker, HintSubscription, LiveError, LiveFailureKind, SyncHint};
+use aequora_protocol::integrity::{
     CURRENT_HASH_SCHEMA, CanonicalEntity, IntegrityGeneration, IntegritySnapshot, IntegritySupport,
     PartitionScheme,
 };
-use aequora_live::{HintBroker, HintSubscription, LiveError, LiveFailureKind, SyncHint};
 use aequora_protocol::{
     ChangeKind, OperationAck, OperationRejection, Partition, RemoteChange, SnapshotEntity,
 };

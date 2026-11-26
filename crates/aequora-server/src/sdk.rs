@@ -4,7 +4,7 @@ use aequora_adapter_sdk::{
     AdapterError, Authenticator, AuthorityService, Credential, DomainContext, DomainHandler,
     DomainOutcome,
 };
-use aequora_operation::{EncodedOperation, OperationKind};
+use aequora_protocol::operation::{EncodedOperation, OperationKind};
 use std::{
     collections::{BTreeMap, btree_map::Entry},
     fmt,
@@ -319,7 +319,7 @@ impl AequoraServer {
 mod tests {
     use super::*;
     use aequora_adapter_sdk::{AdapterErrorKind, ClientIdentity, DomainContext};
-    use aequora_operation::{Operation, OperationEncodingError, OperationSchemaVersion};
+    use aequora_protocol::operation::{Operation, OperationEncodingError, OperationSchemaVersion};
     use aequora_types::{DeviceId, TenantId};
     use async_trait::async_trait;
 

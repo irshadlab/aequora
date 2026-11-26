@@ -8,12 +8,9 @@ description.workspace = true
 repository.workspace = true
 
 [dependencies]
-aequora-integrity = { version = "0.1.1", path = "../aequora-integrity" }
-aequora-queue = { version = "0.1.1", path = "../aequora-queue" }
-aequora-scope = { version = "0.1.1", path = "../aequora-scope" }
+aequora-protocol = { version = "0.1.1", path = "../aequora-protocol" }
 aequora-authority = { version = "0.1.1", path = "../aequora-authority" }
 aequora-types = { version = "0.1.1", path = "../aequora-types" }
-aequora-protocol = { version = "0.1.1", path = "../aequora-protocol" }
 async-trait.workspace = true
 blake3.workspace = true
 serde.workspace = true

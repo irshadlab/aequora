@@ -23,10 +23,11 @@ use aequora_authority::{
     AuthorityState,
 };
 use aequora_client::{ClientConfig, ClientSyncEngine, RetryConfig};
-use aequora_conflict::{
+use aequora_protocol::clock::TestClock;
+use aequora_protocol::conflict::{
     ConflictPolicyRegistry, FieldSet, FieldSetMerger, FieldValue, RejectConflicts, TypedOperation,
 };
-use aequora_protocol::clock::TestClock;
+use aequora_protocol::transport::SyncTransport;
 use aequora_protocol::{
     Capability, ChangeKind, ClientLimits, ConflictPolicy, OperationEnvelope, OperationKind,
     OperationMetadata, RejectionCode, SessionMetadata, SyncDirective, SyncRequest,
@@ -36,7 +37,6 @@ use aequora_store::{CursorStore, EntityReader, JournalCompactor, OutboxStore};
 use aequora_testkit::{
     InMemoryAuthoritativeStore, InMemoryLocalStore, InProcessTransport, ResponseDroppingTransport,
 };
-use aequora_transport::SyncTransport;
 use aequora_types::{
     ActorId, AuthorityEpoch, AuthorityId, AuthorityInstanceId, Cursor, DeviceId, EntityId,
     EntityRef, EntityType, EntityVersion, HybridTimestamp, NodeId, OperationId, ProtocolVersion,

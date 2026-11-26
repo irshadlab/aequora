@@ -11,11 +11,12 @@ use aequora_client::{
     SyncCoordinator, SyncCoordinatorConfig, SyncStatus, SyncTrigger,
 };
 use aequora_compute::{ComputeConfig, ComputePool};
-use aequora_conflict::{
-    ConflictPolicyRegistry, FieldSet, FieldSetMerger, FieldValue, RejectConflicts, TypedOperation,
-};
 use aequora_observability::AtomicMetrics;
 use aequora_protocol::clock::TestClock;
+use aequora_protocol::conflict::{
+    ConflictPolicyRegistry, FieldSet, FieldSetMerger, FieldValue, RejectConflicts, TypedOperation,
+};
+use aequora_protocol::transport::{SyncTransport, TransportError};
 use aequora_protocol::{
     BootstrapRequest, Capability, ChangeKind, ClientLimits, ConflictPolicy, OperationEnvelope,
     OperationKind, OperationMetadata, PushHint, PushHintReason, ResyncReason, SessionMetadata,
@@ -33,7 +34,6 @@ use aequora_testkit::ResponseDroppingTransport;
 use aequora_testkit::{
     CommitFailPoint, InMemoryAuthoritativeStore, InMemoryLocalStore, InProcessTransport,
 };
-use aequora_transport::{SyncTransport, TransportError};
 use aequora_types::{
     ActorId, AuthorityEpoch, AuthorityId, AuthorityInstanceId, Cursor, DeviceId, EntityId,
     EntityRef, EntityType, HybridTimestamp, NodeId, OperationId, ProtocolVersion, RequestId,

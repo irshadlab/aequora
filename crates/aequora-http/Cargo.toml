@@ -8,10 +8,9 @@ description.workspace = true
 repository.workspace = true
 
 [dependencies]
-aequora-transport = { version = "0.1.1", path = "../aequora-transport" }
+aequora-protocol = { version = "0.1.1", path = "../aequora-protocol" }
 aequora-codec = { version = "0.1.1", path = "../aequora-codec", features = ["zstd"] }
 aequora-observability = { version = "0.1.1", path = "../aequora-observability" }
-aequora-protocol = { version = "0.1.1", path = "../aequora-protocol" }
 aequora-types = { version = "0.1.1", path = "../aequora-types" }
 async-trait.workspace = true
 http.workspace = true

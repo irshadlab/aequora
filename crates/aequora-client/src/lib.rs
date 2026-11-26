@@ -35,19 +35,21 @@ pub mod prelude {
         ClientIdentity, ClientStore, Credential, CredentialProvider, DomainId, SyncTransport,
     };
     pub use aequora_live::{HintWakeOutcome, HintWakeTracker, SyncHint};
-    pub use aequora_operation::{
+    pub use aequora_protocol::operation::{
         LocalCommitStatus, MutationReceipt, Operation, OperationKind, OperationSchemaVersion,
         OperationState,
     };
-    pub use aequora_protocol::{ClientLimits, SessionMetadata, SnapshotLimits};
-    pub use aequora_scope::{
+    pub use aequora_protocol::scope::{
         LocalScopeState, ScopeTransition, ScopeTransitionOutcome, Subscription,
     };
+    pub use aequora_protocol::transport::{
+        StreamingSyncTransport, SyncTransport as EngineSyncTransport,
+    };
+    pub use aequora_protocol::{ClientLimits, SessionMetadata, SnapshotLimits};
     pub use aequora_store::{
         AdapterCapabilities, AdapterManifest, AdapterManifestProvider, AdapterRequirements,
         AdapterRole, AdapterTier, LocalStore, ProductionAdapterPair, ScopeStateStore,
     };
-    pub use aequora_transport::{StreamingSyncTransport, SyncTransport as EngineSyncTransport};
     pub use aequora_types::coordination::{
         FencingToken, LocalProcessMode, LocalStoreGeneration, LocalStoreId, ProcessInstanceId,
     };
@@ -63,19 +65,21 @@ use aequora_observability::{
     LocalCoordinationEventKind, MetricEvent, NoopObserver, Observer, OutcomeKind,
     SchedulerEventKind, ScopeEventKind, TraceContext,
 };
+use aequora_protocol::queue::OptimizationRegistry;
+use aequora_protocol::region::{ReadResponseMetadata, RegionError, SessionWatermark};
+use aequora_protocol::scope::{
+    ScopeTransition, ScopeTransitionKind, ScopeTransitionOutcome, Subscription,
+};
+use aequora_protocol::transport::{
+    StreamingSyncTransport, SyncTransport, TransportError, TransportErrorKind,
+};
 use aequora_protocol::{
     BootstrapRequest, BootstrapResponse, Capability, ClientLimits, PushHint, ResyncReason,
     SessionMetadata, SnapshotLimits, SyncDirective, SyncRequest, SyncResponse,
 };
-use aequora_queue::OptimizationRegistry;
-use aequora_region::{ReadResponseMetadata, RegionError, SessionWatermark};
-use aequora_scope::{ScopeTransition, ScopeTransitionKind, ScopeTransitionOutcome, Subscription};
 use aequora_store::{
     AdapterCompatibilityError, AdapterManifestProvider, AdapterRequirements,
     LocalCoordinationStore, LocalStore, ScopeStateStore, StoreError, StoreErrorKind,
-};
-use aequora_transport::{
-    StreamingSyncTransport, SyncTransport, TransportError, TransportErrorKind,
 };
 use aequora_types::coordination::{
     LeaseGrant, LeaseKind, LeaseRequest, LocalCoordinationSupport, LocalProcessMode,

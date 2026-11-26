@@ -1,4 +1,9 @@
-use aequora_legacy::{
+use aequora_legacy_api::{
+    CanonicalOperationHandler, CompatibilityError, LegacyAuthContext, LegacyIdentityMapper,
+    LegacyPrincipal, LegacyRequestContext, LegacyRequestTranslator, RetryGuarantee,
+    execute_legacy_request,
+};
+use aequora_protocol::legacy::{
     AggregateOwnership, BridgeCursor, BridgeLedgerEntry, BridgeLedgerStatus, BridgeStore,
     CatchUpState, CoexistenceSurface, CutoverError, CutoverPlan, CutoverReadiness,
     CutoverVerification, GovernanceCoverage, InMemoryBridgeStore, LegacyCutoverBoundary,
@@ -6,11 +11,6 @@ use aequora_legacy::{
     MappingClassification, MappingOutcome, OwnershipError, ShadowMatch, ShadowOperationId,
     ShadowPlan, VerificationCheck, WriteOwner, WritePath, WriterClassification,
     WriterInventoryEntry, WriterKind, compare_shadow, complete_cutover, validate_rollback,
-};
-use aequora_legacy_api::{
-    CanonicalOperationHandler, CompatibilityError, LegacyAuthContext, LegacyIdentityMapper,
-    LegacyPrincipal, LegacyRequestContext, LegacyRequestTranslator, RetryGuarantee,
-    execute_legacy_request,
 };
 use aequora_types::{ActorId, AuthorityEpoch, EntityType, OperationId, TenantId};
 use async_trait::async_trait;
