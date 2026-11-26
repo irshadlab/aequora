@@ -20,13 +20,13 @@ done
 
 if rg -n 'sqlx|stoolap|rusqlite|axum|reqwest|quinn|dioxus|jni|windows-sys|objc2' \
     crates/aequora-types/Cargo.toml crates/aequora-protocol/Cargo.toml \
-    crates/aequora-storage-core/Cargo.toml; then
+    crates/aequora-store/Cargo.toml; then
     echo "foundation, protocol, or storage contracts gained a physical integration dependency" >&2
     exit 1
 fi
 
 if rg -n 'sqlx::|stoolap::|rusqlite::' \
-    crates/aequora-storage-core/src crates/aequora-store/src; then
+    crates/aequora-store/src; then
     echo "physical database type leaked into a storage-neutral public contract" >&2
     exit 1
 fi

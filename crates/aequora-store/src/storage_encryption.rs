@@ -1,5 +1,5 @@
 //! Database-encryption key indirection, resumable rotation, and cryptographic erase contracts.
-use aequora_storage_core::LocalStorageError;
+use crate::storage_core::LocalStorageError;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]

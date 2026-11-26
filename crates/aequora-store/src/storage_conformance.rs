@@ -1,5 +1,5 @@
 //! Certification claims are bound to an adapter, target platform, and complete test matrix.
-use aequora_storage_core::{LocalStorageCapabilities, Platform};
+use crate::storage_core::{LocalStorageCapabilities, Platform};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use thiserror::Error;

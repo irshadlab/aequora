@@ -1,5 +1,5 @@
 //! Bounded, checkpointed maintenance that preserves critical local intent.
-use aequora_storage_core::{LocalStorageError, StorageClass, StoragePressure};
+use crate::storage_core::{LocalStorageError, StorageClass, StoragePressure};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]

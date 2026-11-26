@@ -3,6 +3,14 @@
 //! Implementations must preserve the atomicity requirements on each method. No database
 //! transaction type appears in this public API.
 
+pub mod blob_store;
+pub mod storage_backup;
+pub mod storage_conformance;
+pub mod storage_core;
+pub mod storage_encryption;
+pub mod storage_maintenance;
+pub mod storage_profile;
+
 use aequora_coordination::{
     CoordinationSnapshot, FencingToken, LeaseGrant, LeaseRequest, LocalCoordinationSupport,
     LocalStoreGeneration,

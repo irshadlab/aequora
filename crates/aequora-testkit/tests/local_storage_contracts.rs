@@ -1,12 +1,16 @@
-use aequora_blob_store::BlobMetadata;
 use aequora_invariants::InvariantId;
-use aequora_storage_backup::{RestoreCheck, RestoreContext, RestoreDecision, classify_restore};
-use aequora_storage_conformance::{CertificationError, CertificationProfile, CertificationRecord};
-use aequora_storage_core::{
-    DeviceBinding, LocalStorageCapabilities, Platform, PublicationState, STORAGE_INVARIANT_IDS,
-    StorageClass,
+use aequora_store::blob_store::BlobMetadata;
+use aequora_store::storage_backup::{
+    RestoreCheck, RestoreContext, RestoreDecision, classify_restore,
 };
-use aequora_storage_profile::{StorageProfile, may_evict};
+use aequora_store::storage_conformance::{
+    CertificationError, CertificationProfile, CertificationRecord,
+};
+use aequora_store::storage_core::{
+    DeviceBinding, LocalStorageCapabilities, Platform, PublicationState, STORAGE_INVARIANT_IDS,
+    StorageAdmission, StorageClass,
+};
+use aequora_store::storage_profile::{StorageProfile, may_evict};
 use std::collections::BTreeMap;
 
 #[test]
@@ -54,7 +58,7 @@ fn new_device_restore_requires_rebinding() {
 fn low_disk_is_rejected_before_mutation() {
     assert_ne!(
         StorageProfile::MOBILE_STANDARD.admit(1, 1_000_000, 10_000, 10_000),
-        aequora_storage_core::StorageAdmission::Allowed
+        StorageAdmission::Allowed
     );
 }
 

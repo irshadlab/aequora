@@ -1,5 +1,5 @@
 //! Transactionally consistent backup manifests and restore decisions.
-use aequora_storage_core::{BindingDisposition, DeviceBinding, LocalStoreFormatVersion};
+use crate::storage_core::{BindingDisposition, DeviceBinding, LocalStoreFormatVersion};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]

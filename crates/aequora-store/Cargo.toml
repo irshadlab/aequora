@@ -17,6 +17,7 @@ aequora-queue = { version = "0.1.1", path = "../aequora-queue" }
 aequora-scope = { version = "0.1.1", path = "../aequora-scope" }
 aequora-types = { version = "0.1.1", path = "../aequora-types" }
 async-trait.workspace = true
+blake3.workspace = true
 serde.workspace = true
 thiserror.workspace = true
 

@@ -1,5 +1,5 @@
 //! Policy presets and low-storage admission decisions; policy never changes sync semantics.
-use aequora_storage_core::{StorageAdmission, StorageClass, StoragePressure};
+use crate::storage_core::{StorageAdmission, StorageClass, StoragePressure};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]

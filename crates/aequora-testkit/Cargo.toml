@@ -67,11 +67,6 @@ aequora-types = { version = "0.1.1", path = "../aequora-types" }
 aequora-workflow = { version = "0.1.1", path = "../aequora-workflow" }
 aequora-platform-android = { version = "0.1.1", path = "../aequora-platform-android" }
 aequora-platform-ios = { version = "0.1.1", path = "../aequora-platform-ios" }
-aequora-storage-core = { version = "0.1.1", path = "../aequora-storage-core" }
-aequora-storage-profile = { version = "0.1.1", path = "../aequora-storage-profile" }
-aequora-storage-backup = { version = "0.1.1", path = "../aequora-storage-backup" }
-aequora-storage-conformance = { version = "0.1.1", path = "../aequora-storage-conformance" }
-aequora-blob-store = { version = "0.1.1", path = "../aequora-blob-store" }
 aequora-benchkit = { version = "0.1.1", path = "../aequora-benchkit" }
 aequora-loadgen = { version = "0.1.1", path = "../aequora-loadgen" }
 aequora-workload = { version = "0.1.1", path = "../aequora-workload" }

@@ -1,5 +1,5 @@
 //! Content-addressed blobs remain staged until their digest is verified.
-use aequora_storage_core::{LocalStorageError, PublicationState, StorageClass};
+use crate::storage_core::{LocalStorageError, PublicationState, StorageClass};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
