@@ -1,9 +1,8 @@
-use aequora_conformance::verification::{
+use aequora_testkit::certification::verification::{
     EnvironmentFingerprint, EvidenceRef, GateResult, GateStatus, GateWaiver, InvariantCoverageMap,
     QUALITY_GATE_SCHEMA_VERSION, Qualification, QualityGateManifest, ReleaseProfile, SuiteId,
     TestCategory, TestId, VerificationError, VerificationReport, VerificationTestResult,
 };
-use aequora_invariants::InvariantId;
 use aequora_testkit::{
     conformance::FaultPoint,
     verification::{
@@ -11,6 +10,7 @@ use aequora_testkit::{
         TestContext, TestSeed,
     },
 };
+use aequora_types::invariants::InvariantId;
 use std::{collections::BTreeSet, time::Duration};
 
 fn evidence(name: &str) -> EvidenceRef {

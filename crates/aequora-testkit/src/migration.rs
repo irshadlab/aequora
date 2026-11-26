@@ -5,7 +5,7 @@ use std::{
     sync::{Mutex, MutexGuard},
 };
 
-use aequora_migration::{
+use aequora_authority::migration::{
     BatchCommitOutcome, CheckpointedImportSink, ImportBatch, ImportCheckpoint, ImportJob,
     ImportWorkflowError, ImportWorkflowStoreError, QuarantineEntry, SourceRecordKey,
 };

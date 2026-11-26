@@ -10,15 +10,19 @@ pub mod profiles;
 pub mod replay;
 pub mod verification;
 
-use aequora_client::{ClientError, ClientSyncEngine, SyncOutcome};
-use aequora_coordination::{
-    CoordinationError, CoordinationSnapshot, LeaseGrant, LeaseRequest, LeaseState,
-    LocalCoordinationSupport, LocalStoreGeneration, LocalStoreId,
-};
-use aequora_executor::{
+pub use aequora_adapter_sdk::certification;
+
+pub mod benchkit;
+
+pub mod loadgen;
+
+pub mod model;
+
+use aequora_authority::executor::{
     AuthContext, AuthenticatedOperation, AuthoritativeMutation, AuthorizedOperation, CurrentEntity,
     ExecutableOperation, ExecutionError, OperationExecutor,
 };
+use aequora_client::{ClientError, ClientSyncEngine, SyncOutcome};
 use aequora_integrity::{
     CURRENT_HASH_SCHEMA, CanonicalEntity, IntegrityGeneration, IntegritySnapshot, IntegritySupport,
     PartitionScheme, RepairPlan, RepairStrategy,
@@ -46,6 +50,10 @@ use aequora_store::{
 };
 use aequora_transport::{
     SnapshotPageStream, StreamingSyncTransport, SyncTransport, TransportError,
+};
+use aequora_types::coordination::{
+    CoordinationError, CoordinationSnapshot, LeaseGrant, LeaseRequest, LeaseState,
+    LocalCoordinationSupport, LocalStoreGeneration, LocalStoreId,
 };
 use aequora_types::{
     CorrelationId, Cursor, EntityRef, LineageContext, OperationId, OperationalErrorCode, Sequence,

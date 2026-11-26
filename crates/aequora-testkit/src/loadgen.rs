@@ -1,6 +1,6 @@
 //! Bounded load planning and correctness observation with no I/O or runtime dependency.
 
-use aequora_benchkit::{CorrectnessResult, LoadCounters};
+use crate::benchkit::{CorrectnessResult, LoadCounters};
 use aequora_workload::{ArrivalModel, DatasetGenerator, LoadModel, WorkloadSpec};
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, VecDeque};

@@ -1,4 +1,4 @@
-use aequora_audit::{
+use aequora_authority::audit::{
     AUDIT_FORMAT_VERSION, AuditAccess, AuditActionId, AuditActor, AuditCategory, AuditChange,
     AuditChangeKind, AuditDurability, AuditError, AuditEvent, AuditFieldId, AuditOutcome,
     AuditProvenance, AuditQuery, AuditRetentionClass, AuditSubject, AuditTimestamp, AuditValue,

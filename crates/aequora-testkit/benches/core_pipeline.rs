@@ -1,7 +1,8 @@
+use aequora_authority::executor::plan_dependencies;
+use aequora_authority::validator::{ProtocolLimits, validate_request};
 use aequora_codec::MessageKind;
 use aequora_compute::{ComputeConfig, ComputePool};
 use aequora_conflict::check_version;
-use aequora_executor::plan_dependencies;
 use aequora_journal::{CompactionInputs, plan_compaction};
 use aequora_protocol::{
     Capability, ClientLimits, OperationEnvelope, OperationKind, OperationMetadata, SessionMetadata,
@@ -14,7 +15,6 @@ use aequora_types::{
     NodeId, OperationId, ProtocolVersion, RequestId, SchemaVersion, Sequence, SessionId,
     SyncScopeId, TenantId,
 };
-use aequora_validator::{ProtocolLimits, validate_request};
 use criterion::{BatchSize, Criterion, black_box, criterion_group, criterion_main};
 
 fn session() -> SessionMetadata {

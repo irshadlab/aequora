@@ -1,6 +1,6 @@
 //! Reusable deterministic harness for third-party and built-in certification subjects.
 
-use aequora_conformance::{
+use crate::certification::{
     CertificationArtifact, CertificationTier, ConformanceError, ConformanceProfile,
     ExecutionEnvironment, SubjectIdentity, TestDefinition, TestObservation, TestStatus, certify,
     definitions_for,
@@ -156,8 +156,8 @@ macro_rules! aequora_conformance_compliance {
             artifact.verify_identity()?;
             if !matches!(
                 artifact.result,
-                aequora_conformance::CertificationResult::Passed
-                    | aequora_conformance::CertificationResult::PassedWithLimitations
+                crate::certification::CertificationResult::Passed
+                    | crate::certification::CertificationResult::PassedWithLimitations
             ) {
                 return Err(format!("conformance result was {:?}", artifact.result).into());
             }

@@ -70,7 +70,7 @@ async fn two_runtime_coordinators_elect_exactly_one_leader() {
     let (second, second_handle) = SyncCoordinator::new(Arc::new(second), coordinator_config);
     let first_task = tokio::spawn(first.run_multi_process(election));
     let second_task = tokio::spawn(second.run_multi_process(MultiProcessCoordinatorConfig {
-        process_id: aequora_coordination::ProcessInstanceId::new(),
+        process_id: aequora_types::coordination::ProcessInstanceId::new(),
         ..election
     }));
     tokio::time::sleep(Duration::from_millis(100)).await;

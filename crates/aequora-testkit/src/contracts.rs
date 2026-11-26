@@ -3,10 +3,6 @@
 //! These checks mutate their input stores. Callers must supply isolated stores and fixture IDs
 //! that have never previously been used in those stores.
 
-use aequora_coordination::{
-    FencingToken, LeaseKind, LeaseRequest, LocalCoordinationSupport, LocalStoreGeneration,
-    LocalStoreId, ProcessInstanceId,
-};
 use aequora_integrity::{
     CanonicalEntity, IntegrityComparison, IntegrityGeneration, IntegritySnapshot, IntegritySupport,
     PartitionScheme, RepairPlan,
@@ -27,6 +23,10 @@ use aequora_store::{
     IntegrityCapabilityProvider, LocalCoordinationStore, LocalIntegrityStore, LocalStore,
     OutboxState, OutboxStateStore, OutboxStore, ScopeStateStore, SnapshotStore, StoreError,
     TransactionCapabilities, TransactionCapabilityProvider, TransactionGuarantees,
+};
+use aequora_types::coordination::{
+    FencingToken, LeaseKind, LeaseRequest, LocalCoordinationSupport, LocalStoreGeneration,
+    LocalStoreId, ProcessInstanceId,
 };
 use aequora_types::{
     ActorId, CorrelationId, Cursor, DeviceId, EntityId, EntityRef, EntityType, EntityVersion,
@@ -336,7 +336,7 @@ where
     }
     store
         .release_lease(
-            aequora_coordination::LeaseGrant {
+            aequora_types::coordination::LeaseGrant {
                 store_generation: generation,
                 ..maintenance
             },

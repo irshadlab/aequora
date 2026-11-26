@@ -1,12 +1,12 @@
-use aequora_admin::{
+use aequora_authority::admin::{
     AdminCommand, AdminQuery, AdminTarget, AssuranceLevel, PermissionId, RiskClass,
 };
 use aequora_feed::{
     ConsumerRegistration, ConsumerRetentionPolicy, FEED_INVARIANTS, RetentionDecision,
     evaluate_retention,
 };
-use aequora_invariants::InvariantId;
 use aequora_journal::{CompactionInputs, plan_compaction};
+use aequora_types::invariants::InvariantId;
 use aequora_types::{AuthorityEpoch, AuthorityId, Sequence};
 use std::collections::BTreeSet;
 

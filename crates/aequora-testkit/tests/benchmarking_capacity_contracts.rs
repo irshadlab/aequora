@@ -1,8 +1,8 @@
-use aequora_benchkit::{
+use aequora_testkit::benchkit::{
     BenchmarkError, BenchmarkTarget, CapacityEvidence, CapacityInputs, EvidenceClass,
     ProductionTargetGuard, estimate_capacity,
 };
-use aequora_loadgen::{AdmissionOutcome, LoadGenerator};
+use aequora_testkit::loadgen::{AdmissionOutcome, LoadGenerator};
 use aequora_workload::WorkloadSpec;
 
 const WORKLOADS: [(&str, &str); 8] = [

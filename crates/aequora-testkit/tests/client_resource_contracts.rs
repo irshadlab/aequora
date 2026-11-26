@@ -7,8 +7,8 @@ use aequora_client::resources::{
     StorageAssetKind, StoragePreflight, StoragePreflightDecision, StorageState, ThermalState,
     WorkEstimate,
 };
-use aequora_invariants::InvariantId;
 use aequora_protocol::{Capability, SessionMetadata};
+use aequora_types::invariants::InvariantId;
 use aequora_types::{
     ActorId, AuthorityEpoch, AuthorityId, Cursor, DeviceId, Sequence, SessionId, SyncScopeId,
     TenantId,

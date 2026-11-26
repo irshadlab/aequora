@@ -2,11 +2,11 @@ use aequora_config::{
     AdapterCapabilities, ConfigLoader, ConfigPatch, DevelopmentFacilities, DevelopmentFacility,
     Environment, RawDeploymentConfig,
 };
-use aequora_feature_flags::{
+use aequora_security::feature_flags::{
     EntitlementId, FeatureContext, FeatureDefinition, FeatureEvaluator, FeatureId, FeaturePolicy,
     FeatureSafety, RolloutStage,
 };
-use aequora_policy::{
+use aequora_security::policy::{
     AtomicRuntimeConfigStore, BatchSize, ConfigGeneration, PolicyError, PolicySnapshot,
     RuntimeConfigStore, RuntimePolicy, WorkerLimit,
 };

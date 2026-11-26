@@ -14,19 +14,19 @@
 
 #![expect(clippy::too_many_lines, reason = "comprehensive simulation flows")]
 
+use aequora_authority::executor::{
+    AuthContext, AuthenticatedOperation, AuthoritativeMutation, AuthorizedOperation, CurrentEntity,
+    ExecutableOperation, ExecutionError, OperationExecutor,
+};
 use aequora_authority::{
     AuthorityController, AuthorityPromotionPolicy, AuthorityRole, AuthorityRuntimeMode,
     AuthorityState,
 };
 use aequora_client::{ClientConfig, ClientSyncEngine, RetryConfig};
-use aequora_clock::TestClock;
 use aequora_conflict::{
     ConflictPolicyRegistry, FieldSet, FieldSetMerger, FieldValue, RejectConflicts, TypedOperation,
 };
-use aequora_executor::{
-    AuthContext, AuthenticatedOperation, AuthoritativeMutation, AuthorizedOperation, CurrentEntity,
-    ExecutableOperation, ExecutionError, OperationExecutor,
-};
+use aequora_protocol::clock::TestClock;
 use aequora_protocol::{
     Capability, ChangeKind, ClientLimits, ConflictPolicy, OperationEnvelope, OperationKind,
     OperationMetadata, RejectionCode, SessionMetadata, SyncDirective, SyncRequest,

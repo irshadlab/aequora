@@ -1,17 +1,17 @@
-use aequora_conformance::{
-    CertificationTier, ConformanceDomain, ConformanceProfile, definitions_for,
-};
-use aequora_invariants::InvariantId;
-use aequora_mobile_bindings::{
+use aequora_mobile::bindings::{
     BindingError, BindingErrorCode, MobileBinding, MobileBindingHost, MobileBuildIdentity,
     MobileCommand, MobileOutcome,
 };
-use aequora_mobile_runtime::{
+use aequora_mobile::runtime::{
     AppLifecycle, Completion, CoordinatorError, MobileCoordinator, MobilePlatformEvent,
     MobilePolicy, MobileResourceContext, MobileSyncBudget, NetworkContext, NetworkCost,
     PolicyDecision, PushHint, PushHintReason, RecoveryAction, RecoveryError, RecoverySnapshot,
     StoragePressure, StoreVersions, SyncTrigger, TransferKind, classify_startup,
 };
+use aequora_testkit::certification::{
+    CertificationTier, ConformanceDomain, ConformanceProfile, definitions_for,
+};
+use aequora_types::invariants::InvariantId;
 use async_trait::async_trait;
 
 fn ready_context() -> MobileResourceContext {
@@ -177,7 +177,7 @@ fn storage_pressure_blocks_work_and_pending_intent_pins_scope() {
         PolicyDecision::StorageUnavailable
     );
     assert!(!MobilePolicy::may_evict_scope(
-        aequora_mobile_runtime::ScopeCachePolicy::OnDemand,
+        aequora_mobile::runtime::ScopeCachePolicy::OnDemand,
         true,
         false,
     ));
@@ -197,7 +197,7 @@ async fn binding_contains_panics_and_exposes_stable_internal_error() {
     let binding = MobileBinding::new(
         PanickingHost,
         MobileBuildIdentity {
-            abi_version: aequora_mobile_runtime::AEQUORA_MOBILE_ABI_VERSION,
+            abi_version: aequora_mobile::runtime::AEQUORA_MOBILE_ABI_VERSION,
             core_version: "0.1.0".to_owned(),
             build_id: "test-build".to_owned(),
             registry_generation: 1,

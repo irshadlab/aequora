@@ -1,20 +1,20 @@
-use aequora_agent::{AgentError, AgentSession, CommandRoute};
-use aequora_conformance::{
-    CertificationTier, ConformanceDomain, ConformanceProfile, definitions_for,
-};
-use aequora_coordination::{
-    CoordinationSnapshot, FencingToken, LeaseGrant, LeaseKind, LocalStoreGeneration, LocalStoreId,
-    ProcessInstanceId,
-};
-use aequora_desktop_runtime::{
+use aequora_desktop::agent::{AgentError, AgentSession, CommandRoute};
+use aequora_desktop::ipc::{CURRENT_IPC_PROTOCOL_VERSION, Command, Handshake, SessionToken};
+use aequora_desktop::linux::{LinuxError, LinuxSecureStore};
+use aequora_desktop::runtime::{
     CoordinatorAction, DesktopCoordinator, DesktopError, DesktopLifecycle, DesktopPolicy,
     DesktopSession, NetworkAvailability, NetworkContext, PowerContext, ResumeAction,
     StoragePressure, WorkClass, WorkDecision,
 };
-use aequora_invariants::InvariantId;
-use aequora_ipc_protocol::{CURRENT_IPC_PROTOCOL_VERSION, Command, Handshake, SessionToken};
-use aequora_platform_linux::{LinuxError, LinuxSecureStore};
-use aequora_update::{UpdateError, UpdateStage, UpdateState};
+use aequora_desktop::update::{UpdateError, UpdateStage, UpdateState};
+use aequora_testkit::certification::{
+    CertificationTier, ConformanceDomain, ConformanceProfile, definitions_for,
+};
+use aequora_types::coordination::{
+    CoordinationSnapshot, FencingToken, LeaseGrant, LeaseKind, LocalStoreGeneration, LocalStoreId,
+    ProcessInstanceId,
+};
+use aequora_types::invariants::InvariantId;
 use uuid::Uuid;
 
 fn lease(token: u64) -> LeaseGrant {

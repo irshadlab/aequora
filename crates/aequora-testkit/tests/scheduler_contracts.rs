@@ -2,11 +2,11 @@ use std::{sync::Arc, time::Duration};
 
 use aequora_client::{ClientConfig, ClientError, ClientSyncEngineBuilder};
 use aequora_protocol::{SessionMetadata, SyncRequest};
-use aequora_scheduler::{
-    BatchController, DeferralReason, SchedulerPolicy, SchedulingContext, SyncProfile,
-};
 use aequora_testkit::InMemoryLocalStore;
 use aequora_transport::{SyncTransport, TransportError};
+use aequora_types::scheduler::{
+    BatchController, DeferralReason, SchedulerPolicy, SchedulingContext, SyncProfile,
+};
 use aequora_types::{ActorId, DeviceId, SessionId, SyncScopeId, TenantId};
 use async_trait::async_trait;
 use std::sync::atomic::{AtomicUsize, Ordering};

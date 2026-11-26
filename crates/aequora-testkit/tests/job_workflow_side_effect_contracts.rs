@@ -1,21 +1,21 @@
-use aequora_jobs::{
+use aequora_authority::jobs::{
     DependencyCondition, EpochRecoveryAction, ErrorClass, FencedUpdate, FencingToken, JitterPolicy,
     JobCheckpoint, JobDependency, JobEpochPolicy, JobExecutionRegionPolicy, JobGovernanceMetadata,
     JobKind, JobLease, JobPayloadRef, JobPayloadSchemaVersion, JobRecord, JobState, OccurrenceId,
     RetryPolicy, ScheduleId, WorkerId, WorkflowId, epoch_recovery_action, validate_fenced_update,
     verify_dependency_dag,
 };
-use aequora_scheduler::WorkClass;
-use aequora_side_effects::{
+use aequora_authority::side_effects::{
     AmbiguousRecoveryPolicy, ExternalIdempotencyKey, ExternalOutcome, ExternalOutcomeKind,
     ProviderCapabilities, ProviderError, ReconciliationResult, RecoveryAction, SideEffectIntent,
     SideEffectIntentId, SideEffectKind, SideEffectPayload, SideEffectProvider, recovery_action,
 };
-use aequora_types::{AuthorityEpoch, CorrelationId, JobId, OperationId, TenantId};
-use aequora_workflow::{
+use aequora_authority::workflow::{
     WorkflowAction, WorkflowCheckpoint, WorkflowKind, WorkflowRecord, WorkflowState,
     WorkflowTransition, WorkflowVersion,
 };
+use aequora_types::scheduler::WorkClass;
+use aequora_types::{AuthorityEpoch, CorrelationId, JobId, OperationId, TenantId};
 use async_trait::async_trait;
 use proptest::prelude::*;
 use std::{collections::BTreeSet, sync::Mutex};
@@ -83,7 +83,7 @@ fn newer_claim_fences_expired_worker() {
     };
     assert_eq!(
         validate_fenced_update(&record, current_lease, stale_update),
-        Err(aequora_jobs::JobStoreError::LeaseLost)
+        Err(aequora_authority::jobs::JobStoreError::LeaseLost)
     );
 }
 
@@ -110,7 +110,7 @@ proptest! {
         };
         prop_assert_eq!(
             validate_fenced_update(&job(job_id), lease, update),
-            Err(aequora_jobs::JobStoreError::StaleFence)
+            Err(aequora_authority::jobs::JobStoreError::StaleFence)
         );
     }
 }
@@ -132,7 +132,7 @@ fn dependency_dag_rejects_cycles() {
                 condition: DependencyCondition::Completed,
             },
         ]),
-        Err(aequora_jobs::JobError::DependencyCycle)
+        Err(aequora_authority::jobs::JobError::DependencyCycle)
     );
 }
 

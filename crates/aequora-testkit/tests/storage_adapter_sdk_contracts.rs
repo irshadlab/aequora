@@ -8,7 +8,7 @@ use aequora_adapter_sdk::{
         run_fencing_conformance, run_local_store_conformance, run_snapshot_conformance,
     },
 };
-use aequora_conformance::TestStatus;
+use aequora_testkit::certification::TestStatus;
 use async_trait::async_trait;
 
 struct ReferenceFactory;

@@ -1,5 +1,4 @@
 use aequora_client::ClientReadSession;
-use aequora_invariants::InvariantId;
 use aequora_region::{
     AssignmentTrust, AuthorityLocation, AuthorityShardId, DirectoryGeneration, EndpointReadPolicy,
     ReadConsistency, ReadFallbackPolicy, ReadTarget, RegionError, RegionHealth, RegionMode,
@@ -9,6 +8,7 @@ use aequora_region::{
     StalenessBudget, TenantAuthorityAssignment, TenantAuthorityDirectory,
 };
 use aequora_server::ServerRegionalReadGuard;
+use aequora_types::invariants::InvariantId;
 use aequora_types::{AuthorityEpoch, AuthorityId, RegionId, Sequence, TenantId};
 use std::{collections::BTreeSet, time::Duration};
 

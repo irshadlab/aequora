@@ -1,8 +1,8 @@
-use aequora_conformance::{CertificationTier, ConformanceProfile, definitions_for};
-use aequora_invariants::InvariantId;
 use aequora_release::productization::{
     DecisionCheck, GaGate, GaReadinessManifest, Maturity, Milestone, V1Component, V1Scope,
 };
+use aequora_testkit::certification::{CertificationTier, ConformanceProfile, definitions_for};
+use aequora_types::invariants::InvariantId;
 
 #[test]
 fn frozen_v1_scope_is_small_and_keeps_stoolap_conditional() {

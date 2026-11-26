@@ -1,4 +1,4 @@
-use aequora_conformance::{
+use aequora_testkit::certification::{
     CertificationResult, CertificationTier, ConformanceProfile, ExecutionEnvironment,
     SubjectIdentity, TestDefinition, TestObservation, TestStatus,
 };

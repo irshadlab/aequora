@@ -1,4 +1,4 @@
-use aequora_admin::{
+use aequora_authority::admin::{
     AdminAction, AdminCommand, AdminCommandExecutor, AdminError, AdminOperationId,
     AdminOperationStatus, AdminPrincipal, AdminReasonCode, AdminResultCode, AdminService,
     AdminTarget, AssuranceLevel, ConfigGeneration, ExecutionResult, InMemoryAdminStore,
@@ -9,8 +9,8 @@ use std::{collections::BTreeSet, sync::Arc};
 
 struct DurableAudit;
 
-impl aequora_admin::AdminAuditSink for DurableAudit {
-    fn record(&self, _event: aequora_admin::AdminAuditEvent) -> Result<(), AdminError> {
+impl aequora_authority::admin::AdminAuditSink for DurableAudit {
+    fn record(&self, _event: aequora_authority::admin::AdminAuditEvent) -> Result<(), AdminError> {
         Ok(())
     }
 }

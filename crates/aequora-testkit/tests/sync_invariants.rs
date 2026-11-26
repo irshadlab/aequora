@@ -1,3 +1,7 @@
+use aequora_authority::executor::{
+    AuthContext, AuthenticatedOperation, AuthoritativeMutation, AuthorizedOperation, CurrentEntity,
+    ExecutableOperation, ExecutionError, OperationExecutor,
+};
 use aequora_authority::{
     AuthorityController, AuthorityPromotionPolicy, AuthorityRole, AuthorityRuntimeMode,
     AuthorityState,
@@ -6,16 +10,12 @@ use aequora_client::{
     ClientConfig, ClientError, ClientSyncEngine, ClientSyncEngineBuilder, RetryConfig,
     SyncCoordinator, SyncCoordinatorConfig, SyncStatus, SyncTrigger,
 };
-use aequora_clock::TestClock;
 use aequora_compute::{ComputeConfig, ComputePool};
 use aequora_conflict::{
     ConflictPolicyRegistry, FieldSet, FieldSetMerger, FieldValue, RejectConflicts, TypedOperation,
 };
-use aequora_executor::{
-    AuthContext, AuthenticatedOperation, AuthoritativeMutation, AuthorizedOperation, CurrentEntity,
-    ExecutableOperation, ExecutionError, OperationExecutor,
-};
 use aequora_observability::AtomicMetrics;
+use aequora_protocol::clock::TestClock;
 use aequora_protocol::{
     BootstrapRequest, Capability, ChangeKind, ClientLimits, ConflictPolicy, OperationEnvelope,
     OperationKind, OperationMetadata, PushHint, PushHintReason, ResyncReason, SessionMetadata,

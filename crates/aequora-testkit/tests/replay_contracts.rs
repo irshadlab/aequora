@@ -1,4 +1,6 @@
-use aequora_replay::{ExecutionPlan, HandlerVersion, PlanCommitter, ReplayError, SideEffectIntent};
+use aequora_authority::replay::{
+    ExecutionPlan, HandlerVersion, PlanCommitter, ReplayError, SideEffectIntent,
+};
 use aequora_testkit::replay::{InMemoryPlanCommitter, PlanCommitFailPoint};
 use aequora_types::{JobId, OperationId};
 

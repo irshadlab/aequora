@@ -1,6 +1,6 @@
 //! Runtime-, transport-, database-, and vendor-neutral performance evidence contracts.
 
-use aequora_invariants::InvariantId;
+use aequora_types::invariants::InvariantId;
 use aequora_workload::{ScenarioId, WorkloadSpec};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;

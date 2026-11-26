@@ -1,6 +1,6 @@
 //! Deterministic canonical audit repository, commit failpoints, queries, and explanation fixtures.
 
-use aequora_audit::{
+use aequora_authority::audit::{
     AuditAccess, AuditCategory, AuditError, AuditEvent, AuditEventId, AuditFieldId, AuditPartition,
     AuditQuery, ChainedAuditRecord, FieldProvenance,
 };
@@ -85,7 +85,7 @@ impl InMemoryAuditRepository {
                 .iter()
                 .find(|event| event.audit_event_id == pointer.last_audit_event_id)
                 .ok_or(AuditError::DuplicateEventIdentity)?;
-            if source.subject != aequora_audit::AuditSubject::Entity(pointer.entity)
+            if source.subject != aequora_authority::audit::AuditSubject::Entity(pointer.entity)
                 || source.provenance.authoritative_event_id != Some(pointer.last_event_id)
                 || !source
                     .changes

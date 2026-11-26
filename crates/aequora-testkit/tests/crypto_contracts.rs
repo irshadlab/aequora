@@ -1,4 +1,4 @@
-use aequora_crypto::{
+use aequora_security::crypto::{
     AssociatedData, CryptoPolicy, DataEncryptionKey, EncryptionError,
     InMemoryEncryptionKeyProvider, KeyPurpose, KeyStatus, TenantKeyId, decrypt_payload,
     encrypt_payload,

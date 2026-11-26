@@ -4,7 +4,7 @@
 //! two-client conflicts. It deliberately does not model HTTP, SQL, Axum, or a particular local
 //! database. Every transition checks the normative invariant registry.
 
-use aequora_invariants::InvariantId;
+use aequora_types::invariants::InvariantId;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet, VecDeque};
 use thiserror::Error;

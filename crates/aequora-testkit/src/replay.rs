@@ -1,6 +1,6 @@
 //! Deterministic replay repositories, captured services, compliance, and commit failpoints.
 
-use aequora_replay::{
+use aequora_authority::replay::{
     CapturedExternalResult, ExecutionPlan, ExecutionPlanDigest, HandlerVersion, PlanCommitter,
     ReplayBundle, ReplayError, ReplayHandler, ReplayReport, ReplaySandbox, verify_corpus,
 };

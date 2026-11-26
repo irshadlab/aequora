@@ -1,11 +1,11 @@
-use aequora_executor::AuthContext;
-use aequora_invariants::InvariantId;
+use aequora_authority::executor::AuthContext;
 use aequora_security::{
     ArchiveEntry, ArchiveEntryKind, AssuranceLevel, AuthMethod, AuthenticationEvidence,
     AuthorityEpochGuard, DeviceState, OperationBinding, OperationReplayGuard, ReplayDisposition,
     ResourceKind, SECURITY_INVARIANTS, SecurityError, SecurityPolicy, SideEffectRisk,
     SideEffectSafety, TenantResource,
 };
+use aequora_types::invariants::InvariantId;
 use aequora_types::{ActorId, AuthorityEpoch, DeviceId, OperationId, TenantId};
 use proptest::prelude::*;
 use std::net::IpAddr;

@@ -1,4 +1,3 @@
-use aequora_invariants::InvariantId;
 use aequora_store::blob_store::BlobMetadata;
 use aequora_store::storage_backup::{
     RestoreCheck, RestoreContext, RestoreDecision, classify_restore,
@@ -11,6 +10,7 @@ use aequora_store::storage_core::{
     StorageAdmission, StorageClass,
 };
 use aequora_store::storage_profile::{StorageProfile, may_evict};
+use aequora_types::invariants::InvariantId;
 use std::collections::BTreeMap;
 
 #[test]

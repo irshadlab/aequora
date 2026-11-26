@@ -1,15 +1,15 @@
-use aequora_conformance::{CertificationTier, ConformanceProfile, definitions_for};
-use aequora_crypto::{
-    CryptoTimestamp, InMemorySigningKeyProvider, KeyPurpose, KeyStatus, SigningKeyId, SigningSecret,
-};
-use aequora_invariants::InvariantId;
+use aequora_desktop::update::{AtomicUpdateState, UpdateError, UpdateStage, UpgradeCheckpoint};
 use aequora_release::{
     ArtifactDescriptor, ArtifactHashes, ArtifactKind, BuildProvenance, CompatibilityMatrix,
     ImmutableReleaseIndex, MigrationBundleDescriptor, ReleaseChannel, ReleaseError,
     ReleaseManifest, ReleaseTrustStore, RollbackClass, TrustedReleaseKey, Version, sign_artifact,
     sign_release_manifest,
 };
-use aequora_update::{AtomicUpdateState, UpdateError, UpdateStage, UpgradeCheckpoint};
+use aequora_security::crypto::{
+    CryptoTimestamp, InMemorySigningKeyProvider, KeyPurpose, KeyStatus, SigningKeyId, SigningSecret,
+};
+use aequora_testkit::certification::{CertificationTier, ConformanceProfile, definitions_for};
+use aequora_types::invariants::InvariantId;
 use std::collections::{BTreeMap, BTreeSet};
 use uuid::Uuid;
 

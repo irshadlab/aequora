@@ -1,4 +1,4 @@
-use aequora_governance::{
+use aequora_authority::governance::{
     GovernanceError, GovernanceJobState, PurgeId, PurgeVerificationReport, StorageSurfaceId,
     StoreVerification, SurfaceOutcome, TenantLifecycle,
 };

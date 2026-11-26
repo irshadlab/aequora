@@ -1,7 +1,7 @@
 //! Deterministic test contexts, test-only fault schedules, and versioned fixtures.
 
+use crate::certification::verification::TestCategory;
 use crate::conformance::FaultPoint;
-use aequora_conformance::verification::TestCategory;
 use aequora_types::{DeviceId, EntityId, OperationId, TenantId};
 use serde::{Deserialize, Serialize};
 use std::{

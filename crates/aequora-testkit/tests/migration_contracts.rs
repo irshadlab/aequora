@@ -1,13 +1,13 @@
 use std::collections::BTreeMap;
 
-use aequora_migration::{
+use aequora_authority::migration::{
     CheckpointedImportSink, ImportBatch, ImportCheckpoint, ImportJob, ImportJobState,
     MigrationMode, PreparedImportRecord, QuarantineEntry, QuarantineStatus, SourceFingerprint,
     SourceRecordKey, SourceSystemId,
 };
-use aequora_schema::{CanonicalEntityId, CanonicalRecord, CanonicalValue};
 use aequora_testkit::migration::{FaultInjectingImportSink, ImportFailpoint};
 use aequora_types::EntityId;
+use aequora_types::schema::{CanonicalEntityId, CanonicalRecord, CanonicalValue};
 
 fn key(value: &str) -> SourceRecordKey {
     SourceRecordKey::new(value).unwrap_or_else(|error| panic!("{error}"))
@@ -78,7 +78,7 @@ async fn checkpointed_sink_rolls_back_replays_and_quarantines_durably() {
     assert_eq!(
         sink.commit_batch_and_checkpoint(&job, &initial, &batch)
             .await,
-        Ok(aequora_migration::BatchCommitOutcome::Duplicate)
+        Ok(aequora_authority::migration::BatchCommitOutcome::Duplicate)
     );
     assert_eq!(sink.record_count(), 1);
 
