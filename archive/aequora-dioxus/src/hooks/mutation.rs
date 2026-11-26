@@ -1,5 +1,5 @@
 use crate::{Invalidation, MutationState, QueryKey, UiError, hooks::use_aequora};
-use aequora_operation::MutationReceipt;
+use aequora_protocol::operation::MutationReceipt;
 use dioxus::prelude::{Callback, ReadSignal, Signal, WritableExt, spawn, use_callback, use_signal};
 use std::{future::Future, marker::PhantomData};
 

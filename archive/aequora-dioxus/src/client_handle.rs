@@ -262,7 +262,7 @@ mod tests {
         ExchangeSummary, OperationSnapshot, SyncTransport,
     };
     use aequora_client::{BootstrapProgress, ClientSdkSyncStatus, DataChange};
-    use aequora_operation::{EncodedOperation, LocalCommitStatus};
+    use aequora_protocol::operation::{EncodedOperation, LocalCommitStatus};
     use aequora_types::{DeviceId, OperationId, TenantId};
     use async_trait::async_trait;
     use std::time::Duration;

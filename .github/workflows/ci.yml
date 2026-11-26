@@ -49,17 +49,19 @@ jobs:
       - name: Formatting
         run: cargo +stable fmt --all -- --check
       - name: Enforce repository-wide hardening controls
-        run: bash scripts/check-high-assurance-hardening.sh
+        run: cargo xtask check high-assurance-hardening
       - name: Check every target and feature
         run: cargo +stable check --workspace --all-targets --all-features --locked
       - name: Enforce independent database feature profiles
         env:
           RUSTUP_TOOLCHAIN: stable
-        run: bash scripts/check-database-neutrality.sh
+        run: cargo xtask check database-neutrality
+      - name: Enforce database- and runtime-neutral protocol dependencies
+        run: cargo xtask check protocol
       - name: Enforce Guppy dependency boundaries
         run: cargo +stable run -p aequora-dev --locked -- check
       - name: Validate crates.io publish dependency order
-        run: python3 scripts/publish-workspace.py --plan
+        run: cargo xtask publish --plan
       - name: Enforce consistency-profile contracts and manifest compatibility rules
         run: |
           cargo +stable test -p aequora-profile --locked
@@ -82,111 +84,111 @@ jobs:
           cargo +stable test -p aequora-testkit --test crypto_contracts --locked
       - name: Enforce epoch-safe regional reads and authority-only writes
         run: |
-          cargo +stable test -p aequora-region --locked
+          cargo +stable test -p aequora-protocol --locked
           cargo +stable test -p aequora-testkit --test regional_contracts --locked
       - name: Enforce durable jobs, workflows, and side-effect recovery
         run: |
-          bash scripts/check-jobs-architecture.sh
+          cargo xtask check jobs
           cargo +stable test -p aequora-authority --locked
           cargo +stable test -p aequora-testkit --test job_workflow_side_effect_contracts --locked
       - name: Enforce operational control-plane authorization and safety contracts
         run: |
-          bash scripts/check-admin-architecture.sh
+          cargo xtask check admin
           cargo +stable test -p aequora-authority --locked
           cargo +stable test -p aequora-testkit --test admin_control_plane_contracts --locked
           cargo +stable run -p aequora-cli --locked -- admin capabilities
       - name: Enforce bounded diagnostics, bundle safety, and replay isolation
         run: |
-          bash scripts/check-diagnostics-architecture.sh
+          cargo xtask check diagnostics
           cargo +stable test -p aequora-diagnostics --locked
           cargo +stable test -p aequora-testkit --test diagnostic_incident_contracts --locked
           cargo +stable run -p aequora-cli --locked -- incident explain
       - name: Enforce security threat model and abuse-resistance contracts
         run: |
-          bash scripts/check-security-architecture.sh
+          cargo xtask check security
           cargo +stable test -p aequora-security --locked
           cargo +stable test -p aequora-testkit --test security_abuse_contracts --locked
           cargo +stable run -p aequora-cli --locked -- security show
       - name: Enforce multi-consumer change-feed contracts
         run: |
-          bash scripts/check-change-feed-architecture.sh
-          cargo +stable test -p aequora-feed --locked
+          cargo xtask check change-feed
+          cargo +stable test -p aequora-protocol --locked
           cargo +stable test -p aequora-testkit --test change_feed_contracts --locked
           cargo +stable run -p aequora-cli --locked -- feed show
       - name: Enforce protocol negotiation and compatibility governance
         run: |
-          bash scripts/check-compatibility-architecture.sh
-          cargo +stable test -p aequora-compat --locked
+          cargo xtask check compatibility
+          cargo +stable test -p aequora-protocol --locked
           cargo +stable test -p aequora-testkit --test compatibility_contracts --locked
           cargo +stable run -p aequora-cli --locked -- compat registry
       - name: Enforce durable registry and developer governance
         run: |
-          bash scripts/check-registry-architecture.sh
+          cargo xtask check registry
           cargo +stable test -p aequora-registry -p aequora-cli --features aequora-registry/codegen --locked
           cargo +stable test -p aequora-testkit --test registry_contracts --locked
           cargo +stable run -p aequora-cli --locked --bin aequora-registry -- verify .
       - name: Enforce certification, conformance, and ecosystem trust contracts
         run: |
-          bash scripts/check-certification-architecture.sh
+          cargo xtask check certification
           cargo +stable test -p aequora-adapter-sdk --locked
           cargo +stable test -p aequora-testkit --test adapter_contracts --locked
           cargo +stable test -p aequora-testkit --test conformance_certification_contracts --locked
           cargo +stable test -p aequora-store-stoolap built_in_stoolap_passes_the_public_local_adapter_contract --locked
           cargo +stable run -p aequora-cli --locked -- conform storage
       - name: Enforce Android and iOS mobile runtime contracts
-        run: bash scripts/check-mobile-architecture.sh
+        run: cargo xtask check mobile
       - name: Enforce Linux, Windows, and macOS desktop runtime contracts
-        run: bash scripts/check-desktop-architecture.sh
+        run: cargo xtask check desktop
       - name: Enforce cross-platform local storage contracts
-        run: bash scripts/check-local-storage-architecture.sh
+        run: cargo xtask check local-storage
       - name: Enforce reference workspace layers and crate dependency direction
-        run: bash scripts/check-reference-implementation-architecture.sh
+        run: cargo xtask check reference-implementation
       - name: Enforce stable public Rust SDK and extension boundaries
-        run: bash scripts/check-public-sdk-architecture.sh
+        run: cargo xtask check public-sdk
       - name: Enforce storage adapter SDK and official adapter contracts
-        run: bash scripts/check-storage-adapter-sdk-architecture.sh
+        run: cargo xtask check storage-adapter-sdk
       - name: Enforce PostgreSQL and Neon authoritative adapter contracts
-        run: bash scripts/check-postgres-authority-architecture.sh
+        run: cargo xtask check postgres-authority
       - name: Enforce Stoolap embedded local persistence contracts
-        run: bash scripts/check-stoolap-local-persistence-architecture.sh
+        run: cargo xtask check stoolap-local-persistence
       - name: Enforce SQLite embedded local adapter contracts
-        run: bash scripts/check-sqlite-local-adapter-architecture.sh
+        run: cargo xtask check sqlite-local-adapter
       - name: Enforce Axum server integration and middleware contracts
-        run: bash scripts/check-axum-server-architecture.sh
+        run: cargo xtask check axum-server
       - name: Verify archived Dioxus client boundary contracts
         run: |
           cargo +stable fetch --manifest-path archive/aequora-dioxus/Cargo.toml --locked
-          bash scripts/check-dioxus-client-architecture.sh
+          cargo xtask check dioxus-client
       - name: Enforce CLI and developer toolchain contracts
-        run: bash scripts/check-cli-toolchain-architecture.sh
+        run: cargo xtask check cli-toolchain
       - name: Enforce configuration, secrets, runtime policy, and feature rollout contracts
-        run: bash scripts/check-configuration-architecture.sh
+        run: cargo xtask check configuration
       - name: Enforce packaging, signing, update-channel, and delivery contracts
-        run: bash scripts/check-release-architecture.sh
+        run: cargo xtask check release
       - name: Enforce deployment topology and operational environment contracts
-        run: bash scripts/check-deployment-architecture.sh
+        run: cargo xtask check deployment
       - name: Enforce production observability, SLO, and alert contracts
-        run: bash scripts/check-observability-architecture.sh
+        run: cargo xtask check observability
       - name: Enforce benchmarking and capacity evidence contracts
-        run: bash scripts/check-benchmarking-architecture.sh
+        run: cargo xtask check benchmarking
       - name: Enforce deterministic verification and release quality-gate contracts
-        run: bash scripts/check-verification-architecture.sh
+        run: cargo xtask check verification
       - name: Enforce licensing, SBOM, provenance, and supply-chain governance
-        run: bash scripts/check-supply-chain-architecture.sh
+        run: cargo xtask check supply-chain
       - name: Enforce v1 scope, productization, and GA-readiness contracts
-        run: bash scripts/check-productization-architecture.sh
+        run: cargo xtask check productization
       - name: Enforce bounded Part 19 performance and memory contracts
         run: |
-          bash scripts/check-performance-architecture.sh
+          cargo xtask check performance
           cargo +stable test -p aequora-authority --locked
           cargo +stable test -p aequora-codec --all-features --locked
-          cargo +stable test -p aequora-bootstrap --locked
-          cargo +stable test -p aequora-blob --locked
+          cargo +stable test -p aequora-protocol --locked
+          cargo +stable test -p aequora-protocol --locked
           cargo +stable test -p aequora-compute --locked
       - name: Enforce legacy adoption ownership, bridge, facade, and cutover contracts
         run: |
-          bash scripts/check-legacy-architecture.sh
-          cargo +stable test -p aequora-legacy -p aequora-legacy-api --locked
+          cargo xtask check legacy
+          cargo +stable test -p aequora-protocol -p aequora-legacy-api --locked
           cargo +stable test -p aequora-testkit --test legacy_adoption_contracts --locked
       - name: Strict Clippy
         run: cargo +stable clippy --workspace --all-targets --all-features --locked -- -D warnings
@@ -292,4 +294,4 @@ jobs:
           PROPTEST_CASES: "1024"
         run: |
           cargo +stable run -p aequora-cli --locked -- verify model
-          cargo +stable test -p aequora-authority -p aequora-region -p aequora-security -p aequora-client -p aequora-testkit --features aequora-security/crypto --locked
+          cargo +stable test -p aequora-authority -p aequora-protocol -p aequora-security -p aequora-client -p aequora-testkit --features aequora-security/crypto --locked

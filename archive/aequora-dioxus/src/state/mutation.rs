@@ -1,5 +1,5 @@
 use crate::UiError;
-use aequora_operation::MutationReceipt;
+use aequora_protocol::operation::MutationReceipt;
 
 /// Ephemeral state of the latest component submission.
 #[derive(Clone, Debug, Eq, PartialEq)]

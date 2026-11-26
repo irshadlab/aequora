@@ -20,11 +20,9 @@ dependencies = [
  "aequora-authority",
  "aequora-axum",
  "aequora-client",
- "aequora-conflict",
  "aequora-http",
  "aequora-macros",
  "aequora-observability",
- "aequora-operation",
  "aequora-profile",
  "aequora-protocol",
  "aequora-registry",
@@ -51,7 +49,7 @@ dependencies = [
 name = "aequora-adapter-sdk"
 version = "0.1.1"
 dependencies = [
- "aequora-operation",
+ "aequora-protocol",
  "aequora-registry",
  "aequora-types",
  "async-trait",
@@ -103,52 +101,16 @@ dependencies = [
 ]
 
 [[package]]
-name = "aequora-blob"
-version = "0.1.1"
-dependencies = [
- "async-trait",
- "blake3",
- "bytes",
- "serde",
- "thiserror",
- "tokio",
-]
-
-[[package]]
-name = "aequora-bootstrap"
-version = "0.1.1"
-dependencies = [
- "aequora-protocol",
- "aequora-scope",
- "aequora-types",
- "async-trait",
- "blake3",
- "postcard",
- "proptest",
- "serde",
- "thiserror",
- "tokio",
- "uuid",
-]
-
-[[package]]
 name = "aequora-cli"
 version = "0.1.1"
 dependencies = [
  "aequora",
  "aequora-authority",
- "aequora-bootstrap",
- "aequora-compat",
  "aequora-config",
  "aequora-deployment",
  "aequora-diagnostics",
- "aequora-feed",
- "aequora-integrity",
- "aequora-legacy",
  "aequora-observability",
  "aequora-protocol",
- "aequora-queue",
- "aequora-region",
  "aequora-registry",
  "aequora-release",
  "aequora-security",
@@ -176,13 +138,8 @@ dependencies = [
  "aequora-diagnostics",
  "aequora-live",
  "aequora-observability",
- "aequora-operation",
  "aequora-protocol",
- "aequora-queue",
- "aequora-region",
- "aequora-scope",
  "aequora-store",
- "aequora-transport",
  "aequora-types",
  "async-trait",
  "loom",
@@ -204,18 +161,6 @@ dependencies = [
  "serde_json",
  "thiserror",
  "zstd",
-]
-
-[[package]]
-name = "aequora-compat"
-version = "0.1.1"
-dependencies = [
- "aequora-types",
- "blake3",
- "postcard",
- "ron",
- "serde",
- "thiserror",
 ]
 
 [[package]]
@@ -248,28 +193,6 @@ dependencies = [
  "ron",
  "serde",
  "thiserror",
-]
-
-[[package]]
-name = "aequora-conflict"
-version = "0.1.1"
-dependencies = [
- "aequora-protocol",
- "aequora-types",
- "postcard",
- "serde",
- "thiserror",
-]
-
-[[package]]
-name = "aequora-crdt"
-version = "0.1.1"
-dependencies = [
- "aequora-conflict",
- "aequora-protocol",
- "aequora-types",
- "postcard",
- "serde",
 ]
 
 [[package]]
@@ -306,9 +229,8 @@ name = "aequora-dev"
 version = "0.1.1"
 dependencies = [
  "aequora-authority",
- "aequora-feed",
  "aequora-profile",
- "aequora-scope",
+ "aequora-protocol",
  "aequora-security",
  "aequora-types",
  "guppy",
@@ -330,22 +252,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "aequora-feed"
-version = "0.1.1"
-dependencies = [
- "aequora-metadata",
- "aequora-protocol",
- "aequora-types",
- "async-trait",
- "blake3",
- "futures-util",
- "ron",
- "serde",
- "thiserror",
- "uuid",
-]
-
-[[package]]
 name = "aequora-http"
 version = "0.1.1"
 dependencies = [
@@ -355,7 +261,6 @@ dependencies = [
  "aequora-observability",
  "aequora-protocol",
  "aequora-server",
- "aequora-transport",
  "aequora-types",
  "async-trait",
  "axum",
@@ -367,43 +272,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "aequora-integrity"
-version = "0.1.1"
-dependencies = [
- "aequora-types",
- "blake3",
- "hex",
- "serde",
- "thiserror",
- "uuid",
-]
-
-[[package]]
-name = "aequora-journal"
-version = "0.1.1"
-dependencies = [
- "aequora-protocol",
- "aequora-types",
- "thiserror",
-]
-
-[[package]]
-name = "aequora-legacy"
-version = "0.1.1"
-dependencies = [
- "aequora-types",
- "async-trait",
- "blake3",
- "serde",
- "thiserror",
- "uuid",
-]
-
-[[package]]
 name = "aequora-legacy-api"
 version = "0.1.1"
 dependencies = [
- "aequora-legacy",
+ "aequora-protocol",
  "aequora-types",
  "async-trait",
  "blake3",
@@ -435,20 +307,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "aequora-metadata"
-version = "0.1.1"
-dependencies = [
- "aequora-protocol",
- "aequora-types",
- "async-trait",
- "blake3",
- "postcard",
- "serde",
- "thiserror",
- "uuid",
-]
-
-[[package]]
 name = "aequora-mobile"
 version = "0.1.1"
 dependencies = [
@@ -471,28 +329,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "aequora-operation"
-version = "0.1.1"
-dependencies = [
- "aequora-types",
- "serde",
- "thiserror",
-]
-
-[[package]]
-name = "aequora-partition"
-version = "0.1.1"
-dependencies = [
- "aequora-protocol",
- "thiserror",
-]
-
-[[package]]
 name = "aequora-profile"
 version = "0.1.1"
 dependencies = [
  "aequora-protocol",
- "aequora-queue",
  "aequora-store",
  "blake3",
  "postcard",
@@ -506,21 +346,17 @@ name = "aequora-protocol"
 version = "0.1.1"
 dependencies = [
  "aequora-types",
- "postcard",
- "serde",
- "smallvec",
-]
-
-[[package]]
-name = "aequora-queue"
-version = "0.1.1"
-dependencies = [
- "aequora-protocol",
- "aequora-types",
+ "async-trait",
  "blake3",
+ "bytes",
+ "futures-executor",
+ "futures-util",
+ "hex",
  "postcard",
  "proptest",
+ "ron",
  "serde",
+ "smallvec",
  "thiserror",
  "uuid",
 ]
@@ -534,23 +370,12 @@ dependencies = [
  "aequora-protocol",
  "aequora-server",
  "aequora-store",
- "aequora-transport",
  "aequora-types",
  "async-trait",
  "quinn",
  "serde",
  "thiserror",
  "tokio",
-]
-
-[[package]]
-name = "aequora-region"
-version = "0.1.1"
-dependencies = [
- "aequora-types",
- "serde",
- "thiserror",
- "uuid",
 ]
 
 [[package]]
@@ -575,28 +400,6 @@ dependencies = [
  "serde",
  "sha2",
  "thiserror",
-]
-
-[[package]]
-name = "aequora-routing"
-version = "0.1.1"
-dependencies = [
- "aequora-types",
- "thiserror",
-]
-
-[[package]]
-name = "aequora-scope"
-version = "0.1.1"
-dependencies = [
- "aequora-types",
- "async-trait",
- "postcard",
- "proptest",
- "serde",
- "thiserror",
- "tokio",
- "uuid",
 ]
 
 [[package]]
@@ -630,12 +433,9 @@ dependencies = [
  "aequora-authority",
  "aequora-codec",
  "aequora-compute",
- "aequora-conflict",
  "aequora-diagnostics",
  "aequora-observability",
- "aequora-operation",
  "aequora-protocol",
- "aequora-region",
  "aequora-store",
  "aequora-types",
  "async-trait",
@@ -650,10 +450,7 @@ name = "aequora-store"
 version = "0.1.1"
 dependencies = [
  "aequora-authority",
- "aequora-integrity",
  "aequora-protocol",
- "aequora-queue",
- "aequora-scope",
  "aequora-types",
  "async-trait",
  "blake3",
@@ -667,7 +464,6 @@ version = "0.1.1"
 dependencies = [
  "aequora-adapter-sdk",
  "aequora-authority",
- "aequora-integrity",
  "aequora-live",
  "aequora-protocol",
  "aequora-store",
@@ -688,7 +484,6 @@ version = "0.1.1"
 dependencies = [
  "aequora-adapter-sdk",
  "aequora-protocol",
- "aequora-queue",
  "aequora-store",
  "aequora-testkit",
  "aequora-types",
@@ -706,10 +501,7 @@ name = "aequora-store-stoolap"
 version = "0.1.1"
 dependencies = [
  "aequora-adapter-sdk",
- "aequora-integrity",
  "aequora-protocol",
- "aequora-queue",
- "aequora-scope",
  "aequora-store",
  "aequora-testkit",
  "aequora-types",
@@ -738,36 +530,25 @@ version = "0.1.1"
 dependencies = [
  "aequora-adapter-sdk",
  "aequora-authority",
- "aequora-bootstrap",
  "aequora-client",
  "aequora-codec",
- "aequora-compat",
  "aequora-compute",
  "aequora-config",
- "aequora-conflict",
  "aequora-deployment",
  "aequora-desktop",
  "aequora-diagnostics",
- "aequora-feed",
- "aequora-integrity",
- "aequora-journal",
- "aequora-legacy",
  "aequora-legacy-api",
  "aequora-live",
  "aequora-mobile",
  "aequora-observability",
  "aequora-profile",
  "aequora-protocol",
- "aequora-queue",
- "aequora-region",
  "aequora-registry",
  "aequora-release",
- "aequora-scope",
  "aequora-security",
  "aequora-server",
  "aequora-store",
  "aequora-supply-chain",
- "aequora-transport",
  "aequora-types",
  "aequora-workload",
  "async-trait",
@@ -781,16 +562,6 @@ dependencies = [
  "thiserror",
  "tokio",
  "uuid",
-]
-
-[[package]]
-name = "aequora-transport"
-version = "0.1.1"
-dependencies = [
- "aequora-protocol",
- "aequora-types",
- "async-trait",
- "thiserror",
 ]
 
 [[package]]
@@ -4898,6 +4669,20 @@ name = "writeable"
 version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1ffae5123b2d3fc086436f8834ae3ab053a283cfac8fe0a0b8eaae044768a4c4"
+
+[[package]]
+name = "xtask"
+version = "0.1.1"
+dependencies = [
+ "getrandom 0.3.4",
+ "hex",
+ "regex",
+ "ron",
+ "serde",
+ "serde_json",
+ "sha2",
+ "tempfile",
+]
 
 [[package]]
 name = "yoke"

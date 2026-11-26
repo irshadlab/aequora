@@ -9,7 +9,7 @@ description = "Server-authoritative, database-agnostic local-first synchronizati
 repository = "https://github.com/irshadali5/aequora"
 
 [dependencies]
-aequora-operation = { version = "0.1.1", path = "../../crates/aequora-operation" }
+aequora-protocol = { version = "0.1.1", path = "../../crates/aequora-protocol" }
 aequora-adapter-sdk = { version = "0.1.1", path = "../../crates/aequora-adapter-sdk" }
 aequora-client = { version = "0.1.1", path = "../../crates/aequora-client" }
 aequora-types = { version = "0.1.1", path = "../../crates/aequora-types" }

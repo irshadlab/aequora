@@ -6,7 +6,7 @@ version = 4
 name = "aequora-adapter-sdk"
 version = "0.1.1"
 dependencies = [
- "aequora-operation",
+ "aequora-protocol",
  "aequora-registry",
  "aequora-types",
  "async-trait",
@@ -42,13 +42,8 @@ dependencies = [
  "aequora-diagnostics",
  "aequora-live",
  "aequora-observability",
- "aequora-operation",
  "aequora-protocol",
- "aequora-queue",
- "aequora-region",
- "aequora-scope",
  "aequora-store",
- "aequora-transport",
  "aequora-types",
  "serde",
  "thiserror",
@@ -86,22 +81,11 @@ version = "0.1.1"
 dependencies = [
  "aequora-adapter-sdk",
  "aequora-client",
- "aequora-operation",
+ "aequora-protocol",
  "aequora-types",
  "async-trait",
  "dioxus",
  "tokio",
-]
-
-[[package]]
-name = "aequora-integrity"
-version = "0.1.1"
-dependencies = [
- "aequora-types",
- "blake3",
- "hex",
- "serde",
- "thiserror",
 ]
 
 [[package]]
@@ -127,41 +111,18 @@ dependencies = [
 ]
 
 [[package]]
-name = "aequora-operation"
-version = "0.1.1"
-dependencies = [
- "aequora-types",
- "serde",
- "thiserror",
-]
-
-[[package]]
 name = "aequora-protocol"
 version = "0.1.1"
 dependencies = [
  "aequora-types",
+ "async-trait",
+ "blake3",
+ "bytes",
+ "hex",
+ "postcard",
+ "ron",
  "serde",
  "smallvec",
-]
-
-[[package]]
-name = "aequora-queue"
-version = "0.1.1"
-dependencies = [
- "aequora-protocol",
- "aequora-types",
- "blake3",
- "postcard",
- "serde",
- "thiserror",
-]
-
-[[package]]
-name = "aequora-region"
-version = "0.1.1"
-dependencies = [
- "aequora-types",
- "serde",
  "thiserror",
  "uuid",
 ]
@@ -174,17 +135,6 @@ dependencies = [
  "ron",
  "serde",
  "thiserror",
-]
-
-[[package]]
-name = "aequora-scope"
-version = "0.1.1"
-dependencies = [
- "aequora-types",
- "async-trait",
- "serde",
- "thiserror",
- "uuid",
 ]
 
 [[package]]
@@ -206,24 +156,11 @@ name = "aequora-store"
 version = "0.1.1"
 dependencies = [
  "aequora-authority",
- "aequora-integrity",
  "aequora-protocol",
- "aequora-queue",
- "aequora-scope",
  "aequora-types",
  "async-trait",
  "blake3",
  "serde",
- "thiserror",
-]
-
-[[package]]
-name = "aequora-transport"
-version = "0.1.1"
-dependencies = [
- "aequora-protocol",
- "aequora-types",
- "async-trait",
  "thiserror",
 ]
 
