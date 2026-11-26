@@ -3,8 +3,9 @@
 #![allow(clippy::missing_errors_doc)]
 
 use aequora_authority::jobs::{
-    AdminAction, ClaimRequest, ClaimedJob, ConcurrencyClass, JobError, JobKind, JobRegistry,
-    JobStatus, JobStore, JobStoreError, MAX_CLAIM_BATCH, WorkerCapability, WorkerId,
+    AdminAction, ClaimRequest, ClaimedJob, ConcurrencyClass, JobError, JobExecutionRegionPolicy,
+    JobKind, JobRegistry, JobState, JobStatus, JobStore, JobStoreError, MAX_CLAIM_BATCH,
+    WorkerCapability, WorkerId,
 };
 use aequora_types::{JobId, RegionId, TenantId};
 use async_trait::async_trait;
@@ -95,6 +96,62 @@ impl<'a> JobWorkerPlanner<'a> {
             if claim.lease.worker_id != self.config.worker_id {
                 return Err(JobServerError::ForeignLease);
             }
+            if !descriptor
+                .payload_versions
+                .contains(&claim.job.payload_schema_version)
+            {
+                return Err(JobServerError::InvalidClaimedJob);
+            }
+        }
+        Ok(())
+    }
+
+    /// Makes one bounded poll against the durable store using permits reserved by the caller.
+    /// Work claimed during polling stays durable if the caller stops or validation fails.
+    pub async fn poll(
+        &self,
+        store: &(impl JobStore + ?Sized),
+        shutdown: WorkerShutdown,
+        now_unix_ms: u64,
+        available_permits: usize,
+    ) -> Result<Vec<ClaimedJob>, JobServerError> {
+        if shutdown != WorkerShutdown::Running {
+            return Ok(Vec::new());
+        }
+        let Some(request) = self.claim_request(now_unix_ms, available_permits) else {
+            return Ok(Vec::new());
+        };
+        request.verify()?;
+        let limit = request.limit;
+        let claims = store.claim_ready(request).await?;
+        self.verify_polled_claims(&claims, limit, now_unix_ms)?;
+        Ok(claims)
+    }
+
+    fn verify_polled_claims(
+        &self,
+        claims: &[ClaimedJob],
+        limit: usize,
+        now_unix_ms: u64,
+    ) -> Result<(), JobServerError> {
+        if claims.len() > limit {
+            return Err(JobServerError::AdapterExceededClaimLimit);
+        }
+        self.verify_claims(claims)?;
+        let mut claimed_jobs = BTreeSet::new();
+        for claim in claims {
+            let job = &claim.job;
+            job.verify()?;
+            if job.state != JobState::Running
+                || job.job_id != claim.lease.job_id
+                || claim.lease.fencing_token.get() == 0
+                || !claim.lease.is_current_at(now_unix_ms)
+                || !claimed_jobs.insert(job.job_id)
+                || matches!(job.region_policy, JobExecutionRegionPolicy::SpecificRegion(region)
+                    if !self.config.allowed_regions.contains(&region))
+            {
+                return Err(JobServerError::InvalidClaimedJob);
+            }
         }
         Ok(())
     }
@@ -161,6 +218,8 @@ pub enum JobServerError {
     MissingCapability,
     #[error("job store returned a lease owned by another worker")]
     ForeignLease,
+    #[error("job store returned an invalid running job or lease")]
+    InvalidClaimedJob,
     #[error("job action is not authorized")]
     Forbidden,
     #[error("job store failed: {0}")]

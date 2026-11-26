@@ -1114,7 +1114,7 @@ where
         auth: AuthContext,
         request: SyncRequest,
     ) -> Result<SyncResponse, ServerError> {
-        let authority = self.authority.state()?;
+        let authority = self.authority.validated_state()?;
         if request.protocol < self.config.limits.minimum_protocol
             || request.protocol > self.config.limits.current_protocol
         {
@@ -1367,8 +1367,7 @@ where
         auth: AuthContext,
         request: BootstrapRequest,
     ) -> Result<BootstrapResponse, ServerError> {
-        let authority = self.authority.state()?;
-        self.authority.validate_startup()?;
+        let authority = self.authority.validated_state()?;
         let validation_started = Instant::now();
         let validation = validate_bootstrap_request(&request, self.config.limits);
         self.record_phase(ServerPhaseKind::Validation, validation_started);
