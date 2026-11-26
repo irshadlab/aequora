@@ -314,7 +314,7 @@ async fn server_reports_epoch_transition_before_accepting_old_timeline_writes() 
             current_epoch,
         } if changed_id == authority_id && current_epoch == authority_state.epoch
     ));
-    assert!(response.acknowledged.is_empty());
+    assert_eq!(response.acknowledged.len(), 0);
     assert_eq!(authoritative.applied_operation_count(), 0);
     assert_eq!(response.next_cursor.authority_id, authority_id);
     assert_eq!(response.next_cursor.authority_epoch, authority_state.epoch);
@@ -704,12 +704,13 @@ async fn manual_conflicts_remain_in_a_durable_ui_independent_inbox() {
         .resolve_conflict(operation_id, ConflictResolution::AcceptServer)
         .await
         .unwrap_or_else(|error| panic!("{error}"));
-    assert!(
+    assert_eq!(
         local
             .unresolved_conflicts(10)
             .await
             .unwrap_or_else(|error| panic!("{error}"))
-            .is_empty()
+            .len(),
+        0
     );
 }
 
@@ -808,7 +809,7 @@ async fn registered_field_merger_commits_a_deterministic_stale_update() {
         .unwrap_or_else(|error| panic!("{error}"));
 
     assert_eq!(response.acknowledged.len(), 1);
-    assert!(response.conflicts.is_empty());
+    assert_eq!(response.conflicts.len(), 0);
     let stored = authoritative
         .entity(fixture.tenant, fixture.entity)
         .unwrap_or_else(|| panic!("missing merged entity"));

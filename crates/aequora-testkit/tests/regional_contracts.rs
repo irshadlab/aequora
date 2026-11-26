@@ -240,6 +240,6 @@ fn all_nine_regional_invariants_are_registered() {
     ];
     for (index, invariant) in identifiers.into_iter().enumerate() {
         assert_eq!(invariant.as_str(), format!("AEQ-INV-REG{:03}", index + 1));
-        assert!(!invariant.entry().diagnostic.is_empty());
+        assert_ne!(invariant.entry().diagnostic, "");
     }
 }

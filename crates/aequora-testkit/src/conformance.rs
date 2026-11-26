@@ -156,8 +156,8 @@ macro_rules! aequora_conformance_compliance {
             artifact.verify_identity()?;
             if !matches!(
                 artifact.result,
-                crate::certification::CertificationResult::Passed
-                    | crate::certification::CertificationResult::PassedWithLimitations
+                $crate::certification::CertificationResult::Passed
+                    | $crate::certification::CertificationResult::PassedWithLimitations
             ) {
                 return Err(format!("conformance result was {:?}", artifact.result).into());
             }

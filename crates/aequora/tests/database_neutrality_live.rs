@@ -25,7 +25,6 @@ use aequora_types::{
 use axum::Extension;
 use reqwest::Url;
 use std::sync::Arc;
-use tempfile::tempdir;
 use tokio::net::TcpListener;
 
 #[tokio::test]
@@ -142,7 +141,7 @@ fn prepare_local_database(
     scope: SyncScopeId,
     payload: &[u8],
 ) -> Result<(tempfile::TempDir, StoolapDatabase), Box<dyn std::error::Error>> {
-    let directory = tempdir()?;
+    let directory = tempfile::tempdir_in(env!("CARGO_TARGET_TMPDIR"))?;
     let dsn = format!("file://{}", directory.path().join("client").display());
     let backend = StoolapDatabase::open(&dsn)?;
     backend.transact_local_mutation(operation, |transaction| {

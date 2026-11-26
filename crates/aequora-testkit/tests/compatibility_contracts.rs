@@ -294,7 +294,7 @@ fn mixed_fleet_cannot_activate_required_capability() {
 fn registry_and_extensions_enforce_stable_bounded_evolution() {
     let registry = canonical_registry().unwrap_or_else(|error| panic!("{error}"));
     assert_eq!(registry.capabilities.len(), 18);
-    assert!(registry.report().deprecated_protocols.is_empty());
+    assert_eq!(registry.report().deprecated_protocols.len(), 0);
 
     let extensions = vec![ExtensionSection {
         id: 77,

@@ -1255,7 +1255,7 @@ async fn sim_08_authority_failover_epoch_boundary_safety() {
             ..
         } if previous_epoch == AuthorityEpoch::INITIAL && current_epoch == AuthorityEpoch::new(2).unwrap_or_else(|error| panic!("{error}"))
     ));
-    assert!(response.acknowledged.is_empty());
+    assert_eq!(response.acknowledged.len(), 0);
     assert_eq!(authority_store.applied_operation_count(), 0);
     println!(
         "  [SUCCESS] Server safely isolated stale timeline and returned AuthorityChanged directive."

@@ -69,6 +69,12 @@ fn config() -> HarnessConfig {
     }
 }
 
+aequora_testkit::aequora_conformance_compliance!(
+    downstream_macro_resolves_certification_types,
+    DeterministicSubject { skip_test: None },
+    config()
+);
+
 #[tokio::test]
 async fn deterministic_harness_binds_seeds_and_exact_subject() -> Result<(), HarnessError> {
     let artifact = run_conformance(&DeterministicSubject { skip_test: None }, config()).await?;

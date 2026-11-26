@@ -1679,11 +1679,19 @@ impl<T> ResponseDroppingTransport<T> {
     }
 
     fn should_drop(&self) -> bool {
-        self.drops_remaining
-            .fetch_update(Ordering::Relaxed, Ordering::Relaxed, |remaining| {
-                remaining.checked_sub(1)
-            })
-            .is_ok()
+        let mut remaining = self.drops_remaining.load(Ordering::Relaxed);
+        while let Some(next) = remaining.checked_sub(1) {
+            match self.drops_remaining.compare_exchange_weak(
+                remaining,
+                next,
+                Ordering::Relaxed,
+                Ordering::Relaxed,
+            ) {
+                Ok(_) => return true,
+                Err(actual) => remaining = actual,
+            }
+        }
+        false
     }
 }
 
