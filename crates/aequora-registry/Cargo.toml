@@ -1,0 +1,26 @@
+[package]
+name = "aequora-registry"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+description = "Durable registry types, generated lookup tables, and optional registry tooling"
+repository.workspace = true
+
+[features]
+codegen = ["dep:blake3", "dep:ron"]
+
+[dependencies]
+serde.workspace = true
+thiserror.workspace = true
+blake3 = { workspace = true, optional = true }
+ron = { workspace = true, optional = true }
+
+[build-dependencies]
+blake3.workspace = true
+ron.workspace = true
+serde.workspace = true
+thiserror.workspace = true
+
+[lints]
+workspace = true

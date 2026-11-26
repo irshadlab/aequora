@@ -1,6 +1,6 @@
 //! Deterministic loader, validator, compatibility checker, and generator.
 
-use aequora_registry_types::{
+use crate::types::{
     AllocationClass, ChangeClassification, LockEntry, RegistryDomain, RegistryEntry, RegistryError,
     RegistryFragment, RegistryLock, RegistryManifest, RegistrySet, SupportStatus,
 };
@@ -626,7 +626,7 @@ pub fn generated_rust(set: &RegistrySet) -> String {
         for entry in set.entries.iter().filter(|entry| entry.domain == domain) {
             let _ = writeln!(
                 output,
-                "        pub const {}: aequora_registry_types::{} = aequora_registry_types::{}({});",
+                "        pub const {}: crate::types::{} = crate::types::{}({});",
                 screaming_snake(&entry.name),
                 rust_id_type(domain),
                 rust_id_type(domain),
@@ -755,7 +755,7 @@ pub fn load_lock(root: &Path) -> Result<RegistryLock, CodegenError> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use aequora_registry_types::{OwnerRef, RegistryRef};
+    use crate::types::{OwnerRef, RegistryRef};
 
     fn entry(domain: RegistryDomain, id: u32, name: &str) -> RegistryEntry {
         RegistryEntry {

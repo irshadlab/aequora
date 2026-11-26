@@ -1,6 +1,11 @@
 //! Immutable, build-validated durable registry lookup tables.
 
-pub use aequora_registry_types::{RegistryDomain, SupportStatus};
+pub mod types;
+
+#[cfg(feature = "codegen")]
+pub mod codegen;
+
+pub use types::{RegistryDomain, SupportStatus};
 
 /// Compact runtime descriptor generated from canonical RON sources.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
