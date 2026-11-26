@@ -117,6 +117,7 @@ dependencies = [
  "aequora-security",
  "aequora-store",
  "aequora-store-postgres",
+ "aequora-store-sqlite",
  "aequora-store-stoolap",
  "aequora-supply-chain",
  "aequora-testkit",

@@ -32,6 +32,7 @@ aequora-diagnostics = { version = "0.1.1", path = "../aequora-diagnostics" }
 aequora-deployment = { version = "0.1.1", path = "../aequora-deployment" }
 aequora-store = { version = "0.1.1", path = "../aequora-store" }
 aequora-store-postgres = { version = "0.1.1", path = "../aequora-store-postgres" }
+aequora-store-sqlite = { version = "0.1.1", path = "../aequora-store-sqlite" }
 aequora-store-stoolap = { version = "0.1.1", path = "../aequora-store-stoolap" }
 aequora-supply-chain = { version = "0.1.1", path = "../aequora-supply-chain" }
 aequora-observability = { version = "0.1.1", path = "../aequora-observability" }

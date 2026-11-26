@@ -64,6 +64,7 @@ use aequora_store::{
     AdapterCompatibilityError, AdapterManifest, AdapterRequirements, ProductionAdapterPair,
 };
 use aequora_store_postgres::POSTGRES_ADAPTER_MANIFEST;
+use aequora_store_sqlite::SQLITE_ADAPTER_MANIFEST;
 use aequora_store_stoolap::STOOLAP_ADAPTER_MANIFEST;
 use aequora_supply_chain::{DependencyPolicy, ReleaseEvidence, SbomDocument, SupplyChainError};
 use aequora_testkit::benchkit::{
@@ -567,7 +568,7 @@ fn diagnostics_command(action: Option<&str>, identity: Option<&str>) -> Result<S
 }
 
 fn base_help() -> &'static str {
-    "global: --output human|json|ron --color auto|always|never --log-format human|json --log-level <level> --trace-id <id>\naequora version\naequora doctor adapters\naequora inspect adapters\naequora inspect adapter <stoolap|postgresql>\naequora verify pair <local> <authority>\naequora verify export <artifact.postcard> <schema.ron>\naequora verify model\naequora verify trace <failure.ron>\naequora integrity status\naequora integrity verify <snapshot.ron>\naequora integrity explain <repair-plan.ron>\naequora queue status <entries.ron>\naequora queue verify <entries.ron>\naequora queue compact <entries.ron> <registry.ron>\naequora queue explain <plan.ron>\naequora import plan <artifact.postcard> <schema.ron>\naequora import validate <artifact.postcard> <schema.ron>\naequora import status <job.ron>\naequora import cutover <evidence.ron>\naequora import explain\naequora bootstrap inspect <manifest.ron>\naequora bootstrap status <job.ron>\naequora bootstrap explain\naequora authority status <state.ron>\naequora authority readiness <evidence.ron>\naequora authority promote <plan.ron>\naequora authority demote <state.ron>\naequora authority restore-plan <state.ron>\naequora authority recover <state.ron> --new-epoch\naequora authority verify <verification.ron>\naequora authority fork-check <local.ron> <peer.ron>\naequora authority explain\naequora region status <topology.ron>\naequora region route <topology.ron> <request.ron>\naequora region explain\naequora compat show\naequora compat matrix\naequora compat deprecated\naequora compat check-client <hello.ron> <policy.ron>\naequora compat registry [registry.ron]\naequora conform run <request.ron>\naequora conform storage|protocol|client|server\naequora conform report <artifact.ron>\naequora conform verify <artifact.ron>\naequora admin capabilities\naequora admin validate-listener <policy.ron>\naequora admin inspect-action <action.ron>\naequora admin explain\naequora incident inspect <manifest.ron> <policy.ron>\naequora incident explain-operation <input.ron>\naequora incident explain\naequora security show\naequora security validate <policy.ron>\naequora security explain\naequora feed show\naequora feed validate <consumer.ron>\naequora feed explain\naequora legacy discover <system-manifest.ron>\naequora legacy map-verify <migration-manifest.ron>\naequora legacy bridge-status <health.ron>\naequora legacy shadow-report <results.ron>\naequora legacy cutover-plan <readiness.ron>\naequora legacy verify <verification.ron>\naequora legacy retire <retirement-manifest.ron>\naequora config check <config.ron>\naequora config effective <config.ron>\naequora config explain <setting>\naequora config diff <current.ron> <candidate.ron>\naequora init <new-directory> <client|server>"
+    "global: --output human|json|ron --color auto|always|never --log-format human|json --log-level <level> --trace-id <id>\naequora version\naequora doctor adapters\naequora inspect adapters\naequora inspect adapter <stoolap|sqlite|postgresql>\naequora verify pair <local> <authority>\naequora verify export <artifact.postcard> <schema.ron>\naequora verify model\naequora verify trace <failure.ron>\naequora integrity status\naequora integrity verify <snapshot.ron>\naequora integrity explain <repair-plan.ron>\naequora queue status <entries.ron>\naequora queue verify <entries.ron>\naequora queue compact <entries.ron> <registry.ron>\naequora queue explain <plan.ron>\naequora import plan <artifact.postcard> <schema.ron>\naequora import validate <artifact.postcard> <schema.ron>\naequora import status <job.ron>\naequora import cutover <evidence.ron>\naequora import explain\naequora bootstrap inspect <manifest.ron>\naequora bootstrap status <job.ron>\naequora bootstrap explain\naequora authority status <state.ron>\naequora authority readiness <evidence.ron>\naequora authority promote <plan.ron>\naequora authority demote <state.ron>\naequora authority restore-plan <state.ron>\naequora authority recover <state.ron> --new-epoch\naequora authority verify <verification.ron>\naequora authority fork-check <local.ron> <peer.ron>\naequora authority explain\naequora region status <topology.ron>\naequora region route <topology.ron> <request.ron>\naequora region explain\naequora compat show\naequora compat matrix\naequora compat deprecated\naequora compat check-client <hello.ron> <policy.ron>\naequora compat registry [registry.ron]\naequora conform run <request.ron>\naequora conform storage|protocol|client|server\naequora conform report <artifact.ron>\naequora conform verify <artifact.ron>\naequora admin capabilities\naequora admin validate-listener <policy.ron>\naequora admin inspect-action <action.ron>\naequora admin explain\naequora incident inspect <manifest.ron> <policy.ron>\naequora incident explain-operation <input.ron>\naequora incident explain\naequora security show\naequora security validate <policy.ron>\naequora security explain\naequora feed show\naequora feed validate <consumer.ron>\naequora feed explain\naequora legacy discover <system-manifest.ron>\naequora legacy map-verify <migration-manifest.ron>\naequora legacy bridge-status <health.ron>\naequora legacy shadow-report <results.ron>\naequora legacy cutover-plan <readiness.ron>\naequora legacy verify <verification.ron>\naequora legacy retire <retirement-manifest.ron>\naequora config check <config.ron>\naequora config effective <config.ron>\naequora config explain <setting>\naequora config diff <current.ron> <candidate.ron>\naequora init <new-directory> <client|server>"
 }
 
 fn release_command(
@@ -1659,6 +1660,7 @@ fn doctor(subject: Option<&str>, descriptor_path: Option<&str>) -> Result<String
     AdapterRequirements::PRODUCTION_LOCAL.verify(STOOLAP_ADAPTER_MANIFEST)?;
     AdapterRequirements::PRODUCTION_AUTHORITATIVE.verify(POSTGRES_ADAPTER_MANIFEST)?;
     ProductionAdapterPair::verify(STOOLAP_ADAPTER_MANIFEST, POSTGRES_ADAPTER_MANIFEST)?;
+    ProductionAdapterPair::verify(SQLITE_ADAPTER_MANIFEST, POSTGRES_ADAPTER_MANIFEST)?;
     Ok(format!(
         "adapter status: ok\nlocal: {} {} tier={:?} db={}\nauthority: {} {} tier={:?} db={}\npair: database-neutral production requirements satisfied",
         STOOLAP_ADAPTER_MANIFEST.name,
@@ -1676,7 +1678,11 @@ fn inspect(subject: Option<&str>, name: Option<&str>) -> Result<String, CliError
     let pretty = ron::ser::PrettyConfig::default();
     match subject {
         Some("adapters") if name.is_none() => {
-            let manifests = [STOOLAP_ADAPTER_MANIFEST, POSTGRES_ADAPTER_MANIFEST];
+            let manifests = [
+                STOOLAP_ADAPTER_MANIFEST,
+                POSTGRES_ADAPTER_MANIFEST,
+                SQLITE_ADAPTER_MANIFEST,
+            ];
             for manifest in manifests {
                 manifest.validate()?;
             }
@@ -1690,7 +1696,7 @@ fn inspect(subject: Option<&str>, name: Option<&str>) -> Result<String, CliError
                 .map_err(|error| CliError::Serialize(error.to_string()))
         }
         _ => Err(CliError::Usage(
-            "usage: aequora inspect adapters | aequora inspect adapter <stoolap|postgresql>"
+            "usage: aequora inspect adapters | aequora inspect adapter <stoolap|sqlite|postgresql>"
                 .to_owned(),
         )),
     }
@@ -1852,6 +1858,7 @@ fn read_bounded(path: &Path, maximum: usize) -> Result<Vec<u8>, CliError> {
 fn named_manifest(name: Option<&str>) -> Result<AdapterManifest, CliError> {
     match name {
         Some("stoolap") => Ok(STOOLAP_ADAPTER_MANIFEST),
+        Some("sqlite") => Ok(SQLITE_ADAPTER_MANIFEST),
         Some("postgres" | "postgresql") => Ok(POSTGRES_ADAPTER_MANIFEST),
         Some(other) => Err(CliError::UnknownAdapter(other.to_owned())),
         None => Err(CliError::Usage("adapter name is required".to_owned())),
@@ -2119,7 +2126,19 @@ mod tests {
             .unwrap_or_else(|error| panic!("support data generation failed: {error}"));
         assert!(output.contains("name: \"stoolap\""));
         assert!(output.contains("name: \"postgresql\""));
+        assert!(output.contains("name: \"sqlite\""));
         assert!(!output.contains("postgres://"));
+    }
+
+    #[test]
+    fn sqlite_is_inspectable_and_verifies_only_as_the_local_role() {
+        let output = command(args(&["inspect", "adapter", "sqlite"]))
+            .unwrap_or_else(|error| panic!("inspect failed: {error}"));
+        assert!(output.contains("name: \"sqlite\""));
+        let pair = command(args(&["verify", "pair", "sqlite", "postgresql"]))
+            .unwrap_or_else(|error| panic!("pair verification failed: {error}"));
+        assert_eq!(pair, "pair: ok local=sqlite authority=postgresql");
+        assert!(command(args(&["verify", "pair", "stoolap", "sqlite"])).is_err());
     }
 
     #[test]
