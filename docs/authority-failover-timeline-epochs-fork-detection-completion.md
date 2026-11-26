@@ -25,6 +25,17 @@ The governing specification is [Part 16](../sys-arch/16-authority-failover-timel
   A configured witness must corroborate the authority's exact epoch. A missing or expired witness
   observation blocks serving. Before an epoch-changing promotion, the host records the approved
   epoch with the witness. Promotion still requires the existing fence and approval evidence.
+- `aequora_store_postgres::epoch_witness` provides a monotonic, synchronously committed
+  witness table on a separate control-plane pool. `PostgresEpochWitness::refresh` publishes an
+  expiring, authority-bound view for request handling. Failed refreshes invalidate the view
+  while preserving its process-local high-water mark.
+- `AuthorityController::promote_to_recorded_epoch` supports backups restored multiple epochs
+  behind the witness. `SqlxPostgresBackend::record_restore_epoch_transition` persists the new
+  fence and manifest in read-only verification mode. `complete_restore_recovery` uses the
+  matching witness and a database compare-and-swap to enable writes after verification.
+- PostgreSQL Tx B holds a shared lock on the checked authority row until transaction end.
+  An initialized authority requires a commit context. A concurrent promotion waits for already
+  admitted transactions and stale contexts fail before applying effects.
 
 ## Executable evidence
 
@@ -42,12 +53,16 @@ The governing specification is [Part 16](../sys-arch/16-authority-failover-timel
   witness data, an unrecorded epoch, stale writer context, and verified recovery on the new epoch.
 - `server_rejects_exchange_and_bootstrap_from_a_rolled_back_authority` checks both server
   entry points and verifies that the rejected exchange produces no authoritative effect.
+- `postgres_epoch_witness` verifies monotonic updates, reopening the witness, fail-closed refresh,
+  multi-epoch restore, durable recovery, and a PostgreSQL lock conflict while Tx B is open.
+  The suite passed on two local PostgreSQL 18.7 clusters.
 
 ## Remaining / Left & Environment Gates
 
-**Repository and host integration.** A deployment still supplies independent durable witness
-storage, bounded freshness and availability policy, physical fencing, and orchestration of
-operator approval and the PostgreSQL restore transition. SQLite store-wide epoch trust is
+**Repository and host integration.** The PostgreSQL reference witness and restore state
+transitions are available. The host still supplies infrastructure automation for physical
+fencing, serialized operator-approved epoch allocation, an independent production witness
+deployment, and its refresh schedule and credential policy. SQLite store-wide epoch trust is
 on hold pending explicit authorization.
 
 **Environment.** Run the old-writer fence, restore/PITR, rollback-witness, ambiguous-ACK recovery,

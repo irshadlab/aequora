@@ -94,7 +94,7 @@ difference between framework behavior and completed integrations.
 | 4 | 13 | [Part 13](docs/data-provenance-auditability-explainability-completion.md) | `audit_contracts` | Deployment-specific indexes, archives, anchors and key rotation. Verify restore chains. |
 | 4 | 14 | [Part 14](docs/data-governance-retention-erasure-completion.md) | `governance_contracts` | Host retention, erasure, archive and key-destruction integrations. Verify registered surfaces. |
 | 4 | 15 | [Part 15](docs/cryptographic-integrity-key-management-e2e-completion.md) | `crypto_contracts` | KMS, HSM and OS keystore adapters and deployment custody, rotation and revocation evidence. |
-| 4 | 16 | [Part 16](docs/authority-failover-timeline-epochs-fork-detection-completion.md) | `authority_contracts`, local adapter suites | Host witness is enforced when configured. Durable witness and promotion orchestration, failover and PITR remain. SQLite is on hold. |
+| 4 | 16 | [Part 16](docs/authority-failover-timeline-epochs-fork-detection-completion.md) | `authority_contracts`, `postgres_epoch_witness` | PostgreSQL witness and durable witnessed recovery implemented. Host promotion automation and failover/PITR drills remain. SQLite is on hold. |
 | 5 | 17 | [Part 17](docs/multi-region-read-single-writer-global-completion.md) | `regional_contracts` | Split sync pull is deferred. Regional topology and lag/partition acceptance remain. |
 | 5 | 18 | [Part 18](docs/backpressure-admission-fairness-overload-completion.md) | `aequora-authority admission`, `configuration`, `axum-server` | Shared load feedback implemented. Host pressure sampling and worker queue/brownout composition remain. |
 | 5 | 19 | [Part 19](docs/performance-engineering-memory-architecture-completion.md) | `performance` | Target-specific memory, query plans and throughput baselines. |
@@ -115,7 +115,7 @@ difference between framework behavior and completed integrations.
 | 8 | 34 | [Part 34](docs/reference-implementation-workspace-boundaries-completion.md) | `reference-implementation` | Current 35-crate graph governs local boundaries. Target acceptance is tracked by integration. |
 | 8 | 35 | [Part 35](docs/public-rust-sdk-completion.md) | `public-sdk` | Released consumers and supported upgrade windows require artifact-specific evidence. |
 | 8 | 36 | [Part 36](docs/storage-adapter-sdk-completion.md) | `storage-adapter-sdk` | Independent object store and other adapter integrations. Certify the real engine and capability profile. |
-| 8 | 37 | [Part 37](docs/postgresql-neon-authority-completion.md) | `postgres-authority, postgres_live` | Isolated PostgreSQL 18.7 passed. Hosted Neon, PITR and topology-specific connection behavior remain. |
+| 8 | 37 | [Part 37](docs/postgresql-neon-authority-completion.md) | `postgres-authority`, `postgres_live`, `postgres_epoch_witness` | Isolated PostgreSQL 18.7 including witnessed restore and concurrent fencing passed. Hosted Neon and production PITR remain. |
 | 8 | 38 | [Part 38](docs/stoolap-local-persistence-completion.md) | `stoolap-local-persistence` | Device/filesystem fault and production suitability evidence. v1 support is conditional. |
 | 8 | 39 | [Part 39](docs/axum-server-integration-completion.md) | `axum-server` | Host live routes, proxy/TLS and CORS/CSRF policy. Mixed-version and slow-client qualification. |
 | 9 | 41 | [Part 41](docs/cli-developer-toolchain-completion.md) | `cli-toolchain, aequora-cli lib` | Shell completions, man pages and optional advanced tooling are deferred. Package and credential integration remain. |
@@ -138,7 +138,7 @@ difference between framework behavior and completed integrations.
 ### Open repository and host integration
 
 - SQLite changes are on hold pending explicit authorization.
-- Part 16 still needs durable witness storage and external promotion orchestration. Part 18
+- Part 16 still needs deployment-specific promotion orchestration and witness provisioning. Part 18
   still needs host pressure sampling and worker queue/brownout composition.
 - Parts 23, 24, and 28 still need concrete durable job/workflow/effect, admin, and feed adapters.
   Their transaction participation, fencing, and recovery need real-adapter tests.

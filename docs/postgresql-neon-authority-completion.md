@@ -21,6 +21,11 @@ This report records executable repository evidence and does not replace that des
 
 ## Verification contract
 
+The witness-backed restore path is covered by `postgres_epoch_witness`. PostgreSQL Tx B
+holds the checked authority row through the commit. A restored candidate stays in read-only
+verification until `complete_restore_recovery` commits the matching transition under the
+external witness. See the [Part 16 report](authority-failover-timeline-epochs-fork-detection-completion.md).
+
 The focused architecture gate is:
 
 ```bash
@@ -59,3 +64,11 @@ On November 27, 2026, `postgres_live::authoritative_transaction_snapshot_and_com
 passed on a disposable PostgreSQL 18.7 cluster. The fixture exercises concurrent idempotency,
 version races, and Tx B rollback while keeping exact single-commit journal and snapshot checks.
 Hosted Neon evidence remains open.
+
+The witness and restore suite passed locally on two disposable PostgreSQL 18.7 clusters.
+CI provisions separate test databases for the witness and candidate. Production still requires
+an independently managed witness outside the authority recovery boundary.
+
+`stoolap_client_to_postgres_authority_over_http_is_real` also passed against a disposable
+PostgreSQL 18.7 database. The fixture initializes or loads the durable authority and uses
+that identity and fence for the HTTP server.
