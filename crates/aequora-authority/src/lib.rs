@@ -576,6 +576,36 @@ impl AuthorityController {
         old_final_sequence: Option<Sequence>,
         new_base_sequence: Sequence,
     ) -> Result<PromotionOutcome, AuthorityError> {
+        self.promote_inner(request, old_final_sequence, new_base_sequence, None)
+    }
+
+    /// Promotes to an explicitly approved epoch already recorded in the external witness.
+    ///
+    /// The control plane must serialize promotions and allocate an unused epoch for a changed
+    /// timeline. Use this when the restored metadata is more than one epoch behind the witness.
+    ///
+    /// # Errors
+    /// Returns an error for missing witness evidence, unsafe epoch selection, or failed promotion checks.
+    pub fn promote_to_recorded_epoch(
+        &self,
+        request: PromotionRequest,
+        old_final_sequence: Option<Sequence>,
+        new_base_sequence: Sequence,
+        epoch: AuthorityEpoch,
+    ) -> Result<PromotionOutcome, AuthorityError> {
+        if self.epoch_registry.is_none() {
+            return Err(AuthorityError::ExternalEpochUnavailable);
+        }
+        self.promote_inner(request, old_final_sequence, new_base_sequence, Some(epoch))
+    }
+
+    fn promote_inner(
+        &self,
+        request: PromotionRequest,
+        old_final_sequence: Option<Sequence>,
+        new_base_sequence: Sequence,
+        recorded_epoch: Option<AuthorityEpoch>,
+    ) -> Result<PromotionOutcome, AuthorityError> {
         if self.policy.require_external_fence && !request.evidence.old_primary_externally_fenced {
             return Err(AuthorityError::ExternalFenceRequired);
         }
@@ -601,12 +631,18 @@ impl AuthorityController {
         let old_epoch = state.epoch;
         let retain_epoch = request.class == PromotionClass::LosslessContinuation
             || (request.class == PromotionClass::NewAuthorityMigration && continuity_proven);
-        let new_epoch = if retain_epoch {
-            old_epoch
-        } else {
-            old_epoch
+        let new_epoch = match (retain_epoch, recorded_epoch) {
+            (true, Some(epoch)) if epoch != old_epoch => {
+                return Err(AuthorityError::UnexpectedEpochChange);
+            }
+            (true, _) => old_epoch,
+            (false, Some(epoch)) if epoch <= old_epoch => {
+                return Err(AuthorityError::UnsafeEpochReuse);
+            }
+            (false, Some(epoch)) => epoch,
+            (false, None) => old_epoch
                 .checked_next()
-                .ok_or(AuthorityError::EpochExhausted)?
+                .ok_or(AuthorityError::EpochExhausted)?,
         };
         let new_fence = state.fence_token.next()?;
         self.ensure_registry_epoch(state.authority_id, new_epoch)?;
