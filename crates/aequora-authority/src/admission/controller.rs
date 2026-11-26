@@ -9,8 +9,9 @@ use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 
 use crate::admission::{
-    AdmissionPermit, AdmissionRejection, FairQueueConfig, LoadPolicy, LoadState, PolicyError,
-    RateLimit, RequestLimits, ResourceBudget, ResourceDomain, WorkDescriptor,
+    AdmissionPermit, AdmissionRejection, FairQueueConfig, LoadPolicy, LoadSignals, LoadState,
+    LoadStateTracker, PolicyError, RateLimit, RequestLimits, ResourceBudget, ResourceDomain,
+    WorkDescriptor,
 };
 
 const CLASSES: [WorkClass; 6] = [
@@ -233,20 +234,20 @@ struct AdmissionState {
     tenants: BTreeMap<TenantId, Usage>,
     classes: BTreeMap<WorkClass, Usage>,
     resources: BTreeMap<ResourceDomain, Usage>,
-    load_state: LoadState,
+    load: LoadStateTracker,
     allowed_total: u64,
     rejected_total: [u64; 8],
     rejected_by_class: [u64; 6],
 }
 
-impl Default for AdmissionState {
-    fn default() -> Self {
+impl AdmissionState {
+    fn new(load: LoadStateTracker) -> Self {
         Self {
             global: Usage::default(),
             tenants: BTreeMap::new(),
             classes: BTreeMap::new(),
             resources: BTreeMap::new(),
-            load_state: LoadState::Healthy,
+            load,
             allowed_total: 0,
             rejected_total: [0; 8],
             rejected_by_class: [0; 6],
@@ -323,10 +324,11 @@ impl HierarchicalAdmission {
     /// Returns a [`PolicyError`] when the supplied policy is unsafe.
     pub fn new(policy: AdmissionPolicy) -> Result<Self, PolicyError> {
         policy.validate()?;
+        let load = LoadStateTracker::new(policy.load.thresholds)?;
         Ok(Self {
             inner: Arc::new(ControllerInner {
                 policy,
-                state: Mutex::new(AdmissionState::default()),
+                state: Mutex::new(AdmissionState::new(load)),
             }),
         })
     }
@@ -336,9 +338,16 @@ impl HierarchicalAdmission {
         &self.inner.policy
     }
 
-    /// Installs the state derived by [`crate::admission::LoadStateTracker`].
+    /// Installs a host override and resets the time of the last hysteresis transition.
     pub fn set_load_state(&self, load_state: LoadState) {
-        self.inner.state().load_state = load_state;
+        self.inner.state().load.reset(load_state);
+    }
+
+    /// Applies a host pressure sample, timestamped in monotonic milliseconds, to live admission.
+    /// Existing permits remain counted until they are released.
+    #[must_use]
+    pub fn observe_load(&self, now_ms: u64, signals: LoadSignals) -> LoadState {
+        self.inner.state().load.observe(now_ms, signals)
     }
 
     /// Synchronous fast path for middleware and deterministic tests.
@@ -366,25 +375,21 @@ impl HierarchicalAdmission {
             .into_iter()
             .collect();
         let mut state = self.inner.state();
+        let load_state = state.load.state();
         let retry_after_ms = self.inner.policy.retry_after_ms;
-        if !self
-            .inner
-            .policy
-            .load
-            .allows(state.load_state, request.class)
-        {
+        if !self.inner.policy.load.allows(load_state, request.class) {
             let rejection = AdmissionRejection::LoadShed { retry_after_ms };
             record_rejection_locked(&mut state, rejection, request.class);
             return Err(rejection);
         }
 
-        let capacity_percent = self.inner.policy.load.capacity_percent(state.load_state);
+        let capacity_percent = self.inner.policy.load.capacity_percent(load_state);
         let global_limit = scaled_limit(self.inner.policy.global.max_in_flight, capacity_percent);
         let mut reservable = global_limit;
         let mut unused_other_reservations = 0;
         // Allocate the reduced capacity in priority order. Shed classes cannot use a reservation.
         for class in CLASSES {
-            if !self.inner.policy.load.allows(state.load_state, class) {
+            if !self.inner.policy.load.allows(load_state, class) {
                 continue;
             }
             let reserved = self
@@ -500,7 +505,7 @@ impl HierarchicalAdmission {
             class_in_flight[class_index(*class)] = usage.in_flight;
         }
         AdmissionMetricsSnapshot {
-            load_state: state.load_state,
+            load_state: state.load.state(),
             global_in_flight: state.global.in_flight,
             bytes_in_flight: state.global.bytes,
             cost_units_in_flight: state.global.cost,
@@ -751,6 +756,40 @@ mod tests {
         let _permit = controller
             .try_admit(&work(TenantId::new(), WorkClass::Interactive))
             .unwrap_or_else(|error| panic!("{error}"));
+    }
+
+    #[test]
+    fn pressure_samples_shed_and_restore_work_on_the_shared_controller() {
+        let controller =
+            HierarchicalAdmission::new(small_policy()).unwrap_or_else(|error| panic!("{error}"));
+        let observer = controller.clone();
+        let bulk = work(TenantId::new(), WorkClass::Bulk);
+        let permit = controller
+            .try_admit(&bulk)
+            .unwrap_or_else(|error| panic!("{error}"));
+        let high = LoadSignals {
+            database: 900,
+            ..LoadSignals::default()
+        };
+        let dwell = controller.policy().load.thresholds.minimum_dwell_ms;
+        assert_eq!(observer.observe_load(0, high), LoadState::Elevated);
+        assert_eq!(observer.observe_load(dwell - 1, high), LoadState::Elevated);
+        assert_eq!(observer.observe_load(dwell, high), LoadState::Overloaded);
+        assert!(matches!(
+            controller.try_admit(&bulk),
+            Err(AdmissionRejection::LoadShed { .. })
+        ));
+        assert_eq!(controller.snapshot().global_in_flight, 1);
+        drop(permit);
+        assert_eq!(
+            observer.observe_load(2 * dwell, LoadSignals::default()),
+            LoadState::Elevated
+        );
+        assert_eq!(
+            observer.observe_load(3 * dwell, LoadSignals::default()),
+            LoadState::Healthy
+        );
+        assert!(controller.try_admit(&bulk).is_ok());
     }
 
     #[test]

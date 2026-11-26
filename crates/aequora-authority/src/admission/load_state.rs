@@ -121,6 +121,11 @@ impl LoadStateTracker {
         self.state
     }
 
+    pub(super) fn reset(&mut self, state: LoadState) {
+        self.state = state;
+        self.last_transition_ms = None;
+    }
+
     /// Observes pressure and returns the hysteretic state after at most one transition.
     pub fn observe(&mut self, now_ms: u64, signals: LoadSignals) -> LoadState {
         let pressure = signals.maximum();

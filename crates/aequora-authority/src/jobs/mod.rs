@@ -615,13 +615,12 @@ impl JobRegistry {
     }
     pub fn register(&mut self, descriptor: JobDescriptor) -> Result<(), JobError> {
         descriptor.verify()?;
-        if self
-            .descriptors
-            .insert(descriptor.kind, descriptor)
-            .is_some()
-        {
+        let std::collections::btree_map::Entry::Vacant(entry) =
+            self.descriptors.entry(descriptor.kind)
+        else {
             return Err(JobError::DuplicateKind);
-        }
+        };
+        entry.insert(descriptor);
         Ok(())
     }
     #[must_use]

@@ -443,6 +443,7 @@ pub struct AuthorityController {
     state: Arc<RwLock<AuthorityState>>,
     policy: AuthorityPromotionPolicy,
     external_highest_epoch: Arc<RwLock<Option<AuthorityEpoch>>>,
+    epoch_registry: Option<Arc<dyn ExternalEpochRegistry>>,
 }
 
 impl AuthorityController {
@@ -453,7 +454,16 @@ impl AuthorityController {
             state: Arc::new(RwLock::new(state)),
             policy,
             external_highest_epoch: Arc::new(RwLock::new(None)),
+            epoch_registry: None,
         }
+    }
+
+    /// Requires a matching epoch from a host-supplied witness on each authority check.
+    /// Use a bounded synchronous registry view that fails closed when its observations expire.
+    #[must_use]
+    pub fn with_epoch_registry(mut self, registry: Arc<dyn ExternalEpochRegistry>) -> Self {
+        self.epoch_registry = Some(registry);
+        self
     }
 
     /// Returns a consistent state snapshot.
@@ -501,12 +511,20 @@ impl AuthorityController {
     ///
     /// Returns an authority metadata, rollback, or poisoned-controller error.
     pub fn validate_startup(&self) -> Result<(), AuthorityError> {
+        self.validated_state().map(|_| ())
+    }
+
+    /// Returns the authority state after checking its rollback anchors.
+    ///
+    /// # Errors
+    /// Returns an authority metadata, witness, rollback, or controller-state error.
+    pub fn validated_state(&self) -> Result<AuthorityState, AuthorityError> {
         let state = self.state()?;
-        self.ensure_external_epoch(state.epoch)?;
+        self.ensure_external_epoch(state.authority_id, state.epoch)?;
         if state.role == AuthorityRole::Primary && state.fence_token.get() == 0 {
             return Err(AuthorityError::ZeroFenceToken);
         }
-        Ok(())
+        Ok(state)
     }
 
     /// Returns a token that the authoritative database transaction must compare to stored state.
@@ -515,8 +533,7 @@ impl AuthorityController {
     ///
     /// Returns an error unless this instance is the serving primary on a valid external epoch.
     pub fn authorize_write(&self) -> Result<AuthorityCommitContext, AuthorityError> {
-        let state = self.state()?;
-        self.ensure_external_epoch(state.epoch)?;
+        let state = self.validated_state()?;
         if state.role != AuthorityRole::Primary {
             return Err(AuthorityError::NotPrimary(state.role));
         }
@@ -592,6 +609,7 @@ impl AuthorityController {
                 .ok_or(AuthorityError::EpochExhausted)?
         };
         let new_fence = state.fence_token.next()?;
+        self.ensure_registry_epoch(state.authority_id, new_epoch)?;
         let transition_id = AuthorityTransitionId::new();
         *state = AuthorityState {
             authority_id: state.authority_id,
@@ -672,7 +690,7 @@ impl AuthorityController {
             .state
             .write()
             .map_err(|_| AuthorityError::ControllerPoisoned)?;
-        self.ensure_external_epoch(state.epoch)?;
+        self.ensure_external_epoch(state.authority_id, state.epoch)?;
         if state.role != AuthorityRole::Primary {
             return Err(AuthorityError::NotPrimary(state.role));
         }
@@ -704,7 +722,11 @@ impl AuthorityController {
         Ok(comparison)
     }
 
-    fn ensure_external_epoch(&self, local: AuthorityEpoch) -> Result<(), AuthorityError> {
+    fn ensure_external_epoch(
+        &self,
+        authority_id: AuthorityId,
+        local: AuthorityEpoch,
+    ) -> Result<(), AuthorityError> {
         let external = *self
             .external_highest_epoch
             .read()
@@ -715,7 +737,30 @@ impl AuthorityController {
                 highest: external.unwrap_or(local),
             })
         } else {
-            Ok(())
+            self.ensure_registry_epoch(authority_id, local)
+        }
+    }
+
+    fn ensure_registry_epoch(
+        &self,
+        authority_id: AuthorityId,
+        local: AuthorityEpoch,
+    ) -> Result<(), AuthorityError> {
+        let Some(registry) = &self.epoch_registry else {
+            return Ok(());
+        };
+        let external = registry
+            .highest_epoch(authority_id)
+            .ok_or(AuthorityError::ExternalEpochUnavailable)?;
+        match local.cmp(&external) {
+            std::cmp::Ordering::Less => Err(AuthorityError::AuthorityRollbackDetected {
+                presented: local,
+                highest: external,
+            }),
+            std::cmp::Ordering::Equal => Ok(()),
+            std::cmp::Ordering::Greater => {
+                Err(AuthorityError::ExternalEpochRegression { external, local })
+            }
         }
     }
 }
@@ -1016,6 +1061,7 @@ pub struct BackupAuthorityMetadata {
 
 /// External monotonic epoch anchor protecting against restored database metadata rollback.
 pub trait ExternalEpochRegistry: Send + Sync {
+    /// Returns the current trusted epoch. An unavailable or expired observation returns `None`.
     fn highest_epoch(&self, authority_id: AuthorityId) -> Option<AuthorityEpoch>;
     /// Records a monotonic epoch for one authority.
     ///
@@ -1118,6 +1164,8 @@ pub enum AuthorityError {
         external: AuthorityEpoch,
         local: AuthorityEpoch,
     },
+    #[error("the external authority epoch is unavailable")]
+    ExternalEpochUnavailable,
     #[error("there is no active authority epoch transition")]
     NoEpochTransition,
     #[error("lossless transition unexpectedly changed authority epoch")]
