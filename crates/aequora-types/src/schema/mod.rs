@@ -301,7 +301,6 @@ impl SchemaRegistry {
     }
 
     /// Registered schemas in stable identifier order.
-    #[must_use]
     pub fn entities(&self) -> impl ExactSizeIterator<Item = &EntitySchema> {
         self.entities.values()
     }

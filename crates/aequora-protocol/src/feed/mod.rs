@@ -1551,7 +1551,7 @@ mod tests {
             &registration,
         )
         .unwrap_or_else(|error| panic!("{error}"));
-        assert!(batch.events.is_empty());
+        assert_eq!(batch.events.len(), 0);
         assert_eq!(batch.through(), Sequence(7));
     }
 

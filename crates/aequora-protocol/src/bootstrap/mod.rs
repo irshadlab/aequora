@@ -1365,7 +1365,7 @@ mod tests {
             let decoded = chunk
                 .decode_verified(&chunk.descriptor, 4_096)
                 .unwrap_or_else(|error| panic!("{error}"));
-            assert!(!decoded.is_empty());
+            assert_ne!(decoded.len(), 0);
         }
     }
 

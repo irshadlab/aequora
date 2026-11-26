@@ -435,7 +435,11 @@ mod tests {
 
     #[test]
     fn secret_file_read_is_bounded_from_the_open_handle() {
-        let directory = tempfile::tempdir().unwrap_or_else(|error| panic!("{error}"));
+        let executable = std::env::current_exe().unwrap_or_else(|error| panic!("{error}"));
+        let output = executable
+            .parent()
+            .unwrap_or_else(|| panic!("test executable has no parent directory"));
+        let directory = tempfile::tempdir_in(output).unwrap_or_else(|error| panic!("{error}"));
         let path = directory.path().join("oversized-secret");
         let mut file = File::create(&path).unwrap_or_else(|error| panic!("{error}"));
         file.write_all(&vec![5; MAX_SECRET_BYTES + 1])

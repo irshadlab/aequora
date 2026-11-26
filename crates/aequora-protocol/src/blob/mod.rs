@@ -532,12 +532,13 @@ mod tests {
                     .unwrap_or_else(|error| panic!("{error}")),
                 Some(bytes.to_vec())
             );
-            assert!(
+            assert_eq!(
                 store
                     .missing(&manifest.chunks)
                     .await
                     .unwrap_or_else(|error| panic!("{error}"))
-                    .is_empty()
+                    .len(),
+                0
             );
         });
     }

@@ -6574,11 +6574,11 @@ mod tests {
         for (index, invariant) in InvariantId::ALL.into_iter().enumerate() {
             assert_eq!(invariant.entry(), REGISTRY[index]);
             assert_eq!(invariant.as_str().parse(), Ok(invariant));
-            assert!(!invariant.description().is_empty());
-            assert!(!invariant.entry().model_assertion.is_empty());
-            assert!(!invariant.entry().property_test.is_empty());
-            assert!(!invariant.entry().adapter_test.is_empty());
-            assert!(!invariant.entry().diagnostic.is_empty());
+            assert_ne!(invariant.description(), "");
+            assert_ne!(invariant.entry().model_assertion, "");
+            assert_ne!(invariant.entry().property_test, "");
+            assert_ne!(invariant.entry().adapter_test, "");
+            assert_ne!(invariant.entry().diagnostic, "");
         }
     }
 }

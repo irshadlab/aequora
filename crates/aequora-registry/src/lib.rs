@@ -158,7 +158,7 @@ mod tests {
 
     #[test]
     fn generated_registry_is_sorted_and_resolvable() {
-        assert!(!ENTRIES.is_empty());
+        assert_ne!(ENTRIES.len(), 0);
         assert!(
             ENTRIES.windows(2).all(|window| {
                 (window[0].domain, window[0].id) < (window[1].domain, window[1].id)
