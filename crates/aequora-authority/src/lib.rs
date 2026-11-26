@@ -4,6 +4,19 @@
 //! crate makes that evidence explicit and enforces the application-level state machine at every
 //! authoritative write boundary.
 
+pub mod admin;
+pub mod admission;
+pub mod audit;
+pub mod executor;
+pub mod governance;
+pub mod jobs;
+pub mod migration;
+pub mod performance;
+pub mod replay;
+pub mod side_effects;
+pub mod validator;
+pub mod workflow;
+
 use aequora_types::{
     AuthorityEpoch, AuthorityId, AuthorityInstanceId, AuthorityTransitionId, Cursor, OperationId,
     Sequence,
