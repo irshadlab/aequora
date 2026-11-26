@@ -1,4 +1,4 @@
-use aequora_scheduler::SchedulingDecision;
+use aequora_types::scheduler::SchedulingDecision;
 
 use super::{
     BackgroundBudget, ClientResourceContext, ClientResourcePolicy, DataBudgetUsage, MemoryClass,

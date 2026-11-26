@@ -1,11 +1,11 @@
 //! Part 43 deployment configuration and deterministic source composition.
 
-use aequora_feature_flags::{FeatureDefinition, FeatureError, FeaturePolicy};
-use aequora_policy::{
+use aequora_security::feature_flags::{FeatureDefinition, FeatureError, FeaturePolicy};
+use aequora_security::policy::{
     ChangeClass, ConfigDigest, ConfigGeneration, MutabilityClass, PolicyError, RuntimePolicy,
     diff_runtime_policy,
 };
-use aequora_secrets::SecretRef;
+use aequora_security::secrets::SecretRef;
 use serde::{Deserialize, Serialize};
 use std::{
     collections::{BTreeMap, BTreeSet},
@@ -73,11 +73,11 @@ impl Default for HttpDeploymentConfig {
             trusted_proxies: BTreeSet::new(),
             tls: TlsMode::DirectTls {
                 certificate: SecretRef::Environment(
-                    aequora_secrets::SecretKey::new("AEQUORA_TLS_CERT")
+                    aequora_security::secrets::SecretKey::new("AEQUORA_TLS_CERT")
                         .unwrap_or_else(|error| panic!("{error}")),
                 ),
                 private_key: SecretRef::Environment(
-                    aequora_secrets::SecretKey::new("AEQUORA_TLS_PRIVATE_KEY")
+                    aequora_security::secrets::SecretKey::new("AEQUORA_TLS_PRIVATE_KEY")
                         .unwrap_or_else(|error| panic!("{error}")),
                 ),
             },
@@ -124,7 +124,7 @@ impl Default for AuthorityAdapterConfig {
         Self::Postgres {
             maximum_connections: 32,
             credential: SecretRef::Environment(
-                aequora_secrets::SecretKey::new("AEQUORA_DATABASE_URL")
+                aequora_security::secrets::SecretKey::new("AEQUORA_DATABASE_URL")
                     .unwrap_or_else(|error| panic!("{error}")),
             ),
         }
@@ -560,8 +560,8 @@ fn parse_patch(input: &str) -> Result<ConfigPatch, ConfigurationError> {
 #[derive(Default)]
 struct EnvironmentOverrides {
     environment: Option<Environment>,
-    batch_size: Option<aequora_policy::BatchSize>,
-    request_timeout: Option<aequora_policy::TimeoutMillis>,
+    batch_size: Option<aequora_security::policy::BatchSize>,
+    request_timeout: Option<aequora_security::policy::TimeoutMillis>,
 }
 
 fn environment_patch(
@@ -572,16 +572,18 @@ fn environment_patch(
         match key.as_str() {
             "AEQUORA_ENVIRONMENT" => patch.environment = Some(value.parse()?),
             "AEQUORA_BATCH_SIZE" => {
-                patch.batch_size =
-                    Some(aequora_policy::BatchSize::new(value.parse().map_err(
-                        |_| ConfigurationError::InvalidValue("AEQUORA_BATCH_SIZE"),
-                    )?)?);
+                patch.batch_size = Some(aequora_security::policy::BatchSize::new(
+                    value
+                        .parse()
+                        .map_err(|_| ConfigurationError::InvalidValue("AEQUORA_BATCH_SIZE"))?,
+                )?);
             }
             "AEQUORA_REQUEST_TIMEOUT_MS" => {
-                patch.request_timeout =
-                    Some(aequora_policy::TimeoutMillis::new(value.parse().map_err(
-                        |_| ConfigurationError::InvalidValue("AEQUORA_REQUEST_TIMEOUT_MS"),
-                    )?)?);
+                patch.request_timeout = Some(aequora_security::policy::TimeoutMillis::new(
+                    value.parse().map_err(|_| {
+                        ConfigurationError::InvalidValue("AEQUORA_REQUEST_TIMEOUT_MS")
+                    })?,
+                )?);
             }
             key if key.starts_with("AEQUORA_") => {
                 return Err(ConfigurationError::UnknownEnvironmentKey(key.to_owned()));

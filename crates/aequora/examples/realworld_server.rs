@@ -3,17 +3,17 @@
 #[path = "support/stress_auth.rs"]
 mod stress_auth;
 
+use aequora_authority::executor::{
+    AuthContext, AuthoritativeMutation, CurrentEntity, DomainOperation, ExecutionError,
+    OperationHandler, OperationRegistry, ScopeAuthorizer,
+};
 use aequora_axum::{
     AuthenticationFailure, AxumConfig, HttpAuthenticator, PresentedCredential, ReadinessProbe,
     router_with_authenticator,
 };
-use aequora_clock::TestClock;
 use aequora_conflict::RejectConflicts;
-use aequora_executor::{
-    AuthContext, AuthoritativeMutation, CurrentEntity, DomainOperation, ExecutionError,
-    OperationHandler, OperationRegistry, ScopeAuthorizer,
-};
 use aequora_observability::NoopObserver;
+use aequora_protocol::clock::TestClock;
 use aequora_protocol::{ChangeKind, OperationEnvelope, SessionMetadata};
 use aequora_server::{ExchangeService, SyncServer};
 use aequora_testkit::InMemoryAuthoritativeStore;

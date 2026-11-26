@@ -34,19 +34,12 @@ pub mod prelude {
     pub use aequora_adapter_sdk::{
         ClientIdentity, ClientStore, Credential, CredentialProvider, DomainId, SyncTransport,
     };
-    pub use aequora_coordination::{
-        FencingToken, LocalProcessMode, LocalStoreGeneration, LocalStoreId, ProcessInstanceId,
-    };
     pub use aequora_live::{HintWakeOutcome, HintWakeTracker, SyncHint};
     pub use aequora_operation::{
         LocalCommitStatus, MutationReceipt, Operation, OperationKind, OperationSchemaVersion,
         OperationState,
     };
     pub use aequora_protocol::{ClientLimits, SessionMetadata, SnapshotLimits};
-    pub use aequora_scheduler::{
-        AppActivity, NetworkContext, PowerContext, SchedulerPolicy, SchedulerState,
-        SchedulingContext, SyncProfile, WorkClass,
-    };
     pub use aequora_scope::{
         LocalScopeState, ScopeTransition, ScopeTransitionOutcome, Subscription,
     };
@@ -55,13 +48,16 @@ pub mod prelude {
         AdapterRole, AdapterTier, LocalStore, ProductionAdapterPair, ScopeStateStore,
     };
     pub use aequora_transport::{StreamingSyncTransport, SyncTransport as EngineSyncTransport};
+    pub use aequora_types::coordination::{
+        FencingToken, LocalProcessMode, LocalStoreGeneration, LocalStoreId, ProcessInstanceId,
+    };
+    pub use aequora_types::scheduler::{
+        AppActivity, NetworkContext, PowerContext, SchedulerPolicy, SchedulerState,
+        SchedulingContext, SyncProfile, WorkClass,
+    };
     pub use aequora_types::{DeviceId, SyncScopeId, TenantId};
 }
 
-use aequora_coordination::{
-    LeaseGrant, LeaseKind, LeaseRequest, LocalCoordinationSupport, LocalProcessMode,
-    ProcessInstanceId,
-};
 use aequora_live::{HintWakeOutcome, HintWakeTracker, SyncHint};
 use aequora_observability::{
     LocalCoordinationEventKind, MetricEvent, NoopObserver, Observer, OutcomeKind,
@@ -73,10 +69,6 @@ use aequora_protocol::{
 };
 use aequora_queue::OptimizationRegistry;
 use aequora_region::{ReadResponseMetadata, RegionError, SessionWatermark};
-use aequora_scheduler::{
-    AdaptiveScheduler, DeferralReason, SchedulerPolicy, SchedulerState, SchedulingContext,
-    WorkClass, WorkDescriptor, WorkId, WorkKind,
-};
 use aequora_scope::{ScopeTransition, ScopeTransitionKind, ScopeTransitionOutcome, Subscription};
 use aequora_store::{
     AdapterCompatibilityError, AdapterManifestProvider, AdapterRequirements,
@@ -84,6 +76,14 @@ use aequora_store::{
 };
 use aequora_transport::{
     StreamingSyncTransport, SyncTransport, TransportError, TransportErrorKind,
+};
+use aequora_types::coordination::{
+    LeaseGrant, LeaseKind, LeaseRequest, LocalCoordinationSupport, LocalProcessMode,
+    ProcessInstanceId,
+};
+use aequora_types::scheduler::{
+    AdaptiveScheduler, DeferralReason, SchedulerPolicy, SchedulerState, SchedulingContext,
+    WorkClass, WorkDescriptor, WorkId, WorkKind,
 };
 use aequora_types::{
     AuthorityEpoch, AuthorityId, Cursor, OperationId, ProtocolVersion, RequestId, Sequence,
@@ -588,7 +588,7 @@ pub enum CoordinatorStatus {
     SingleProcess,
     /// This process owns the current durable sync lease.
     Leader {
-        token: aequora_coordination::FencingToken,
+        token: aequora_types::coordination::FencingToken,
     },
     /// Another process owns the lease or this process is awaiting takeover.
     Follower,
@@ -1474,7 +1474,7 @@ pub enum ClientBuildError {
     CoordinationUnsupported,
     /// Scheduler limits are internally inconsistent.
     #[error(transparent)]
-    Scheduler(#[from] aequora_scheduler::SchedulerError),
+    Scheduler(#[from] aequora_types::scheduler::SchedulerError),
     /// Client resource limits are internally inconsistent.
     #[error(transparent)]
     Resources(#[from] resources::PolicyError),
@@ -1505,7 +1505,7 @@ where
         );
         if let Some(mut state) = self.scheduler_state {
             if state.policy_version != scheduler_policy.version {
-                return Err(aequora_scheduler::SchedulerError::PolicyVersionMismatch.into());
+                return Err(aequora_types::scheduler::SchedulerError::PolicyVersionMismatch.into());
             }
             state.normalize(unix_time_ms(), scheduler_policy.maximum_retry_deferral_ms);
             engine.scheduler = Mutex::new(AdaptiveScheduler::from_state(scheduler_policy, state));
@@ -1670,7 +1670,7 @@ impl<L, T> ClientSyncEngine<L, T> {
         &self,
         kind: WorkKind,
         class: WorkClass,
-    ) -> Result<aequora_scheduler::SchedulingDecision, ClientError> {
+    ) -> Result<aequora_types::scheduler::SchedulingDecision, ClientError> {
         let mut context = *self.scheduling_context();
         context.now_unix_ms = unix_time_ms();
         context.coordinator_leader =
@@ -1996,9 +1996,9 @@ where
                         .map(|delay| u64::try_from(delay.as_millis()).unwrap_or(u64::MAX));
                     self.scheduler().record_overload(
                         unix_time_ms(),
-                        aequora_scheduler::ServerSchedulingHints {
+                        aequora_types::scheduler::ServerSchedulingHints {
                             retry_after_ms,
-                            ..aequora_scheduler::ServerSchedulingHints::default()
+                            ..aequora_types::scheduler::ServerSchedulingHints::default()
                         },
                     );
                     self.observer.record(MetricEvent::Scheduler {

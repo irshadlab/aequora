@@ -8,14 +8,13 @@ description.workspace = true
 repository.workspace = true
 
 [dependencies]
-aequora-adapter-sdk = { version = "0.1.1", path = "../aequora-adapter-sdk" }
-aequora-coordination = { version = "0.1.1", path = "../aequora-coordination" }
 aequora-integrity = { version = "0.1.1", path = "../aequora-integrity" }
-aequora-protocol = { version = "0.1.1", path = "../aequora-protocol" }
 aequora-queue = { version = "0.1.1", path = "../aequora-queue" }
 aequora-scope = { version = "0.1.1", path = "../aequora-scope" }
-aequora-store = { version = "0.1.1", path = "../aequora-store" }
+aequora-adapter-sdk = { version = "0.1.1", path = "../aequora-adapter-sdk" }
 aequora-types = { version = "0.1.1", path = "../aequora-types" }
+aequora-protocol = { version = "0.1.1", path = "../aequora-protocol" }
+aequora-store = { version = "0.1.1", path = "../aequora-store" }
 async-trait.workspace = true
 blake3.workspace = true
 hex.workspace = true

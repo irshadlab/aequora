@@ -35,11 +35,11 @@ pub use observability::{PostgresMetrics, PostgresMetricsSnapshot};
 pub use retention::{PostgresRetentionDecision, PostgresRetentionLease};
 
 use aequora_adapter_sdk as adapter_sdk;
+use aequora_authority::executor::CurrentEntity;
 use aequora_authority::{
     AuthorityRole, AuthorityRuntimeMode, AuthorityState, AuthorityTransitionManifest,
     PromotionClass, TransitionReason,
 };
-use aequora_executor::CurrentEntity;
 use aequora_integrity::{
     CURRENT_HASH_SCHEMA, CanonicalEntity, IntegrityGeneration, IntegritySnapshot, IntegritySupport,
     PartitionScheme,

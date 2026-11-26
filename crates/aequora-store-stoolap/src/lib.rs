@@ -29,10 +29,6 @@ pub use capabilities::{
 };
 
 use aequora_adapter_sdk as adapter_sdk;
-use aequora_coordination::{
-    CoordinationSnapshot, FencingToken, LeaseGrant, LeaseKind, LeaseRequest,
-    LocalCoordinationSupport, LocalStoreGeneration, LocalStoreId, ProcessInstanceId,
-};
 use aequora_integrity::{
     CURRENT_HASH_SCHEMA, CanonicalEntity, IntegrityGeneration, IntegritySnapshot, IntegritySupport,
     PartitionScheme, RepairPlan, RepairStrategy,
@@ -52,6 +48,10 @@ use aequora_store::{
     LocalCoordinationStore, LocalIntegrityStore, OutboxState, OutboxStateStore, OutboxStats,
     OutboxStore, ReconciliationStore, ReplicaRepairReport, RetryMetadata, ScopeStateStore,
     SnapshotProgress, StoreError, TransactionCapabilities, TransactionCapabilityProvider,
+};
+use aequora_types::coordination::{
+    CoordinationSnapshot, FencingToken, LeaseGrant, LeaseKind, LeaseRequest,
+    LocalCoordinationSupport, LocalStoreGeneration, LocalStoreId, ProcessInstanceId,
 };
 use aequora_types::{
     AuthorityEpoch, AuthorityId, Cursor, DeviceId, EntityId, EntityRef, EntityType, EntityVersion,
@@ -3688,7 +3688,7 @@ mod tests {
     }
 
     fn lease_request(
-        owner_id: aequora_coordination::ProcessInstanceId,
+        owner_id: aequora_types::coordination::ProcessInstanceId,
         kind: LeaseKind,
         now_unix_ms: u64,
         ttl_ms: u64,
@@ -3761,7 +3761,7 @@ mod tests {
                         .build()
                         .unwrap_or_else(|error| panic!("{error}"))
                         .block_on(candidate.acquire_lease(lease_request(
-                            aequora_coordination::ProcessInstanceId::new(),
+                            aequora_types::coordination::ProcessInstanceId::new(),
                             LeaseKind::SyncCoordinator,
                             now,
                             10_000,
@@ -3801,7 +3801,7 @@ mod tests {
         let now = unix_time_millis();
         let first = backend
             .acquire_lease(lease_request(
-                aequora_coordination::ProcessInstanceId::new(),
+                aequora_types::coordination::ProcessInstanceId::new(),
                 LeaseKind::SyncCoordinator,
                 now,
                 1_000,
@@ -3817,7 +3817,7 @@ mod tests {
         let takeover_at = now.saturating_add(1_000);
         let second = backend
             .acquire_lease(lease_request(
-                aequora_coordination::ProcessInstanceId::new(),
+                aequora_types::coordination::ProcessInstanceId::new(),
                 LeaseKind::SyncCoordinator,
                 takeover_at,
                 1_000,
@@ -3847,7 +3847,7 @@ mod tests {
         let maintenance_at = takeover_at.saturating_add(1_000);
         let maintenance = backend
             .acquire_lease(lease_request(
-                aequora_coordination::ProcessInstanceId::new(),
+                aequora_types::coordination::ProcessInstanceId::new(),
                 LeaseKind::Maintenance,
                 maintenance_at,
                 1_000,

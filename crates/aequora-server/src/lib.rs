@@ -31,53 +31,58 @@ pub mod prelude {
     pub use aequora_adapter_sdk::{
         Authenticator, AuthorityService, DomainContext, DomainHandler, DomainOutcome,
     };
-    pub use aequora_admission::{AdmissionController, AdmissionPolicy, HierarchicalAdmission};
+    pub use aequora_authority::admission::{
+        AdmissionController, AdmissionPolicy, HierarchicalAdmission,
+    };
+    pub use aequora_authority::executor::{
+        AuthContext, DerivedEventProvenance, DomainOperation, JobProvenance, OperationExecutor,
+        OperationHandler, OperationRegistry, ScopeAuthorizer, TrustedProvenance,
+    };
+    pub use aequora_authority::jobs::{JobRegistry, JobStore};
+    pub use aequora_authority::side_effects::{
+        AuthoritativeOperationSink, SideEffectProvider, SideEffectStore,
+    };
+    pub use aequora_authority::workflow::{WorkflowDefinition, WorkflowStore};
     pub use aequora_authority::{
         AuthorityController, AuthorityPromotionPolicy, AuthorityRole, AuthorityRuntimeMode,
         AuthorityState,
     };
-    pub use aequora_clock::{Clock, SystemClock};
     pub use aequora_conflict::{ConflictResolver, RejectConflicts};
-    pub use aequora_executor::{
-        AuthContext, DerivedEventProvenance, DomainOperation, JobProvenance, OperationExecutor,
-        OperationHandler, OperationRegistry, ScopeAuthorizer, TrustedProvenance,
-    };
-    pub use aequora_jobs::{JobRegistry, JobStore};
+    pub use aequora_protocol::clock::{Clock, SystemClock};
     pub use aequora_region::{
         ReadResponseMetadata, RegionError, RegionalReadRequest, ReplicaObservation,
-    };
-    pub use aequora_side_effects::{
-        AuthoritativeOperationSink, SideEffectProvider, SideEffectStore,
     };
     pub use aequora_store::{
         AdapterCapabilities, AdapterManifest, AdapterManifestProvider, AdapterRequirements,
         AdapterRole, AdapterTier, AuthoritativeStore, ProductionAdapterPair,
     };
-    pub use aequora_workflow::{WorkflowDefinition, WorkflowStore};
 }
 
-use aequora_admission::{
+use aequora_authority::admission::{
     AdmissionController, AdmissionRejection, CostUnits, RequestShape, ResourceDomain,
     ServerPriorityPolicy, WorkDescriptor,
+};
+use aequora_authority::executor::{
+    AuthContext, DependencyError, DependencyPlan, ExecutionError, IncomingOperation,
+    OperationExecutor, plan_dependencies,
+};
+use aequora_authority::performance::PerformancePolicy;
+use aequora_authority::validator::{
+    ProtocolLimits, ValidationError, validate_bootstrap_request, validate_request,
 };
 use aequora_authority::{
     AuthorityController, AuthorityError, AuthorityPromotionPolicy, AuthorityRole,
     AuthorityRuntimeMode, AuthorityState, CursorDisposition, validate_cursor,
 };
-use aequora_clock::Clock;
 use aequora_compute::{ComputeError, ComputePool};
 use aequora_conflict::{
     ConflictResolver, MergeDecision, MergeError, MergeInput, VersionCheck, check_version,
-};
-use aequora_executor::{
-    AuthContext, DependencyError, DependencyPlan, ExecutionError, IncomingOperation,
-    OperationExecutor, plan_dependencies,
 };
 use aequora_observability::{
     MetricEvent, NoopObserver, Observer, OutcomeKind, ServerPhaseKind, TraceContext,
     TransactionOutcomeKind,
 };
-use aequora_performance::PerformancePolicy;
+use aequora_protocol::clock::Clock;
 use aequora_protocol::{
     BootstrapRequest, BootstrapResponse, ClientLimits, Conflict, ConflictPolicy, OperationAck,
     OperationEnvelope, OperationRejection, RejectionCode, ResyncReason, SessionMetadata,
@@ -93,9 +98,6 @@ use aequora_store::{
 use aequora_types::{
     AuthorityId, AuthorityInstanceId, EntityVersion, EventId, OperationId, RequestId, Sequence,
     SessionId, SyncScopeId,
-};
-use aequora_validator::{
-    ProtocolLimits, ValidationError, validate_bootstrap_request, validate_request,
 };
 use async_trait::async_trait;
 use rayon::prelude::*;
@@ -426,9 +428,9 @@ impl<S: ?Sized> AdmittedExchangeService<S> {
             total.saturating_add(u64::try_from(operation.payload.len()).unwrap_or(u64::MAX))
         });
         let kind = if request.operations.is_empty() {
-            aequora_scheduler::WorkKind::PullChanges
+            aequora_types::scheduler::WorkKind::PullChanges
         } else {
-            aequora_scheduler::WorkKind::PushOperations
+            aequora_types::scheduler::WorkKind::PushOperations
         };
         let class = self.priority.classify(kind, None);
         let mut resources = vec![
@@ -471,7 +473,7 @@ impl<S: ?Sized> AdmittedExchangeService<S> {
     }
 
     fn bootstrap_work(&self, auth: &AuthContext, request: &BootstrapRequest) -> WorkDescriptor {
-        let kind = aequora_scheduler::WorkKind::Bootstrap;
+        let kind = aequora_types::scheduler::WorkKind::Bootstrap;
         WorkDescriptor {
             tenant_id: auth.tenant_id,
             tenant_weight: self.tenant_weight,
@@ -1656,7 +1658,7 @@ mod tests {
 
     #[tokio::test]
     async fn admission_decorator_rejects_before_inner_service_and_releases_with_raii() {
-        let mut policy = aequora_admission::AdmissionPolicy::default();
+        let mut policy = aequora_authority::admission::AdmissionPolicy::default();
         policy.global.max_in_flight = 1;
         policy.tenant.budget.max_in_flight = 1;
         policy.tenant.max_tracked_tenants = 1;
@@ -1667,7 +1669,7 @@ mod tests {
         policy.background.reserved_in_flight = 0;
         policy.maintenance.reserved_in_flight = 0;
         let admission = Arc::new(
-            aequora_admission::HierarchicalAdmission::new(policy)
+            aequora_authority::admission::HierarchicalAdmission::new(policy)
                 .unwrap_or_else(|error| panic!("{error}")),
         );
         let inner = Arc::new(CountingService(AtomicUsize::new(0)));

@@ -8,9 +8,8 @@ description.workspace = true
 repository.workspace = true
 
 [dependencies]
-aequora-admission = { version = "0.1.1", path = "../aequora-admission" }
+aequora-authority = { version = "0.1.1", path = "../aequora-authority" }
 aequora-codec = { version = "0.1.1", path = "../aequora-codec", features = ["zstd"] }
-aequora-executor = { version = "0.1.1", path = "../aequora-executor" }
 aequora-observability = { version = "0.1.1", path = "../aequora-observability" }
 aequora-protocol = { version = "0.1.1", path = "../aequora-protocol" }
 aequora-server = { version = "0.1.1", path = "../aequora-server" }

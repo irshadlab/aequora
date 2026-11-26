@@ -1,6 +1,6 @@
 #![no_main]
 
-use aequora_crypto::{EncryptedPayload, ProtectedPayload};
+use aequora_security::crypto::{EncryptedPayload, ProtectedPayload};
 use libfuzzer_sys::fuzz_target;
 
 fuzz_target!(|bytes: &[u8]| {

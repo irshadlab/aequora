@@ -9,7 +9,7 @@ use std::{
     sync::{Arc, Mutex, MutexGuard},
 };
 
-use aequora_coordination::FencingToken;
+use aequora_types::coordination::FencingToken;
 use aequora_types::{ActorId, DeviceId, Sequence, SyncScopeId, TenantId};
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};

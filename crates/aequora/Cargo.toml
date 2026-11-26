@@ -14,7 +14,7 @@ categories = ["database", "network-programming", "data-structures"]
 
 [features]
 default = []
-macros = ["dep:aequora-executor", "dep:aequora-macros", "dep:aequora-profile"]
+macros = ["dep:aequora-authority", "dep:aequora-macros", "dep:aequora-profile"]
 # Compatibility feature names for repository integration examples. Application code should add
 # the owning adapter/integration crate directly.
 axum = ["dep:aequora-axum"]
@@ -27,17 +27,15 @@ stoolap = ["dep:aequora-store-stoolap"]
 testkit = []
 
 [dependencies]
+aequora-operation = { version = "0.1.1", path = "../aequora-operation" }
 aequora-adapter-sdk = { version = "0.1.1", path = "../aequora-adapter-sdk" }
 aequora-client = { version = "0.1.1", path = "../aequora-client" }
-aequora-operation = { version = "0.1.1", path = "../aequora-operation" }
-aequora-registry-generated = { version = "0.1.1", path = "../aequora-registry-generated" }
+aequora-registry = { version = "0.1.1", path = "../aequora-registry" }
 aequora-server = { version = "0.1.1", path = "../aequora-server" }
 aequora-types = { version = "0.1.1", path = "../aequora-types" }
-
-aequora-executor = { version = "0.1.1", path = "../aequora-executor", optional = true }
+aequora-authority = { version = "0.1.1", path = "../aequora-authority", optional = true }
 aequora-macros = { version = "0.1.1", path = "../aequora-macros", optional = true }
 aequora-profile = { version = "0.1.1", path = "../aequora-profile", optional = true }
-
 aequora-axum = { version = "0.1.1", path = "../aequora-axum", optional = true }
 aequora-http = { version = "0.1.1", path = "../aequora-http", optional = true }
 aequora-store-postgres = { version = "0.1.1", path = "../aequora-store-postgres", optional = true }
@@ -69,13 +67,12 @@ name = "derive_operation"
 required-features = ["macros"]
 
 [dev-dependencies]
-aequora-testkit = { version = "0.1.1", path = "../aequora-testkit" }
-aequora-clock = { version = "0.1.1", path = "../aequora-clock" }
 aequora-conflict = { version = "0.1.1", path = "../aequora-conflict" }
-aequora-executor = { version = "0.1.1", path = "../aequora-executor" }
-aequora-observability = { version = "0.1.1", path = "../aequora-observability" }
+aequora-testkit = { version = "0.1.1", path = "../aequora-testkit" }
 aequora-protocol = { version = "0.1.1", path = "../aequora-protocol" }
-aequora-scheduler = { version = "0.1.1", path = "../aequora-scheduler" }
+aequora-authority = { version = "0.1.1", path = "../aequora-authority" }
+aequora-observability = { version = "0.1.1", path = "../aequora-observability" }
+aequora-types = { version = "0.1.1", path = "../aequora-types" }
 aequora-store = { version = "0.1.1", path = "../aequora-store" }
 async-trait.workspace = true
 axum.workspace = true

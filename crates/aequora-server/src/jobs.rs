@@ -2,7 +2,7 @@
 
 #![allow(clippy::missing_errors_doc)]
 
-use aequora_jobs::{
+use aequora_authority::jobs::{
     AdminAction, ClaimRequest, ClaimedJob, ConcurrencyClass, JobError, JobKind, JobRegistry,
     JobStatus, JobStore, JobStoreError, MAX_CLAIM_BATCH, WorkerCapability, WorkerId,
 };

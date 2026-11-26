@@ -1,6 +1,6 @@
 #![no_main]
 
-use aequora_executor::{
+use aequora_authority::executor::{
     AuthContext, AuthoritativeMutation, AuthorizedOperation, CurrentEntity, DomainOperation,
     ExecutionError, IncomingOperation, OperationExecutor, OperationHandler, OperationRegistry,
     PayloadMigrator, ScopeAuthorizer,

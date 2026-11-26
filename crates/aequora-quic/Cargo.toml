@@ -8,12 +8,12 @@ description.workspace = true
 repository.workspace = true
 
 [dependencies]
+aequora-transport = { version = "0.1.1", path = "../aequora-transport" }
 aequora-codec = { version = "0.1.1", path = "../aequora-codec", features = ["zstd"] }
-aequora-executor = { version = "0.1.1", path = "../aequora-executor" }
+aequora-authority = { version = "0.1.1", path = "../aequora-authority" }
 aequora-protocol = { version = "0.1.1", path = "../aequora-protocol" }
 aequora-server = { version = "0.1.1", path = "../aequora-server" }
 aequora-store = { version = "0.1.1", path = "../aequora-store" }
-aequora-transport = { version = "0.1.1", path = "../aequora-transport" }
 aequora-types = { version = "0.1.1", path = "../aequora-types" }
 async-trait.workspace = true
 quinn.workspace = true

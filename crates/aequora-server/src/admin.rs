@@ -4,7 +4,7 @@
 //! all mutation safety remain in `aequora-admin`; this module deliberately has no data-plane
 //! dependency and exposes no raw metadata mutation facility.
 
-use aequora_admin::{
+use aequora_authority::admin::{
     AdminAction, AdminAuditSink, AdminCommand, AdminCommandExecutor, AdminError,
     AdminListenerPolicy, AdminOperationId, AdminOperationRecord, AdminPlan, AdminPrincipal,
     AdminService, AdminStore,

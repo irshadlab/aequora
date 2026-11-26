@@ -1,10 +1,10 @@
+use aequora_authority::executor::AuthContext;
 use aequora_axum::{
     AuthenticationFailure, AxumConfig, DrainOutcome, HttpAuthenticator, POSTCARD_CONTENT_TYPE,
     PresentedCredential, REQUEST_ID_HEADER, ReadinessProbe, router_with_authenticator,
     router_with_lifecycle, router_with_readiness,
 };
 use aequora_codec::{FLAG_ZSTD, MessageKind};
-use aequora_executor::AuthContext;
 use aequora_observability::AtomicMetrics;
 use aequora_protocol::{
     BootstrapRequest, BootstrapResponse, Capability, ChangeKind, ClientLimits, RemoteChange,

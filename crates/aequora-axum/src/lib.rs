@@ -1,9 +1,9 @@
 //! Thin Axum boundary for framed Postcard exchanges.
 
+use aequora_authority::executor::AuthContext;
 use aequora_codec::{
     CodecError, Compression, DecodeLimits, EncodeOptions, HEADER_LEN, MessageKind, inspect_header,
 };
-use aequora_executor::AuthContext;
 use aequora_observability::{MetricEvent, NoopObserver, Observer};
 use aequora_protocol::{BootstrapRequest, Capability, SyncRequest, SyncResponse};
 use aequora_server::{ExchangeService, ServerError};
@@ -1237,14 +1237,14 @@ impl IntoResponse for HttpError {
             ),
             Self::Server(ServerError::Admission(rejection)) => {
                 let status = match rejection {
-                    aequora_admission::AdmissionRejection::TenantBusy { .. }
-                    | aequora_admission::AdmissionRejection::RateLimited { .. } => {
+                    aequora_authority::admission::AdmissionRejection::TenantBusy { .. }
+                    | aequora_authority::admission::AdmissionRejection::RateLimited { .. } => {
                         StatusCode::TOO_MANY_REQUESTS
                     }
-                    aequora_admission::AdmissionRejection::RequestTooLarge => {
+                    aequora_authority::admission::AdmissionRejection::RequestTooLarge => {
                         StatusCode::PAYLOAD_TOO_LARGE
                     }
-                    aequora_admission::AdmissionRejection::TooManyDependencies => {
+                    aequora_authority::admission::AdmissionRejection::TooManyDependencies => {
                         StatusCode::BAD_REQUEST
                     }
                     _ => StatusCode::SERVICE_UNAVAILABLE,

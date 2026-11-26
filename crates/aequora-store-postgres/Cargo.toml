@@ -8,12 +8,11 @@ description.workspace = true
 repository.workspace = true
 
 [dependencies]
+aequora-integrity = { version = "0.1.1", path = "../aequora-integrity" }
 aequora-adapter-sdk = { version = "0.1.1", path = "../aequora-adapter-sdk" }
 aequora-authority = { version = "0.1.1", path = "../aequora-authority" }
-aequora-executor = { version = "0.1.1", path = "../aequora-executor" }
-aequora-integrity = { version = "0.1.1", path = "../aequora-integrity" }
-aequora-live = { version = "0.1.1", path = "../aequora-live" }
 aequora-protocol = { version = "0.1.1", path = "../aequora-protocol" }
+aequora-live = { version = "0.1.1", path = "../aequora-live" }
 aequora-store = { version = "0.1.1", path = "../aequora-store" }
 aequora-types = { version = "0.1.1", path = "../aequora-types" }
 async-trait.workspace = true

@@ -378,7 +378,7 @@ fn permanent(error: impl std::fmt::Display) -> TransportError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use aequora_executor::AuthContext;
+    use aequora_authority::executor::AuthContext;
     use aequora_protocol::{ClientLimits, SessionMetadata, SyncDirective};
     use aequora_server::{ExchangeService, ServerError};
     use aequora_transport::TransportErrorKind;

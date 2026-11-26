@@ -1,7 +1,7 @@
 // This source is shared by two independent example binaries; each uses one half of the codec.
 #![allow(dead_code)]
 
-use aequora_executor::AuthContext;
+use aequora_authority::executor::AuthContext;
 use aequora_types::{ActorId, DeviceId, TenantId};
 use std::{env, error::Error, fmt, str::FromStr, sync::Arc};
 use zeroize::Zeroizing;

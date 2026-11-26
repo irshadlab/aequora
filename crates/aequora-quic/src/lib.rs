@@ -3,11 +3,11 @@
 //! TLS endpoint construction and certificate policy remain application-owned. A server must
 //! authenticate the QUIC connection before supplying its [`AuthContext`] to [`QuicServer`].
 
+use aequora_authority::executor::AuthContext;
 use aequora_codec::{
     Compression, DecodeLimits, EncodeOptions, MessageKind, decode_frame, decode_with_limits,
     encode_with_options,
 };
-use aequora_executor::AuthContext;
 use aequora_protocol::{
     BootstrapRequest, BootstrapResponse, Capability, PushHint, SyncRequest, SyncResponse,
 };

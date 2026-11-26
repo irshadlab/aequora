@@ -37,9 +37,9 @@ pub struct DurableRegistryProvenance {
 #[must_use]
 pub const fn durable_registry_provenance() -> DurableRegistryProvenance {
     DurableRegistryProvenance {
-        generation: aequora_registry_generated::REGISTRY_GENERATION,
-        digest: aequora_registry_generated::REGISTRY_DIGEST,
-        entry_count: aequora_registry_generated::ENTRIES.len(),
+        generation: aequora_registry::REGISTRY_GENERATION,
+        digest: aequora_registry::REGISTRY_DIGEST,
+        entry_count: aequora_registry::ENTRIES.len(),
     }
 }
 

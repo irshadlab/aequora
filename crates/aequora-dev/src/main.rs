@@ -11,18 +11,20 @@ use std::{
     process::ExitCode,
 };
 
-use aequora_audit::{ChainedAuditRecord, verify_chain};
-use aequora_coordination::CoordinationSnapshot;
-use aequora_crypto::{CryptoPolicy, KeyRegistryManifest, PublicKeyBytes, TrustedKeyRegistry};
-use aequora_governance::ErasurePlan;
-use aequora_performance::{
+use aequora_authority::audit::{ChainedAuditRecord, verify_chain};
+use aequora_authority::governance::ErasurePlan;
+use aequora_authority::performance::{
     PerformancePolicy, PerformanceProfile, PerformanceReport, RegressionPolicy, WorkloadManifest,
     compare_reports,
 };
+use aequora_authority::replay::{ReplayBundle, ReplayStateRef};
 use aequora_profile::{ConsistencyProfile, ConsistencyProfileKind, ProfileManifest};
-use aequora_replay::{ReplayBundle, ReplayStateRef};
-use aequora_scheduler::SchedulerState;
 use aequora_scope::LocalScopeState;
+use aequora_security::crypto::{
+    CryptoPolicy, KeyRegistryManifest, PublicKeyBytes, TrustedKeyRegistry,
+};
+use aequora_types::coordination::CoordinationSnapshot;
+use aequora_types::scheduler::SchedulerState;
 
 use guppy::{
     MetadataCommand,
@@ -37,14 +39,12 @@ const BOUNDARY_RULES: &[(&str, &[&str])] = &[
     (
         "aequora-feed",
         &[
-            "aequora-admin",
+            "aequora-authority",
             "aequora-axum",
             "aequora-client",
             "aequora-http",
-            "aequora-jobs",
             "aequora-quic",
             "aequora-server",
-            "aequora-side-effects",
             "aequora-store-postgres",
             "aequora-store-stoolap",
             "axum",
@@ -58,20 +58,14 @@ const BOUNDARY_RULES: &[(&str, &[&str])] = &[
     (
         "aequora-security",
         &[
-            "aequora-admin",
-            "aequora-admission",
-            "aequora-axum",
             "aequora-authority",
+            "aequora-axum",
             "aequora-client",
             "aequora-compat",
-            "aequora-crypto",
             "aequora-diagnostics",
-            "aequora-executor",
             "aequora-http",
-            "aequora-jobs",
             "aequora-quic",
             "aequora-server",
-            "aequora-side-effects",
             "aequora-store-postgres",
             "aequora-store-stoolap",
             "axum",
@@ -101,44 +95,8 @@ const BOUNDARY_RULES: &[(&str, &[&str])] = &[
         ],
     ),
     (
-        "aequora-admin",
+        "aequora-authority",
         &[
-            "aequora-axum",
-            "aequora-client",
-            "aequora-http",
-            "aequora-quic",
-            "aequora-server",
-            "aequora-store-postgres",
-            "aequora-store-stoolap",
-            "axum",
-            "rayon",
-            "reqwest",
-            "sqlx",
-            "stoolap",
-            "tokio",
-        ],
-    ),
-    (
-        "aequora-compat",
-        &[
-            "aequora-axum",
-            "aequora-client",
-            "aequora-http",
-            "aequora-quic",
-            "aequora-server",
-            "aequora-store-postgres",
-            "aequora-store-stoolap",
-            "axum",
-            "reqwest",
-            "sqlx",
-            "stoolap",
-            "tokio",
-        ],
-    ),
-    (
-        "aequora-performance",
-        &[
-            "aequora-admission",
             "aequora-axum",
             "aequora-client",
             "aequora-compute",
@@ -156,7 +114,7 @@ const BOUNDARY_RULES: &[(&str, &[&str])] = &[
         ],
     ),
     (
-        "aequora-admission",
+        "aequora-compat",
         &[
             "aequora-axum",
             "aequora-client",
@@ -197,91 +155,6 @@ const BOUNDARY_RULES: &[(&str, &[&str])] = &[
         ],
     ),
     (
-        "aequora-replay",
-        &[
-            "aequora-axum",
-            "aequora-client",
-            "aequora-http",
-            "aequora-quic",
-            "aequora-server",
-            "aequora-store-postgres",
-            "aequora-store-stoolap",
-            "axum",
-            "reqwest",
-            "sqlx",
-            "stoolap",
-            "tokio",
-        ],
-    ),
-    (
-        "aequora-audit",
-        &[
-            "aequora-axum",
-            "aequora-client",
-            "aequora-http",
-            "aequora-quic",
-            "aequora-server",
-            "aequora-store-postgres",
-            "aequora-store-stoolap",
-            "axum",
-            "reqwest",
-            "sqlx",
-            "stoolap",
-            "tokio",
-        ],
-    ),
-    (
-        "aequora-governance",
-        &[
-            "aequora-axum",
-            "aequora-client",
-            "aequora-http",
-            "aequora-quic",
-            "aequora-server",
-            "aequora-store-postgres",
-            "aequora-store-stoolap",
-            "axum",
-            "reqwest",
-            "sqlx",
-            "stoolap",
-            "tokio",
-        ],
-    ),
-    (
-        "aequora-crypto",
-        &[
-            "aequora-axum",
-            "aequora-client",
-            "aequora-http",
-            "aequora-quic",
-            "aequora-server",
-            "aequora-store-postgres",
-            "aequora-store-stoolap",
-            "axum",
-            "reqwest",
-            "sqlx",
-            "stoolap",
-            "tokio",
-        ],
-    ),
-    (
-        "aequora-authority",
-        &[
-            "aequora-axum",
-            "aequora-client",
-            "aequora-http",
-            "aequora-quic",
-            "aequora-server",
-            "aequora-store-postgres",
-            "aequora-store-stoolap",
-            "axum",
-            "reqwest",
-            "sqlx",
-            "stoolap",
-            "tokio",
-        ],
-    ),
-    (
         "aequora-region",
         &[
             "aequora-axum",
@@ -300,60 +173,6 @@ const BOUNDARY_RULES: &[(&str, &[&str])] = &[
     ),
     (
         "aequora-metadata",
-        &[
-            "aequora-axum",
-            "aequora-client",
-            "aequora-http",
-            "aequora-quic",
-            "aequora-server",
-            "aequora-store-postgres",
-            "aequora-store-stoolap",
-            "axum",
-            "rayon",
-            "reqwest",
-            "sqlx",
-            "stoolap",
-            "tokio",
-        ],
-    ),
-    (
-        "aequora-jobs",
-        &[
-            "aequora-axum",
-            "aequora-client",
-            "aequora-http",
-            "aequora-quic",
-            "aequora-server",
-            "aequora-store-postgres",
-            "aequora-store-stoolap",
-            "axum",
-            "rayon",
-            "reqwest",
-            "sqlx",
-            "stoolap",
-            "tokio",
-        ],
-    ),
-    (
-        "aequora-workflow",
-        &[
-            "aequora-axum",
-            "aequora-client",
-            "aequora-http",
-            "aequora-quic",
-            "aequora-server",
-            "aequora-store-postgres",
-            "aequora-store-stoolap",
-            "axum",
-            "rayon",
-            "reqwest",
-            "sqlx",
-            "stoolap",
-            "tokio",
-        ],
-    ),
-    (
-        "aequora-side-effects",
         &[
             "aequora-axum",
             "aequora-client",

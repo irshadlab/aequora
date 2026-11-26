@@ -8,12 +8,12 @@ publish = false
 cargo-fuzz = true
 
 [dependencies]
-aequora-codec = { path = "../crates/aequora-codec", features = ["zstd"] }
 aequora-compat = { path = "../crates/aequora-compat" }
 aequora-conflict = { path = "../crates/aequora-conflict" }
-aequora-crypto = { path = "../crates/aequora-crypto" }
-aequora-executor = { path = "../crates/aequora-executor" }
+aequora-codec = { path = "../crates/aequora-codec", features = ["zstd"] }
 aequora-protocol = { path = "../crates/aequora-protocol" }
+aequora-security = { path = "../crates/aequora-security", features = ["crypto"] }
+aequora-authority = { path = "../crates/aequora-authority" }
 aequora-types = { path = "../crates/aequora-types" }
 async-trait = "0.1.92"
 libfuzzer-sys = "0.4.10"

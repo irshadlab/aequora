@@ -6,9 +6,9 @@ mod stress_auth;
 use aequora_client::{ClientConfig, ClientSyncEngine};
 use aequora_http::{HttpTransport, HttpTransportConfig, StaticRequestHeaders};
 use aequora_protocol::{OperationEnvelope, OperationKind, OperationMetadata, SessionMetadata};
-use aequora_scheduler::WorkClass;
 use aequora_store::StoreError;
 use aequora_store_stoolap::{StoolapDatabase, StoolapStore};
+use aequora_types::scheduler::WorkClass;
 use aequora_types::{
     ActorId, DeviceId, EntityId, EntityRef, EntityType, HybridTimestamp, NodeId, OperationId,
     ProtocolVersion, SchemaVersion, SessionId, SyncScopeId, TenantId,

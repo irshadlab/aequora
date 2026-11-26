@@ -11,11 +11,7 @@ pub mod storage_encryption;
 pub mod storage_maintenance;
 pub mod storage_profile;
 
-use aequora_coordination::{
-    CoordinationSnapshot, FencingToken, LeaseGrant, LeaseRequest, LocalCoordinationSupport,
-    LocalStoreGeneration,
-};
-use aequora_executor::CurrentEntity;
+use aequora_authority::executor::CurrentEntity;
 use aequora_integrity::{
     CanonicalEntity, IntegrityGeneration, IntegritySnapshot, IntegritySupport, PartitionScheme,
     RepairPlan,
@@ -28,6 +24,10 @@ use aequora_queue::{
     CompactionPlan as QueueCompactionPlan, OptimizationRegistry, RebasePlan, RebaseTarget,
 };
 use aequora_scope::{LocalScopeState, ScopeTransition, ScopeTransitionOutcome, Subscription};
+use aequora_types::coordination::{
+    CoordinationSnapshot, FencingToken, LeaseGrant, LeaseRequest, LocalCoordinationSupport,
+    LocalStoreGeneration,
+};
 use aequora_types::{
     ActorId, CorrelationId, Cursor, DeviceId, EntityRef, EntityVersion, EventId, HybridTimestamp,
     LineageContext, LineageRef, OperationId, Sequence, SnapshotId, SyncScopeId, TenantId,

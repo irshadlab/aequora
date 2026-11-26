@@ -8,7 +8,7 @@ description.workspace = true
 repository.workspace = true
 
 [dependencies]
-aequora-registry-generated = { version = "0.1.1", path = "../aequora-registry-generated" }
+aequora-registry = { version = "0.1.1", path = "../aequora-registry" }
 aequora-types = { version = "0.1.1", path = "../aequora-types" }
 async-trait.workspace = true
 blake3.workspace = true

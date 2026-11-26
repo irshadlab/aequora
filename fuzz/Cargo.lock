@@ -13,8 +13,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "aequora-authority"
+version = "0.1.1"
+dependencies = [
+ "aequora-protocol",
+ "aequora-security",
+ "aequora-types",
+ "async-trait",
+ "blake3",
+ "postcard",
+ "serde",
+ "thiserror",
+ "uuid",
+]
+
+[[package]]
 name = "aequora-codec"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "aequora-types",
  "blake3",
@@ -27,7 +42,7 @@ dependencies = [
 
 [[package]]
 name = "aequora-compat"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "aequora-types",
  "blake3",
@@ -38,7 +53,7 @@ dependencies = [
 
 [[package]]
 name = "aequora-conflict"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "aequora-protocol",
  "aequora-types",
@@ -48,8 +63,35 @@ dependencies = [
 ]
 
 [[package]]
-name = "aequora-crypto"
-version = "0.1.0"
+name = "aequora-fuzz"
+version = "0.0.0"
+dependencies = [
+ "aequora-authority",
+ "aequora-codec",
+ "aequora-compat",
+ "aequora-conflict",
+ "aequora-protocol",
+ "aequora-security",
+ "aequora-types",
+ "async-trait",
+ "libfuzzer-sys",
+ "postcard",
+ "serde",
+ "tokio",
+]
+
+[[package]]
+name = "aequora-protocol"
+version = "0.1.1"
+dependencies = [
+ "aequora-types",
+ "serde",
+ "smallvec",
+]
+
+[[package]]
+name = "aequora-security"
+version = "0.1.1"
 dependencies = [
  "aequora-protocol",
  "aequora-types",
@@ -68,60 +110,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "aequora-executor"
-version = "0.1.0"
-dependencies = [
- "aequora-protocol",
- "aequora-security",
- "aequora-types",
- "async-trait",
- "postcard",
- "serde",
- "thiserror",
-]
-
-[[package]]
-name = "aequora-fuzz"
-version = "0.0.0"
-dependencies = [
- "aequora-codec",
- "aequora-compat",
- "aequora-conflict",
- "aequora-crypto",
- "aequora-executor",
- "aequora-protocol",
- "aequora-types",
- "async-trait",
- "libfuzzer-sys",
- "postcard",
- "serde",
- "tokio",
-]
-
-[[package]]
-name = "aequora-protocol"
-version = "0.1.0"
-dependencies = [
- "aequora-types",
- "serde",
- "smallvec",
-]
-
-[[package]]
-name = "aequora-security"
-version = "0.1.0"
-dependencies = [
- "aequora-types",
- "blake3",
- "serde",
- "thiserror",
- "uuid",
- "zeroize",
-]
-
-[[package]]
 name = "aequora-types"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "serde",
  "thiserror",

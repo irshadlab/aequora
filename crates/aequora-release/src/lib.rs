@@ -6,8 +6,8 @@
 
 pub mod productization;
 
-pub use aequora_crypto::CryptoTimestamp;
-use aequora_crypto::{
+pub use aequora_security::crypto::CryptoTimestamp;
+use aequora_security::crypto::{
     KeyProvider, KeyPurpose, KeyStatus, PublicKeyBytes, SignatureEnvelope, SigningError,
     SigningKeyId, VerificationError, canonical_bytes, domain_digest, sign_digest, verify_digest,
 };

@@ -1,6 +1,6 @@
 #![no_main]
 
-use aequora_executor::plan_dependencies;
+use aequora_authority::executor::plan_dependencies;
 use aequora_protocol::{OperationEnvelope, SyncRequest};
 use libfuzzer_sys::fuzz_target;
 
