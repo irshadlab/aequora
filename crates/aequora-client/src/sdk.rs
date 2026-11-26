@@ -444,7 +444,11 @@ impl AequoraClientBuilder {
     /// # Errors
     ///
     /// Returns a stable validation error naming the first missing or invalid field.
-    #[allow(clippy::unused_async)]
+    #[allow(
+        clippy::unused_async,
+        clippy::unused_async_trait_impl,
+        reason = "the public SDK contract defers work until the future is polled"
+    )]
     pub async fn build(self) -> Result<AequoraClient, AequoraError> {
         let config = self.config.validate()?;
         let (events, _) = broadcast::channel(config.event_capacity);
@@ -706,7 +710,11 @@ impl AequoraClient {
     ///
     /// Currently infallible; the `Result` permits future bounded shutdown providers without a
     /// breaking signature change.
-    #[allow(clippy::unused_async)]
+    #[allow(
+        clippy::unused_async,
+        clippy::unused_async_trait_impl,
+        reason = "the public SDK contract defers work until the future is polled"
+    )]
     pub async fn shutdown(&self) -> Result<(), AequoraError> {
         if !self.inner.closed.swap(true, Ordering::AcqRel) {
             self.inner
@@ -945,7 +953,11 @@ impl BlobHandle {
     /// # Errors
     ///
     /// Returns [`AequoraErrorCode::UnsupportedCapability`] until a blob provider is installed.
-    #[allow(clippy::unused_async)]
+    #[allow(
+        clippy::unused_async,
+        clippy::unused_async_trait_impl,
+        reason = "the public SDK contract defers work until the future is polled"
+    )]
     pub async fn import(&self, path: impl AsRef<Path>) -> Result<PathBuf, AequoraError> {
         self.inner.ensure_open()?;
         let _path = path.as_ref();

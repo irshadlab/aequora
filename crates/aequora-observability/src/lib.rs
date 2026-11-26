@@ -1015,11 +1015,15 @@ impl Observer for AtomicMetrics {
                 }
                 LiveEventKind::Disconnected => {
                     self.live_disconnects.fetch_add(count, Ordering::Relaxed);
-                    let _updated = self.live_connections.fetch_update(
+                    let mut current = self.live_connections.load(Ordering::Relaxed);
+                    while let Err(actual) = self.live_connections.compare_exchange_weak(
+                        current,
+                        current.saturating_sub(count),
                         Ordering::Relaxed,
                         Ordering::Relaxed,
-                        |current| Some(current.saturating_sub(count)),
-                    );
+                    ) {
+                        current = actual;
+                    }
                 }
                 LiveEventKind::HintPublished => {
                     self.live_hints_published

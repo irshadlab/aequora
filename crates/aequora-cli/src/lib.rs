@@ -2083,6 +2083,16 @@ mod tests {
     };
     use std::collections::BTreeMap;
 
+    fn fixture_dir() -> tempfile::TempDir {
+        let executable = std::env::current_exe()
+            .unwrap_or_else(|error| panic!("test executable path failed: {error}"));
+        let output = executable
+            .parent()
+            .unwrap_or_else(|| panic!("test executable has no parent directory"));
+        tempfile::tempdir_in(output)
+            .unwrap_or_else(|error| panic!("temporary directory failed: {error}"))
+    }
+
     fn args<'a>(values: &'a [&'a str]) -> impl Iterator<Item = String> + 'a {
         values.iter().map(ToString::to_string)
     }
@@ -2202,8 +2212,7 @@ mod tests {
 
     #[test]
     fn init_is_non_destructive_and_writes_a_safe_starter() {
-        let root = tempfile::tempdir()
-            .unwrap_or_else(|error| panic!("temporary directory failed: {error}"));
+        let root = fixture_dir();
         let target = root.path().join("client-app");
         let target_text = target.to_string_lossy().into_owned();
         command(vec![
@@ -2244,8 +2253,7 @@ mod tests {
         }];
         let artifact = CanonicalExport::build(&registry, "fixture", 1, &records, 1)
             .unwrap_or_else(|error| panic!("artifact fixture failed: {error}"));
-        let root = tempfile::tempdir()
-            .unwrap_or_else(|error| panic!("temporary directory failed: {error}"));
+        let root = fixture_dir();
         let artifact_path = root.path().join("export.postcard");
         let schema_path = root.path().join("schema.ron");
         fs::write(
@@ -2282,8 +2290,7 @@ mod tests {
 
     #[test]
     fn bounded_reader_stops_after_the_limit() {
-        let root = tempfile::tempdir()
-            .unwrap_or_else(|error| panic!("temporary directory failed: {error}"));
+        let root = fixture_dir();
         let path = root.path().join("oversized.ron");
         fs::write(&path, vec![b'x'; 1_025])
             .unwrap_or_else(|error| panic!("fixture write failed: {error}"));

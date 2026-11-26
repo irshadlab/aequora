@@ -27,7 +27,7 @@ use http_body_util::BodyExt as _;
 use std::{
     collections::HashMap,
     fmt,
-    future::Future,
+    future::{Future, ready},
     str::FromStr as _,
     sync::{Arc, Mutex, MutexGuard, PoisonError},
     time::{Duration, Instant},
@@ -701,20 +701,20 @@ struct SyncBody {
 impl FromRequestParts<AppState> for ProtocolHeaders {
     type Rejection = HttpError;
 
-    async fn from_request_parts(
+    fn from_request_parts(
         parts: &mut Parts,
         state: &AppState,
-    ) -> Result<Self, Self::Rejection> {
+    ) -> impl Future<Output = Result<Self, Self::Rejection>> {
         let request_id = request_identity(parts, state.config);
         let content_type = parts
             .headers
             .get(CONTENT_TYPE)
             .and_then(|value| value.to_str().ok());
-        if content_type == Some(POSTCARD_CONTENT_TYPE) {
+        ready(if content_type == Some(POSTCARD_CONTENT_TYPE) {
             Ok(Self)
         } else {
             Err(HttpError::UnsupportedMediaType.with_request_id(request_id))
-        }
+        })
     }
 }
 
@@ -771,11 +771,11 @@ impl FromRequestParts<AppState> for Authentication {
 impl FromRequestParts<AppState> for RequestIdentity {
     type Rejection = HttpError;
 
-    async fn from_request_parts(
+    fn from_request_parts(
         parts: &mut Parts,
         state: &AppState,
-    ) -> Result<Self, Self::Rejection> {
-        Ok(Self(request_identity(parts, state.config)))
+    ) -> impl Future<Output = Result<Self, Self::Rejection>> {
+        ready(Ok(Self(request_identity(parts, state.config))))
     }
 }
 
@@ -797,19 +797,20 @@ fn request_identity(parts: &mut Parts, config: AxumConfig) -> aequora_types::Req
 impl FromRequestParts<AppState> for Admission {
     type Rejection = HttpError;
 
-    async fn from_request_parts(
+    fn from_request_parts(
         parts: &mut Parts,
         state: &AppState,
-    ) -> Result<Self, Self::Rejection> {
-        let tenant_id = parts
-            .extensions
-            .get::<AuthContext>()
-            .map(|auth| auth.tenant_id)
-            .ok_or(HttpError::MissingAuthentication)?;
+    ) -> impl Future<Output = Result<Self, Self::Rejection>> {
+        let Some(auth) = parts.extensions.get::<AuthContext>() else {
+            return ready(Err(HttpError::MissingAuthentication));
+        };
+        let tenant_id = auth.tenant_id;
         let request_id = request_identity(parts, state.config);
-        admission_permit(state, tenant_id)
-            .map(|permit| Self { _permit: permit })
-            .map_err(|error| error.with_request_id(request_id))
+        ready(
+            admission_permit(state, tenant_id)
+                .map(|permit| Self { _permit: permit })
+                .map_err(|error| error.with_request_id(request_id)),
+        )
     }
 }
 
