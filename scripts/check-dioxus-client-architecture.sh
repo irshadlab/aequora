@@ -22,8 +22,8 @@ for path in "${required[@]}"; do
 done
 
 for suffix in 001 002 003 004 005 006 007 008 009 010; do
-    rg -q "AEQ-INV-DIOXUS${suffix}" crates/aequora-invariants/src/lib.rs
-    rg -q "AEQ-INV-DIOXUS${suffix}" crates/aequora-conformance/src/lib.rs
+    rg -q "AEQ-INV-DIOXUS${suffix}" crates/aequora-types/src/invariants/mod.rs
+    rg -q "AEQ-INV-DIOXUS${suffix}" crates/aequora-adapter-sdk/src/certification/mod.rs
     rg -q "AEQ-INV-DIOXUS${suffix}" registry/core/certification.ron
     rg -q "AEQ-INV-DIOXUS${suffix}" \
         sys-arch/40-dioxus-client-integration-reactive-state-architecture.md
@@ -64,9 +64,9 @@ rg -q '"rust-analyzer.procMacro.enable": false' .vscode/settings.json
 
 CARGO_BUILD_JOBS=1 cargo test -q --manifest-path archive/aequora-dioxus/Cargo.toml \
     --target-dir target --locked --offline
-CARGO_BUILD_JOBS=1 cargo test -q -p aequora-invariants -p aequora-conformance \
+CARGO_BUILD_JOBS=1 cargo test -q -p aequora-types -p aequora-adapter-sdk \
     --locked --offline
-CARGO_BUILD_JOBS=1 cargo run -q -p aequora-registry-cli --offline --bin aequora-registry \
+CARGO_BUILD_JOBS=1 cargo run -q -p aequora-cli --offline --bin aequora-registry \
     -- verify .
 
 echo "Dioxus client integration architecture checks passed"

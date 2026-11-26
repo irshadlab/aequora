@@ -24,8 +24,8 @@ for path in "${required[@]}"; do
 done
 
 for suffix in 001 002 003 004 005 006 007 008 009 010; do
-    rg -q "AEQ-INV-ADAPTER${suffix}" crates/aequora-invariants/src/lib.rs
-    rg -q "AEQ-INV-ADAPTER${suffix}" crates/aequora-conformance/src/lib.rs
+    rg -q "AEQ-INV-ADAPTER${suffix}" crates/aequora-types/src/invariants/mod.rs
+    rg -q "AEQ-INV-ADAPTER${suffix}" crates/aequora-adapter-sdk/src/certification/mod.rs
     rg -q "AEQ-INV-ADAPTER${suffix}" registry/core/certification.ron
     rg -q "AEQ-INV-ADAPTER${suffix}" sys-arch/36-storage-adapter-sdk-official-adapter-architecture.md
 done
@@ -57,16 +57,16 @@ rg -q 'POSTGRES_STORAGE_ADAPTER_MANIFEST' crates/aequora-store-postgres/src/lib.
 rg -q 'STOOLAP_STORAGE_ADAPTER_MANIFEST' crates/aequora-store-stoolap/src/lib.rs
 rg -q 'AdapterSupport::Official' crates/aequora-store-postgres/src/lib.rs
 rg -q 'AdapterSupport::Official' crates/aequora-store-stoolap/src/lib.rs
-rg -q 'LocalAdapter' crates/aequora-conformance/src/lib.rs
-rg -q 'AuthoritativeAdapter' crates/aequora-conformance/src/lib.rs
-rg -q 'SnapshotAdapter' crates/aequora-conformance/src/lib.rs
-rg -q 'FencingAdapter' crates/aequora-conformance/src/lib.rs
+rg -q 'LocalAdapter' crates/aequora-adapter-sdk/src/certification/mod.rs
+rg -q 'AuthoritativeAdapter' crates/aequora-adapter-sdk/src/certification/mod.rs
+rg -q 'SnapshotAdapter' crates/aequora-adapter-sdk/src/certification/mod.rs
+rg -q 'FencingAdapter' crates/aequora-adapter-sdk/src/certification/mod.rs
 rg -q '"rust-analyzer.cargo.autoreload": false' .vscode/settings.json
 rg -q '"rust-analyzer.files.watcher": "client"' .vscode/settings.json
 rg -q '"\*\*/target/\*\*": true' .vscode/settings.json
 
-CARGO_BUILD_JOBS=1 cargo test -q -p aequora-adapter-sdk -p aequora-conformance \
-    -p aequora-invariants --locked --offline
+CARGO_BUILD_JOBS=1 cargo test -q -p aequora-adapter-sdk \
+    -p aequora-types --locked --offline
 CARGO_BUILD_JOBS=1 cargo test -q -p aequora-testkit \
     --test storage_adapter_sdk_contracts --locked --offline
 CARGO_BUILD_JOBS=1 cargo test -q -p aequora-store-stoolap \

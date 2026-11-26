@@ -17,8 +17,8 @@ for path in "${required[@]}"; do
 done
 
 for suffix in 001 002 003 004 005 006 007 008 009 010; do
-    rg -q "AEQ-INV-GA${suffix}" crates/aequora-invariants/src/lib.rs
-    rg -q "AEQ-INV-GA${suffix}" crates/aequora-conformance/src/lib.rs
+    rg -q "AEQ-INV-GA${suffix}" crates/aequora-types/src/invariants/mod.rs
+    rg -q "AEQ-INV-GA${suffix}" crates/aequora-adapter-sdk/src/certification/mod.rs
     rg -q "AEQ-INV-GA${suffix}" registry/core/certification.ron
     rg -q "AEQ-INV-GA${suffix}" sys-arch/50-*.md
 done
@@ -34,13 +34,13 @@ if rg -n 'sqlx|stoolap|rusqlite|tokio|axum|reqwest|quinn|dioxus' \
     exit 1
 fi
 
-rg -q 'GeneralAvailabilityFull' crates/aequora-conformance/src/lib.rs
+rg -q 'GeneralAvailabilityFull' crates/aequora-adapter-sdk/src/certification/mod.rs
 rg -q 'GeneralAvailabilityFull' registry/core/certification.ron
 rg -q 'aequora compatibility check' crates/aequora-cli/src/lib.rs
 rg -q 'version \[--verbose\]' crates/aequora-cli/src/lib.rs
 
 CARGO_BUILD_JOBS=1 cargo test -q -p aequora-release --locked --offline
-CARGO_BUILD_JOBS=1 cargo test -q -p aequora-conformance -p aequora-invariants --locked --offline
+CARGO_BUILD_JOBS=1 cargo test -q -p aequora-adapter-sdk -p aequora-types --locked --offline
 CARGO_BUILD_JOBS=1 cargo test -q -p aequora-testkit \
     --test productization_ga_contracts --locked --offline
 CARGO_BUILD_JOBS=1 cargo test -q -p aequora-cli --lib --locked --offline
@@ -52,7 +52,7 @@ CARGO_BUILD_JOBS=1 cargo run -q -p aequora-cli --locked --offline -- \
     compatibility check | rg -q 'compatibility: compatible'
 CARGO_BUILD_JOBS=1 cargo run -q -p aequora-cli --locked --offline -- \
     version --verbose | rg -q 'registry-generation='
-CARGO_BUILD_JOBS=1 cargo run -q -p aequora-registry-cli --offline --bin aequora-registry -- \
+CARGO_BUILD_JOBS=1 cargo run -q -p aequora-cli --offline --bin aequora-registry -- \
     verify .
 
 echo "v1 productization and GA-readiness architecture: ok (10 invariants, 10 conformance tests)"

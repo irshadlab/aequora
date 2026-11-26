@@ -25,12 +25,12 @@ rg -q 'RUSTSEC-2023-0071' .cargo/audit.toml
 
 rg -q 'fn read_bounded\(' crates/aequora-cli/src/lib.rs
 rg -q 'fn read_bounded_text\(' crates/aequora-dev/src/main.rs
-rg -q 'MAX_REGISTRY_FILE_BYTES' crates/aequora-registry-codegen/src/lib.rs
+rg -q 'MAX_REGISTRY_FILE_BYTES' crates/aequora-registry/src/codegen.rs
 rg -q 'redirect::Policy::none\(\)' crates/aequora-http/src/lib.rs
 rg -q 'coverage_and_future_suite_claims_cannot_be_resealed' \
-    crates/aequora-conformance/src/lib.rs
+    crates/aequora-adapter-sdk/src/certification/mod.rs
 rg -q 'evidence_paths_and_policy_metadata_are_bounded' \
-    crates/aequora-conformance/src/lib.rs
+    crates/aequora-adapter-sdk/src/certification/mod.rs
 
 rg -q 'AEQUORA_STRESS_AUTH_KEY_HEX' crates/aequora/examples/support/stress_auth.rs
 rg -q 'blake3::keyed_hash' crates/aequora/examples/support/stress_auth.rs
@@ -46,9 +46,9 @@ if rg -n 'test-token|starts_with\("bearer-"\)|TenantId::from_str\(tenant_str\)' 
     exit 1
 fi
 
-rg -q 'take\(u64::try_from\(MAX_SECRET_BYTES \+ 1\)' crates/aequora-secrets/src/lib.rs
-rg -q 'validate_secret_value' crates/aequora-secrets/src/lib.rs
-if rg -n 'fs::read\(path\)' crates/aequora-secrets/src/lib.rs; then
+rg -q 'take\(u64::try_from\(MAX_SECRET_BYTES \+ 1\)' crates/aequora-security/src/secrets/mod.rs
+rg -q 'validate_secret_value' crates/aequora-security/src/secrets/mod.rs
+if rg -n 'fs::read\(path\)' crates/aequora-security/src/secrets/mod.rs; then
     echo "high-assurance hardening: secret file input is not single-open and bounded" >&2
     exit 1
 fi

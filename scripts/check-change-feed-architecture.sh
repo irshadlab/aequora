@@ -13,7 +13,7 @@ test -f docs/multi-consumer-change-feed-completion.md
 
 for suffix in 001 002 003 004 005 006 007 008 009; do
     rg -q "AEQ-INV-FEED${suffix}" crates/aequora-feed/src/lib.rs
-    rg -q "AEQ-INV-FEED${suffix}" crates/aequora-invariants/src/lib.rs
+    rg -q "AEQ-INV-FEED${suffix}" crates/aequora-types/src/invariants/mod.rs
 done
 
 if rg -q '(^|[^[:alnum:]_-])(sqlx|stoolap|tokio|axum|quinn|reqwest)([^[:alnum:]_-]|$)' \
@@ -33,8 +33,8 @@ for symbol in ConsumerId ConsumerKind ConsumerGroupId ConsumerCursor ConsumerPar
 done
 
 rg -q 'minimum_pinning_consumer_cursor' crates/aequora-journal/src/lib.rs
-rg -q 'ResetConsumer' crates/aequora-admin/src/lib.rs
-rg -q 'ConsumersReset' crates/aequora-admin/src/lib.rs
+rg -q 'ResetConsumer' crates/aequora-authority/src/admin/mod.rs
+rg -q 'ConsumersReset' crates/aequora-authority/src/admin/mod.rs
 rg -q 'pub use aequora_feed as feed' crates/aequora/src/lib.rs
 rg -q 'Some\("feed"\)' crates/aequora-cli/src/main.rs
 rg -q '"aequora-feed"' crates/aequora-dev/src/main.rs

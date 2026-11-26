@@ -15,8 +15,8 @@ for path in "${required[@]}"; do
 done
 
 for suffix in 001 002 003 004 005 006 007 008 009 010; do
-    rg -q "AEQ-INV-AXUM${suffix}" crates/aequora-invariants/src/lib.rs
-    rg -q "AEQ-INV-AXUM${suffix}" crates/aequora-conformance/src/lib.rs
+    rg -q "AEQ-INV-AXUM${suffix}" crates/aequora-types/src/invariants/mod.rs
+    rg -q "AEQ-INV-AXUM${suffix}" crates/aequora-adapter-sdk/src/certification/mod.rs
     rg -q "AEQ-INV-AXUM${suffix}" registry/core/certification.ron
     rg -q "AEQ-INV-AXUM${suffix}" \
         sys-arch/39-axum-server-integration-middleware-architecture.md
@@ -45,22 +45,22 @@ for header in REQUEST_ID_HEADER CACHE_CONTROL x-content-type-options referrer-po
 done
 
 if rg -n 'axum|tower|http-body-util' \
-    crates/aequora-server/Cargo.toml crates/aequora-executor/Cargo.toml \
+    crates/aequora-server/Cargo.toml crates/aequora-authority/Cargo.toml \
     crates/aequora-store/Cargo.toml; then
     echo "HTTP framework dependency leaked into a transport-neutral core crate" >&2
     exit 1
 fi
 
 if rg -n 'axum::|http::Request|AUTHORIZATION|Bearer ' \
-    crates/aequora-server/src crates/aequora-executor/src crates/aequora-store/src; then
+    crates/aequora-server/src crates/aequora-authority/src/executor crates/aequora-store/src; then
     echo "HTTP request or credential type leaked beyond the Axum transport boundary" >&2
     exit 1
 fi
 
 CARGO_BUILD_JOBS=1 cargo test -q -p aequora-axum --locked --offline
-CARGO_BUILD_JOBS=1 cargo test -q -p aequora-invariants -p aequora-conformance \
+CARGO_BUILD_JOBS=1 cargo test -q -p aequora-types -p aequora-adapter-sdk \
     --locked --offline
-CARGO_BUILD_JOBS=1 cargo run -q -p aequora-registry-cli --offline --bin aequora-registry \
+CARGO_BUILD_JOBS=1 cargo run -q -p aequora-cli --offline --bin aequora-registry \
     -- verify .
 
 echo "Axum server integration architecture checks passed"

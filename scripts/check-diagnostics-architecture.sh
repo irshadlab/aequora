@@ -5,7 +5,7 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$root"
 
 for suffix in 001 002 003 004 005 006 007 008 009; do
-    rg -q "AEQ-INV-DIAG${suffix}" crates/aequora-invariants/src/lib.rs
+    rg -q "AEQ-INV-DIAG${suffix}" crates/aequora-types/src/invariants/mod.rs
 done
 
 test -f crates/aequora-diagnostics/Cargo.toml
@@ -31,7 +31,7 @@ done
 
 rg -q 'pub mod diagnostics' crates/aequora-client/src/lib.rs
 rg -q 'pub mod diagnostics' crates/aequora-server/src/lib.rs
-rg -q 'Some\("incident"\)' crates/aequora-cli/src/main.rs
+rg -q 'Some\("incident"\)' crates/aequora-cli/src/lib.rs
 rg -q '"aequora-diagnostics"' crates/aequora-dev/src/main.rs
 
 if rg -q 'SigningSecret|DataEncryptionKey|SecretKey' crates/aequora-diagnostics/src/lib.rs; then

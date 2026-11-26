@@ -30,8 +30,8 @@ for path in "${required[@]}"; do
 done
 
 for suffix in 001 002 003 004 005 006 007 008 009 010; do
-    rg -q "AEQ-INV-PG${suffix}" crates/aequora-invariants/src/lib.rs
-    rg -q "AEQ-INV-PG${suffix}" crates/aequora-conformance/src/lib.rs
+    rg -q "AEQ-INV-PG${suffix}" crates/aequora-types/src/invariants/mod.rs
+    rg -q "AEQ-INV-PG${suffix}" crates/aequora-adapter-sdk/src/certification/mod.rs
     rg -q "AEQ-INV-PG${suffix}" registry/core/certification.ron
     rg -q "AEQ-INV-PG${suffix}" sys-arch/37-postgresql-neon-authoritative-adapter-detailed-architecture.md
 done
@@ -70,10 +70,10 @@ fi
 
 CARGO_BUILD_JOBS=1 cargo test -q -p aequora-store-postgres --lib --locked --offline
 CARGO_BUILD_JOBS=1 cargo test -q -p aequora-store-postgres --test postgres_live --locked --offline
-CARGO_BUILD_JOBS=1 cargo test -q -p aequora-invariants -p aequora-conformance --locked --offline
+CARGO_BUILD_JOBS=1 cargo test -q -p aequora-types -p aequora-adapter-sdk --locked --offline
 CARGO_BUILD_JOBS=1 cargo test -q -p aequora-testkit --test storage_adapter_sdk_contracts \
     --locked --offline
-CARGO_BUILD_JOBS=1 cargo run -q -p aequora-registry-cli --offline --bin aequora-registry \
+CARGO_BUILD_JOBS=1 cargo run -q -p aequora-cli --offline --bin aequora-registry \
     -- verify .
 
 echo "PostgreSQL/Neon authority architecture checks passed"

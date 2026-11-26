@@ -19,7 +19,7 @@ if rg -q 'sqlx|stoolap|axum|reqwest|tokio' crates/aequora-legacy/Cargo.toml crat
 fi
 
 for suffix in 001 002 003 004 005 006 007 008 009; do
-    rg -q "AEQ-INV-LEG${suffix}" crates/aequora-invariants/src/lib.rs
+    rg -q "AEQ-INV-LEG${suffix}" crates/aequora-types/src/invariants/mod.rs
 done
 
 for symbol in LegacySystemManifest LegacyReader LegacyMapper CdcBridge BridgeStore LegacyProvenance AggregateOwnership ShadowExecutor CutoverVerification LegacyIdMap GovernanceCoverage LegacyRegistryStore; do
@@ -28,7 +28,7 @@ done
 
 rg -q 'LegacyRequestTranslator' crates/aequora-legacy-api/src/lib.rs
 rg -q 'CanonicalOperationHandler' crates/aequora-legacy-api/src/lib.rs
-rg -q 'Some\("legacy"\)' crates/aequora-cli/src/main.rs
+rg -q 'Some\("legacy"\)' crates/aequora-cli/src/lib.rs
 rg -q 'legacy_facade_retries_route_to_typed_handler_with_stable_operation_id' crates/aequora-testkit/tests/legacy_adoption_contracts.rs
 rg -q 'cdc_gap_or_crash_before_commit_never_advances_cursor' crates/aequora-testkit/tests/legacy_adoption_contracts.rs
 rg -q 'cutover_requires_fence_final_boundary_and_all_canonical_checks' crates/aequora-testkit/tests/legacy_adoption_contracts.rs

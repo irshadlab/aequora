@@ -5,16 +5,16 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$root"
 
 for suffix in 001 002 003 004 005 006 007 008 009; do
-    rg -q "AEQ-INV-ADMIN${suffix}" crates/aequora-invariants/src/lib.rs
+    rg -q "AEQ-INV-ADMIN${suffix}" crates/aequora-types/src/invariants/mod.rs
 done
 
-test -f crates/aequora-admin/Cargo.toml
-test -f crates/aequora-admin/src/lib.rs
+test -f crates/aequora-authority/Cargo.toml
+test -f crates/aequora-authority/src/admin/mod.rs
 test -f crates/aequora-server/src/admin.rs
 test -f crates/aequora-testkit/tests/admin_control_plane_contracts.rs
 
 if rg -q '(^|[^[:alnum:]_-])(sqlx|stoolap|tokio|axum|reqwest|rayon)([^[:alnum:]_-]|$)' \
-    crates/aequora-admin/Cargo.toml; then
+    crates/aequora-authority/Cargo.toml; then
     echo "admin architecture: runtime, database, or transport dependency in core" >&2
     exit 1
 fi
@@ -23,13 +23,13 @@ for symbol in AdminOperationId AdminAction AdminPrincipal PermissionId Assurance
     AdminStore AdminService AdminPlan PlanReference AdminApproval MaintenanceMode \
     MaintenanceStateStore DynamicConfigRegistry AdminListenerPolicy BreakGlassSessionId \
     AdminQuery AdminReadService AdminErrorCode CryptoKeyView; do
-    rg -q "${symbol}" crates/aequora-admin/src/lib.rs
+    rg -q "${symbol}" crates/aequora-authority/src/admin/mod.rs
 done
 
 rg -q 'pub mod admin' crates/aequora-server/src/lib.rs
-rg -q 'Some\("admin"\)' crates/aequora-cli/src/main.rs
+rg -q 'Some\("admin"\)' crates/aequora-cli/src/lib.rs
 
-if rg -q 'SecretKey|SigningSecret|DataEncryptionKey' crates/aequora-admin/src/lib.rs; then
+if rg -q 'SecretKey|SigningSecret|DataEncryptionKey' crates/aequora-authority/src/admin/mod.rs; then
     echo "admin architecture: private key type exposed by admin core" >&2
     exit 1
 fi

@@ -14,7 +14,7 @@ for path in "${required[@]}"; do
 done
 
 for suffix in 001 002 003 004 005 006 007 008 009 010; do
-    rg -q "AEQ-INV-IMPL${suffix}" crates/aequora-invariants/src/lib.rs
+    rg -q "AEQ-INV-IMPL${suffix}" crates/aequora-types/src/invariants/mod.rs
     rg -q "AEQ-INV-IMPL${suffix}" sys-arch/34-reference-implementation-workspace-crate-boundary-architecture.md
 done
 
@@ -41,9 +41,9 @@ if rg -n 'axum|tower|hyper' crates/aequora-server/Cargo.toml; then
     exit 1
 fi
 
-CARGO_BUILD_JOBS=1 cargo test -q -p aequora-dev -p aequora-invariants --locked --offline
+CARGO_BUILD_JOBS=1 cargo test -q -p aequora-dev -p aequora-types --locked --offline
 CARGO_BUILD_JOBS=1 cargo run -q -p aequora-dev --locked --offline -- architecture check
-CARGO_BUILD_JOBS=1 cargo run -q -p aequora-registry-cli --locked --offline \
+CARGO_BUILD_JOBS=1 cargo run -q -p aequora-cli --locked --offline \
     --bin aequora-registry -- verify .
 
 echo "reference implementation architecture checks passed"

@@ -5,7 +5,7 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$root"
 
 for suffix in 001 002 003 004 005 006 007 008 009; do
-    rg -q "AEQ-INV-META${suffix}" crates/aequora-invariants/src/lib.rs
+    rg -q "AEQ-INV-META${suffix}" crates/aequora-types/src/invariants/mod.rs
     rg -q "AEQ-INV-META${suffix}" crates/aequora-metadata/src/invariants.rs
 done
 

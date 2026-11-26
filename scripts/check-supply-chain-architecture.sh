@@ -22,8 +22,8 @@ for path in "${required[@]}"; do
 done
 
 for suffix in 001 002 003 004 005 006 007 008 009 010; do
-    rg -q "AEQ-INV-SUPPLY$suffix" crates/aequora-invariants/src/lib.rs
-    rg -q "AEQ-INV-SUPPLY$suffix" crates/aequora-conformance/src/lib.rs
+    rg -q "AEQ-INV-SUPPLY$suffix" crates/aequora-types/src/invariants/mod.rs
+    rg -q "AEQ-INV-SUPPLY$suffix" crates/aequora-adapter-sdk/src/certification/mod.rs
     rg -q "AEQ-INV-SUPPLY$suffix" registry/core/certification.ron
     rg -q "AEQ-INV-SUPPLY$suffix" sys-arch/49-*.md
 done
@@ -77,7 +77,7 @@ jq -e '.resolved_packages > 1 and (.build_scripts | type == "array") and (.proc_
     "$generated/dependency-report.json" >/dev/null
 
 CARGO_BUILD_JOBS=1 cargo test -q -p aequora-supply-chain --locked --offline
-CARGO_BUILD_JOBS=1 cargo test -q -p aequora-conformance --locked --offline
+CARGO_BUILD_JOBS=1 cargo test -q -p aequora-adapter-sdk --locked --offline
 CARGO_BUILD_JOBS=1 cargo test -q -p aequora-testkit \
     --test supply_chain_contracts --locked --offline
 CARGO_BUILD_JOBS=1 cargo test -q -p aequora-cli --lib --locked --offline

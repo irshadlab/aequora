@@ -23,8 +23,8 @@ for path in "${required[@]}"; do
 done
 
 for suffix in 001 002 003 004 005 006 007 008 009 010; do
-    rg -q "AEQ-INV-DEPLOY${suffix}" crates/aequora-invariants/src/lib.rs
-    rg -q "AEQ-INV-DEPLOY${suffix}" crates/aequora-conformance/src/lib.rs
+    rg -q "AEQ-INV-DEPLOY${suffix}" crates/aequora-types/src/invariants/mod.rs
+    rg -q "AEQ-INV-DEPLOY${suffix}" crates/aequora-adapter-sdk/src/certification/mod.rs
     rg -q "AEQ-INV-DEPLOY${suffix}" registry/core/certification.ron
     rg -q "AEQ-INV-DEPLOY${suffix}" sys-arch/45-*.md
 done
@@ -43,7 +43,7 @@ if rg -n 'sqlx|stoolap|rusqlite|tokio|axum|reqwest|quinn|dioxus|kube|redis|kafka
 fi
 
 rg -q 'aequora doctor deployment' crates/aequora-cli/src/lib.rs
-rg -q 'DeploymentTopologyFull' crates/aequora-conformance/src/lib.rs
+rg -q 'DeploymentTopologyFull' crates/aequora-adapter-sdk/src/certification/mod.rs
 rg -q 'DeploymentTopologyFull' registry/core/certification.ron
 rg -q 'runAsNonRoot: true' deploy/kubernetes/aequora.yaml
 rg -q 'readOnlyRootFilesystem: true' deploy/kubernetes/aequora.yaml
@@ -52,11 +52,11 @@ rg -q 'NoNewPrivileges=yes' deploy/systemd/aequora-server.service
 CARGO_BUILD_JOBS=1 cargo test -q -p aequora-deployment --locked --offline
 CARGO_BUILD_JOBS=1 cargo test -q -p aequora-testkit \
     --test deployment_topology_contracts --locked --offline
-CARGO_BUILD_JOBS=1 cargo test -q -p aequora-invariants -p aequora-conformance \
+CARGO_BUILD_JOBS=1 cargo test -q -p aequora-types -p aequora-adapter-sdk \
     --locked --offline
 CARGO_BUILD_JOBS=1 cargo run -q -p aequora-cli --locked --offline -- \
     doctor deployment deploy/profiles/small-production.ron | rg -q 'deployment status: ready'
-CARGO_BUILD_JOBS=1 cargo run -q -p aequora-registry-cli --offline --bin aequora-registry -- \
+CARGO_BUILD_JOBS=1 cargo run -q -p aequora-cli --offline --bin aequora-registry -- \
     verify .
 
 echo "deployment topology, readiness, recovery, air-gap, and reference environment checks passed"

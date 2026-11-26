@@ -22,7 +22,7 @@ for path in "${required[@]}"; do
 done
 
 for suffix in 001 002 003 004 005 006 007 008 009 010; do
-    rg -q "AEQ-INV-SDK${suffix}" crates/aequora-invariants/src/lib.rs
+    rg -q "AEQ-INV-SDK${suffix}" crates/aequora-types/src/invariants/mod.rs
     rg -q "AEQ-INV-SDK${suffix}" sys-arch/35-public-rust-api-sdk-stability-architecture.md
 done
 
@@ -84,6 +84,6 @@ rg -q '"rust-analyzer.lru.capacity": 64' .vscode/settings.json
 rg -q '"rust-analyzer.procMacro.enable": false' .vscode/settings.json
 
 CARGO_BUILD_JOBS=1 cargo test -q -p aequora-operation -p aequora-adapter-sdk \
-    -p aequora-client -p aequora-server -p aequora-invariants --locked --offline
+    -p aequora-client -p aequora-server -p aequora-types --locked --offline
 
 echo "public Rust SDK architecture checks passed"

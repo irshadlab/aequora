@@ -32,8 +32,8 @@ for path in "${required[@]}"; do
 done
 
 for suffix in 001 002 003 004 005 006 007 008 009 010; do
-    rg -q "AEQ-INV-STOOLAP${suffix}" crates/aequora-invariants/src/lib.rs
-    rg -q "AEQ-INV-STOOLAP${suffix}" crates/aequora-conformance/src/lib.rs
+    rg -q "AEQ-INV-STOOLAP${suffix}" crates/aequora-types/src/invariants/mod.rs
+    rg -q "AEQ-INV-STOOLAP${suffix}" crates/aequora-adapter-sdk/src/certification/mod.rs
     rg -q "AEQ-INV-STOOLAP${suffix}" registry/core/certification.ron
     rg -q "AEQ-INV-STOOLAP${suffix}" sys-arch/38-stoolap-embedded-local-replica-client-persistence-architecture.md
 done
@@ -73,10 +73,10 @@ if rg -n 'stoolap::|ApiTransaction|StoolapDatabase' \
 fi
 
 CARGO_BUILD_JOBS=1 cargo test -q -p aequora-store-stoolap --lib --locked --offline
-CARGO_BUILD_JOBS=1 cargo test -q -p aequora-invariants -p aequora-conformance --locked --offline
+CARGO_BUILD_JOBS=1 cargo test -q -p aequora-types -p aequora-adapter-sdk --locked --offline
 CARGO_BUILD_JOBS=1 cargo test -q -p aequora-testkit --test storage_adapter_sdk_contracts \
     --locked --offline
-CARGO_BUILD_JOBS=1 cargo run -q -p aequora-registry-cli --offline --bin aequora-registry \
+CARGO_BUILD_JOBS=1 cargo run -q -p aequora-cli --offline --bin aequora-registry \
     -- verify .
 
 echo "Stoolap local persistence architecture checks passed"

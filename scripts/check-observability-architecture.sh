@@ -27,8 +27,8 @@ for path in "${required[@]}"; do
 done
 
 for suffix in 001 002 003 004 005 006 007 008 009 010; do
-    rg -q "AEQ-INV-OBS${suffix}" crates/aequora-invariants/src/lib.rs
-    rg -q "AEQ-INV-OBS${suffix}" crates/aequora-conformance/src/lib.rs
+    rg -q "AEQ-INV-OBS${suffix}" crates/aequora-types/src/invariants/mod.rs
+    rg -q "AEQ-INV-OBS${suffix}" crates/aequora-adapter-sdk/src/certification/mod.rs
     rg -q "AEQ-INV-OBS${suffix}" registry/core/certification.ron
     rg -q "AEQ-INV-OBS${suffix}" sys-arch/46-*.md
 done
@@ -56,7 +56,7 @@ done
 rg -q 'aequora diagnostics metrics' crates/aequora-cli/src/lib.rs
 rg -q 'pub observability: ObservabilityConfig' crates/aequora-config/src/lib.rs
 rg -q 'self.observability.validate()' crates/aequora-config/src/lib.rs
-rg -q 'ObservabilityFull' crates/aequora-conformance/src/lib.rs
+rg -q 'ObservabilityFull' crates/aequora-adapter-sdk/src/certification/mod.rs
 rg -q 'ObservabilityFull' registry/core/certification.ron
 rg -q 'SECRET_DO_NOT_LEAK_123' crates/aequora-testkit/tests/observability_production_contracts.rs
 
@@ -64,11 +64,11 @@ CARGO_BUILD_JOBS=1 cargo test -q -p aequora-observability --all-features --locke
 CARGO_BUILD_JOBS=1 cargo test -q -p aequora-config --all-features --locked --offline
 CARGO_BUILD_JOBS=1 cargo test -q -p aequora-testkit \
     --test observability_production_contracts --locked --offline
-CARGO_BUILD_JOBS=1 cargo test -q -p aequora-invariants -p aequora-conformance \
+CARGO_BUILD_JOBS=1 cargo test -q -p aequora-types -p aequora-adapter-sdk \
     --locked --offline
 CARGO_BUILD_JOBS=1 cargo run -q -p aequora-cli --locked --offline -- \
     diagnostics metrics | rg -q 'aequora_telemetry_dropped_total'
-CARGO_BUILD_JOBS=1 cargo run -q -p aequora-registry-cli --offline --bin aequora-registry -- \
+CARGO_BUILD_JOBS=1 cargo run -q -p aequora-cli --offline --bin aequora-registry -- \
     verify .
 
 echo "bounded metrics, tracing, redaction, SLO, alert, and telemetry export checks passed"

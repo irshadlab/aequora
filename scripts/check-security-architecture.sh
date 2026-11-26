@@ -14,7 +14,7 @@ test -f docs/security-ownership.md
 test -f SECURITY.md
 
 for suffix in 001 002 003 004 005 006 007 008 009 010; do
-    rg -q "AEQ-INV-SEC${suffix}" crates/aequora-invariants/src/lib.rs
+    rg -q "AEQ-INV-SEC${suffix}" crates/aequora-types/src/invariants/mod.rs
     rg -q "AEQ-INV-SEC${suffix}" crates/aequora-security/src/lib.rs
 done
 
@@ -38,7 +38,7 @@ for term in "localhost" "169, 254, 169, 254" "is_private" "is_unicast_link_local
     rg -q "${term}" crates/aequora-security/src/lib.rs
 done
 
-rg -q 'from_validated_security' crates/aequora-executor/src/lib.rs
+rg -q 'from_validated_security' crates/aequora-authority/src/executor/mod.rs
 rg -q 'pub use aequora_security as security' crates/aequora/src/lib.rs
 rg -q 'Some\("security"\)' crates/aequora-cli/src/main.rs
 rg -q '"aequora-security"' crates/aequora-dev/src/main.rs

@@ -6,8 +6,8 @@ cd "$root"
 
 required=(
     crates/aequora-workload/src/lib.rs
-    crates/aequora-benchkit/src/lib.rs
-    crates/aequora-loadgen/src/lib.rs
+    crates/aequora-testkit/src/benchkit.rs
+    crates/aequora-testkit/src/loadgen.rs
     crates/aequora-testkit/tests/benchmarking_capacity_contracts.rs
     docs/benchmarking-capacity-planning-completion.md
 )
@@ -16,8 +16,8 @@ for path in "${required[@]}"; do
 done
 
 for suffix in 001 002 003 004 005 006 007 008 009 010; do
-    rg -q "AEQ-INV-BENCH${suffix}" crates/aequora-invariants/src/lib.rs
-    rg -q "AEQ-INV-BENCH${suffix}" crates/aequora-conformance/src/lib.rs
+    rg -q "AEQ-INV-BENCH${suffix}" crates/aequora-types/src/invariants/mod.rs
+    rg -q "AEQ-INV-BENCH${suffix}" crates/aequora-adapter-sdk/src/certification/mod.rs
     rg -q "AEQ-INV-BENCH${suffix}" registry/core/certification.ron
     rg -q "AEQ-INV-BENCH${suffix}" sys-arch/47-*.md
 done
@@ -28,13 +28,18 @@ done
 for symbol in BenchmarkManifest EnvironmentFingerprint BuildFingerprint DatasetFingerprint \
     BenchmarkResult RegressionComparison RegressionDecision EvidenceClass CapacityEstimate \
     ProductionTargetGuard CorrectnessProfile; do
-    rg -q "\b${symbol}\b" crates/aequora-benchkit/src/lib.rs
+    rg -q "\b${symbol}\b" crates/aequora-testkit/src/benchkit.rs
 done
 for symbol in LoadGenerator VirtualClientState CorrectnessOracle AdmissionOutcome LoadCounters; do
-    rg -q "\b${symbol}\b" crates/aequora-loadgen/src/lib.rs crates/aequora-benchkit/src/lib.rs
+    rg -q "\b${symbol}\b" crates/aequora-testkit/src/loadgen.rs crates/aequora-testkit/src/benchkit.rs
 done
 
-for manifest in crates/aequora-workload/Cargo.toml crates/aequora-benchkit/Cargo.toml crates/aequora-loadgen/Cargo.toml; do
+if rg -n '(sqlx|stoolap|rusqlite|tokio|axum|reqwest|quinn|dioxus|opentelemetry|prometheus)::' crates/aequora-testkit/src/{benchkit,loadgen}.rs; then
+    echo "runtime, transport, or database API leaked into neutral verification code" >&2
+    exit 1
+fi
+
+for manifest in crates/aequora-workload/Cargo.toml; do
     if rg -n 'sqlx|stoolap|rusqlite|tokio|axum|reqwest|quinn|dioxus|opentelemetry|prometheus' "$manifest"; then
         echo "runtime, transport, database, UI, or telemetry vendor leaked into Part 47 core" >&2
         exit 1
@@ -47,14 +52,14 @@ test "$workload_count" -eq 8 || { echo "Part 47 requires exactly eight recommend
 rg -q 'aequora bench list' crates/aequora-cli/src/lib.rs
 rg -q 'aequora capacity estimate' crates/aequora-cli/src/lib.rs
 rg -q 'evidence: Unknown' crates/aequora-cli/src/lib.rs
-rg -q 'BenchmarkingFull' crates/aequora-conformance/src/lib.rs
+rg -q 'BenchmarkingFull' crates/aequora-adapter-sdk/src/certification/mod.rs
 rg -q 'BenchmarkingFull' registry/core/certification.ron
 
-CARGO_BUILD_JOBS=1 cargo test -q -p aequora-workload -p aequora-benchkit -p aequora-loadgen \
+CARGO_BUILD_JOBS=1 cargo test -q --lib -p aequora-workload -p aequora-testkit \
     --all-features --locked --offline
 CARGO_BUILD_JOBS=1 cargo test -q -p aequora-testkit \
     --test benchmarking_capacity_contracts --locked --offline
-CARGO_BUILD_JOBS=1 cargo test -q -p aequora-invariants -p aequora-conformance \
+CARGO_BUILD_JOBS=1 cargo test -q -p aequora-types -p aequora-adapter-sdk \
     --locked --offline
 CARGO_BUILD_JOBS=1 cargo run -q -p aequora-cli --locked --offline -- bench list \
     | rg -q 'reconnect_storm/v1'

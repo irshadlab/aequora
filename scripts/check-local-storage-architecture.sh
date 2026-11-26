@@ -20,9 +20,9 @@ for path in "${required[@]}"; do
 done
 
 for suffix in 001 002 003 004 005 006 007 008 009 010; do
-    rg -q "AEQ-INV-STORAGE${suffix}" crates/aequora-invariants/src/lib.rs
+    rg -q "AEQ-INV-STORAGE${suffix}" crates/aequora-types/src/invariants/mod.rs
     rg -q "AEQ-INV-STORAGE${suffix}" crates/aequora-store/src/storage_core.rs
-    rg -q "AEQ-INV-STORAGE${suffix}" crates/aequora-conformance/src/lib.rs
+    rg -q "AEQ-INV-STORAGE${suffix}" crates/aequora-adapter-sdk/src/certification/mod.rs
 done
 
 if rg -n 'tokio|async-std|sqlx|stoolap|rusqlite|reqwest|windows-sys|objc|appkit|gtk' \

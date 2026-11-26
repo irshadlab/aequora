@@ -17,8 +17,8 @@ for path in "${required[@]}"; do
 done
 
 for suffix in 001 002 003 004 005; do
-    rg -q "AEQ-INV-SQLITE${suffix}" crates/aequora-invariants/src/lib.rs
-    rg -q "AEQ-INV-SQLITE${suffix}" crates/aequora-conformance/src/lib.rs
+    rg -q "AEQ-INV-SQLITE${suffix}" crates/aequora-types/src/invariants/mod.rs
+    rg -q "AEQ-INV-SQLITE${suffix}" crates/aequora-adapter-sdk/src/certification/mod.rs
     rg -q "AEQ-INV-SQLITE${suffix}" registry/core/certification.ron
     rg -q "AEQ-INV-SQLITE${suffix}" sys-arch/42-sqlite-embedded-local-adapter-architecture.md
 done
@@ -57,10 +57,10 @@ if rg -n 'rusqlite::|SQLiteDatabase|SQLiteProjectionHook' \
 fi
 
 CARGO_BUILD_JOBS=1 cargo test -q -p aequora-store-sqlite --lib --locked --offline
-CARGO_BUILD_JOBS=1 cargo test -q -p aequora-invariants -p aequora-conformance --locked --offline
+CARGO_BUILD_JOBS=1 cargo test -q -p aequora-types -p aequora-adapter-sdk --locked --offline
 CARGO_BUILD_JOBS=1 cargo test -q -p aequora --test adapter_manifests \
     --features postgres,sqlite,stoolap --locked --offline
-CARGO_BUILD_JOBS=1 cargo run -q -p aequora-registry-cli --offline --bin aequora-registry \
+CARGO_BUILD_JOBS=1 cargo run -q -p aequora-cli --offline --bin aequora-registry \
     -- verify .
 
 echo "SQLite embedded local adapter architecture checks passed"
