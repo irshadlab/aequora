@@ -1310,8 +1310,18 @@ mod tests {
     };
     use tempfile::TempDir;
 
+    fn fixture_dir() -> TempDir {
+        let executable = std::env::current_exe()
+            .unwrap_or_else(|error| panic!("test executable path failed: {error}"));
+        let output = executable
+            .parent()
+            .unwrap_or_else(|| panic!("test executable has no parent directory"));
+        tempfile::tempdir_in(output)
+            .unwrap_or_else(|error| panic!("temporary directory failed: {error}"))
+    }
+
     fn open_store() -> (TempDir, SQLiteDatabase) {
-        let directory = tempfile::tempdir().unwrap_or_else(|error| panic!("{error}"));
+        let directory = fixture_dir();
         let config = SQLiteConfig::production(
             directory.path().join("replica.sqlite3"),
             SQLitePlatform::Desktop,
@@ -1639,7 +1649,7 @@ mod tests {
 
     #[test]
     fn forensic_copy_preserves_main_database_and_existing_wal_sidecars() {
-        let directory = tempfile::tempdir().unwrap_or_else(|error| panic!("{error}"));
+        let directory = fixture_dir();
         let source = directory.path().join("damaged.sqlite3");
         let destination = directory.path().join("forensic.sqlite3");
         fs::write(&source, b"damaged-main").unwrap_or_else(|error| panic!("{error}"));

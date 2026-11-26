@@ -3425,11 +3425,7 @@ mod tests {
             POSTGRES_STORAGE_ADAPTER_MANIFEST
                 .supports_role(adapter_sdk::AdapterRole::AuthoritativeStore)
         );
-        assert!(
-            !POSTGRES_STORAGE_ADAPTER_MANIFEST
-                .known_limitations
-                .is_empty()
-        );
+        assert_ne!(POSTGRES_STORAGE_ADAPTER_MANIFEST.known_limitations.len(), 0);
     }
 
     #[test]

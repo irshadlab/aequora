@@ -3575,7 +3575,6 @@ mod tests {
         ActorId, DeviceId, EntityId, EntityRef, EntityType, EntityVersion, EventId,
         HybridTimestamp, LineageRef, NodeId, ProtocolVersion, SchemaVersion, TenantId,
     };
-    use tempfile::tempdir;
 
     #[test]
     fn part_36_manifest_is_structurally_valid_and_explicit() {
@@ -3586,15 +3585,15 @@ mod tests {
             STOOLAP_STORAGE_ADAPTER_MANIFEST
                 .supports_role(adapter_sdk::AdapterRole::LocalReplicaStore)
         );
-        assert!(
-            !STOOLAP_STORAGE_ADAPTER_MANIFEST
-                .known_limitations
-                .is_empty()
-        );
+        assert_ne!(STOOLAP_STORAGE_ADAPTER_MANIFEST.known_limitations.len(), 0);
     }
 
     fn persistent_dsn(name: &str) -> (tempfile::TempDir, String) {
-        let directory = tempdir().unwrap_or_else(|error| panic!("{error}"));
+        let executable = std::env::current_exe().unwrap_or_else(|error| panic!("{error}"));
+        let output = executable
+            .parent()
+            .unwrap_or_else(|| panic!("test executable has no parent directory"));
+        let directory = tempfile::tempdir_in(output).unwrap_or_else(|error| panic!("{error}"));
         let path = directory.path().join(name);
         let dsn = format!("file://{}", path.display());
         (directory, dsn)
@@ -3948,12 +3947,13 @@ mod tests {
                 next_attempt_unix_ms: retry_deadline,
             }))
         );
-        assert!(
+        assert_eq!(
             backend
                 .pending_operations(10)
                 .await
                 .unwrap_or_else(|error| panic!("{error}"))
-                .is_empty()
+                .len(),
+            0
         );
         backend
             .mark_retry(&[operation.operation_id], 0)
@@ -4040,10 +4040,10 @@ mod tests {
                 .len(),
             64
         );
-        assert!(
-            !row.get::<String>(3)
-                .unwrap_or_else(|error| panic!("{error}"))
-                .is_empty()
+        assert_ne!(
+            row.get::<String>(3)
+                .unwrap_or_else(|error| panic!("{error}")),
+            ""
         );
 
         backend.migrate().unwrap_or_else(|error| panic!("{error}"));
@@ -4253,12 +4253,13 @@ mod tests {
             .query_one::<i64, _>("SELECT COUNT(*) FROM attendance", ())
             .unwrap_or_else(|error| panic!("{error}"));
         assert_eq!(count, 0);
-        assert!(
+        assert_eq!(
             backend
                 .pending_operations(10)
                 .await
                 .unwrap_or_else(|error| panic!("{error}"))
-                .is_empty()
+                .len(),
+            0
         );
 
         backend
@@ -4828,7 +4829,7 @@ mod tests {
             .rebase_outbox(&registry, &[target], 10)
             .await
             .unwrap_or_else(|error| panic!("{error}"));
-        assert!(rebase.rewrites.is_empty());
+        assert_eq!(rebase.rewrites.len(), 0);
         assert_eq!(rebase.immutable_skipped, vec![operations[2].operation_id]);
     }
 

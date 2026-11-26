@@ -79,9 +79,15 @@ impl PostgresMetrics {
 
 fn add_duration(counter: &AtomicU64, duration: Duration) {
     let nanoseconds = u64::try_from(duration.as_nanos()).unwrap_or(u64::MAX);
-    let _ = counter.fetch_update(Ordering::Relaxed, Ordering::Relaxed, |current| {
-        Some(current.saturating_add(nanoseconds))
-    });
+    let mut current = counter.load(Ordering::Relaxed);
+    while let Err(actual) = counter.compare_exchange_weak(
+        current,
+        current.saturating_add(nanoseconds),
+        Ordering::Relaxed,
+        Ordering::Relaxed,
+    ) {
+        current = actual;
+    }
 }
 
 /// Monotonic adapter metric values safe to export through an observability backend.
