@@ -20,6 +20,11 @@ The governing specification is [Part 16](../sys-arch/16-authority-failover-timel
 - The CLI evaluates `authority readiness`, `authority promote`, `authority verify`, and
   `authority fork-check` using supplied evidence. Promotion planning and infrastructure cutover
   have separate owners.
+- `AuthorityController::with_epoch_registry` connects a host-supplied `ExternalEpochRegistry`
+  to startup, exchange, bootstrap, write admission, pre-commit checks, and recovery completion.
+  A configured witness must corroborate the authority's exact epoch. A missing or expired witness
+  observation blocks serving. Before an epoch-changing promotion, the host records the approved
+  epoch with the witness. Promotion still requires the existing fence and approval evidence.
 
 ## Executable evidence
 
@@ -33,13 +38,17 @@ The governing specification is [Part 16](../sys-arch/16-authority-failover-timel
   snapshot activation and sequence reuse without losing pending intent.
 - `AEQ-INV-AUTH001`–`AUTH009` and `AEQ-INV-010` own the timeline obligations.
   Storage conformance test 5, `AuthorityFencing`, binds `AEQ-INV-AUTH001`.
+- `external_witness_fences_stale_instances_and_requires_recorded_promotion` covers missing
+  witness data, an unrecorded epoch, stale writer context, and verified recovery on the new epoch.
+- `server_rejects_exchange_and_bootstrap_from_a_rolled_back_authority` checks both server
+  entry points and verifies that the rejected exchange produces no authoritative effect.
 
 ## Remaining / Left & Environment Gates
 
-**Repository.** The SDK leaves durable provider-independent orchestration of cross-cluster
-promotion, external epoch witness storage, and operator approval to the deploying host. The
-repository supplies the checks and PostgreSQL restore transition the host composes.
-SQLite still lacks a separate store-wide highest-epoch trust record for scopes with no installed cursor.
+**Repository and host integration.** A deployment still supplies independent durable witness
+storage, bounded freshness and availability policy, physical fencing, and orchestration of
+operator approval and the PostgreSQL restore transition. SQLite store-wide epoch trust is
+on hold pending explicit authorization.
 
 **Environment.** Run the old-writer fence, restore/PITR, rollback-witness, ambiguous-ACK recovery,
 and fork-quarantine drills against the intended infrastructure. The [Part 17 report](multi-region-read-single-writer-global-completion.md)

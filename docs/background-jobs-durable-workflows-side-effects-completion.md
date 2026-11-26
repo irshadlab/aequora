@@ -22,6 +22,12 @@ The implementation is split into database-neutral `aequora_authority::jobs`, `ae
 | Operations | Tenant-authorized status/admin service, supported-kind/capability-aware claiming, bounded polling inputs, graceful stop-claiming state, and stable diagnostic invariant entries |
 | Correctness registry | `AEQ-INV-JOB001` through `AEQ-INV-JOB009` in the workspace invariant registry |
 
+`aequora_server::jobs::JobWorkerPlanner::poll` performs one bounded claim against a supplied
+`JobStore`. It skips polling during shutdown or when the caller has reserved zero permits.
+Returned claims must match the actual batch limit and pass lease, payload version, capability,
+worker, and region checks. Failed validation leaves recovery to the durable store's lease policy.
+`JobRegistry::register` preserves the existing descriptor on duplicate registration.
+
 ## Remaining / Left & Environment Gates
 
 **Repository and adapter integration.** PostgreSQL persists hook-produced intents into
@@ -54,3 +60,5 @@ cargo xtask check database-neutrality
 The focused suite covers lease expiry/reclaim fencing (including generated stale tokens), cyclic
 dependencies, provider timeout ambiguity, stable-key idempotent retry, retry backoff, workflow
 compensation, duplicate recurring schedulers, authority-epoch recovery, and governance coverage.
+It also runs `worker_poll_stops_claiming_and_rejects_overclaim_or_invalid_leases` and
+`duplicate_job_registration_preserves_the_original_contract`.

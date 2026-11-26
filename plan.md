@@ -94,14 +94,14 @@ difference between framework behavior and completed integrations.
 | 4 | 13 | [Part 13](docs/data-provenance-auditability-explainability-completion.md) | `audit_contracts` | Deployment-specific indexes, archives, anchors and key rotation. Verify restore chains. |
 | 4 | 14 | [Part 14](docs/data-governance-retention-erasure-completion.md) | `governance_contracts` | Host retention, erasure, archive and key-destruction integrations. Verify registered surfaces. |
 | 4 | 15 | [Part 15](docs/cryptographic-integrity-key-management-e2e-completion.md) | `crypto_contracts` | KMS, HSM and OS keystore adapters and deployment custody, rotation and revocation evidence. |
-| 4 | 16 | [Part 16](docs/authority-failover-timeline-epochs-fork-detection-completion.md) | `authority_contracts`, local adapter suites | SQLite store-wide epoch trust and host promotion/epoch witness. Failover and PITR drills. |
+| 4 | 16 | [Part 16](docs/authority-failover-timeline-epochs-fork-detection-completion.md) | `authority_contracts`, local adapter suites | Host witness is enforced when configured. Durable witness and promotion orchestration, failover and PITR remain. SQLite is on hold. |
 | 5 | 17 | [Part 17](docs/multi-region-read-single-writer-global-completion.md) | `regional_contracts` | Split sync pull is deferred. Regional topology and lag/partition acceptance remain. |
-| 5 | 18 | [Part 18](docs/backpressure-admission-fairness-overload-completion.md) | `aequora-authority admission, axum-server` | Worker queue and resource feedback composition. Production mixed-load and soak evidence. |
+| 5 | 18 | [Part 18](docs/backpressure-admission-fairness-overload-completion.md) | `aequora-authority admission`, `configuration`, `axum-server` | Shared load feedback implemented. Host pressure sampling and worker queue/brownout composition remain. |
 | 5 | 19 | [Part 19](docs/performance-engineering-memory-architecture-completion.md) | `performance` | Target-specific memory, query plans and throughput baselines. |
 | 5 | 20 | [Part 20](docs/resource-constrained-client-architecture-completion.md) | `client-resource` | Native service bridges. Device background, power and storage pressure evidence. |
 | 6 | 21 | [Part 21](docs/protocol-negotiation-compatibility-governance-completion.md) | `compatibility` | Release-policy signing and mixed-version fleet rollout. |
 | 6 | 22 | [Part 22](docs/sync-metadata-schema-internal-persistence-completion.md) | `metadata` | Physical mappings and conformance for each declared adapter profile. |
-| 6 | 23 | [Part 23](docs/background-jobs-durable-workflows-side-effects-completion.md) | `jobs` | Durable production job, workflow and side-effect stores/workers and provider adapters remain to be integrated. |
+| 6 | 23 | [Part 23](docs/background-jobs-durable-workflows-side-effects-completion.md) | `jobs` | Bounded worker polling implemented. Durable production stores, worker execution and provider adapters remain. |
 | 6 | 24 | [Part 24](docs/operational-control-plane-admin-api-completion.md) | `admin` | Durable admin store/executors, private listener and authorization integration. Verify against real identity policy. |
 | 7 | 25 | [Part 25](docs/diagnostics-forensics-reproducible-incident-bundles-completion.md) | `diagnostics` | Host durable registry, protected archive and audit integration. Custody/retention exercises. |
 | 7 | 26 | [Part 26](docs/legacy-application-compatibility-incremental-adoption-completion.md) | `legacy` | Host CDC, route translation and write-ownership wiring. Shadow and cutover runs. |
@@ -137,8 +137,9 @@ difference between framework behavior and completed integrations.
 
 ### Open repository and host integration
 
-- Part 16 still needs SQLite store-wide epoch trust and a host-backed promotion and epoch-witness
-  integration. Part 18 still needs resource-signal and worker-queue integration for a deployed host.
+- SQLite changes are on hold pending explicit authorization.
+- Part 16 still needs durable witness storage and external promotion orchestration. Part 18
+  still needs host pressure sampling and worker queue/brownout composition.
 - Parts 23, 24, and 28 still need concrete durable job/workflow/effect, admin, and feed adapters.
   Their transaction participation, fencing, and recovery need real-adapter tests.
 - Generic CDC adapters, cross-engine local-store cutover, and the runtime multi-store registry
