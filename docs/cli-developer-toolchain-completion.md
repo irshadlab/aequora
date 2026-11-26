@@ -6,17 +6,17 @@ This report records executable repository evidence and does not replace that des
 
 ## Implemented boundaries
 
-`aequora-cli-core` owns stable top-level command nouns, global output/log/color options, versioned
+`aequora_cli::cli_core` owns stable top-level command nouns, global output/log/color options, versioned
 JSON and RON envelopes, exit and error categories, redacted safe details, command safety metadata,
 typed plan/apply identities, durable-submission wait semantics, migration precondition validation,
 and structured doctor results. It is independent of runtimes, transports, UI frameworks, physical
 databases, and server internals.
 
-`aequora-inspect` selects authenticated agent IPC, direct read-only access, or explicitly fenced
+`aequora_cli::inspect` selects authenticated agent IPC, direct read-only access, or explicitly fenced
 offline maintenance from durable ownership observations. It refuses an uncontrolled second writer
 and applies registry-style field classification with redaction by default.
 
-`aequora-devtools` creates deterministic, versioned scaffold plans, distinguishes generated from
+`aequora_cli::devtools` creates deterministic, versioned scaffold plans, distinguishes generated from
 developer-owned files, reports collisions instead of overwriting, rejects destructive development
 actions against explicit production markers, and excludes failpoint execution unless the
 `test-failpoints` feature was built.
@@ -67,4 +67,4 @@ workspace suite passed.
 The semantic RAG index was rebuilt on 2026-09-01 with a writable cache under `/tmp` and one bounded
 indexing process: 577 of 577 files were processed (131 new and 446 unchanged), producing 1,298
 GraphRAG blocks. Follow-up semantic queries retrieved both the Part 41 architecture document and the
-`CliErrorEnvelope` implementation in `aequora-cli-core`.
+`CliErrorEnvelope` implementation in `aequora_cli::cli_core`.

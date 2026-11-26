@@ -8,10 +8,10 @@ profiles. Production crates have no normal dependency on testkit; the public fac
 legacy `testkit` feature spelling as an empty example compatibility switch backed by a
 dev-dependency.
 
-`aequora-conformance::verification` owns the database-, runtime-, and transport-neutral release
+`aequora_testkit::certification::verification` owns the database-, runtime-, and transport-neutral release
 contracts: profile-specific required suites, evidence-bound gate results, release-blocking
 decisions, explicit expiring waivers, seeded verification reports, and typed invariant-to-test
-coverage maps. The existing `aequora-model` remains the executable semantic oracle and continues
+coverage maps. The existing `aequora_testkit::model` remains the executable semantic oracle and continues
 to provide bounded exploration plus versioned RON failure-trace replay. The CLI now validates
 quality manifests and reports and accepts `verify replay` as the architecture spelling for model
 trace reproduction.

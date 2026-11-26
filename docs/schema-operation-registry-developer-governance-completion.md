@@ -6,12 +6,17 @@ Part 29 is implemented as a compile-time, database-neutral durable-contract regi
 
 The implementation separates:
 
-- `aequora-registry-types`: ID newtypes, lifecycle/governance metadata, source and release contracts;
-- `aequora-registry-codegen`: bounded loading, lint, semantic digest, lock verification, compatibility diff, Rust generation, and Markdown generation;
-- `aequora-registry-generated`: immutable runtime IDs/lookups, fail-closed admission, and startup binding checks;
-- `aequora-registry-cli`: `verify`, `lint`, `diff`, `compatibility`, `explain`, `reserve`, `docs`, and `lock` developer workflows.
+- `aequora_registry::types`: ID newtypes, lifecycle/governance metadata, source and release contracts;
+- `aequora_registry::codegen`: bounded loading, lint, semantic digest, lock verification, compatibility diff, Rust generation, and Markdown generation;
+- `aequora-registry`: immutable runtime IDs/lookups, fail-closed admission, and startup binding checks;
+- `aequora-registry binary in aequora-cli`: `verify`, `lint`, `diff`, `compatibility`, `explain`, `reserve`, `docs`, and `lock` developer workflows.
 
 Core, application, and extension fragments share collision validation. Numeric ranges distinguish core, registered-extension, vendor-private, and experimental allocations. Application-owned entity, operation, event, field, job, consumer, audit, and migration sources intentionally begin empty: Aequora does not claim application business IDs. Adding them through `registry/app` or `registry/extensions` activates the same generated and compatibility gates.
+
+The workspace build verifies the canonical RON and published ID lock before checking the
+generated snapshot. Refresh the Rust snapshot after an approved registry change with
+`AEQUORA_REGENERATE_REGISTRY=1 cargo build -p aequora-registry`. Check it with
+`cargo run -p aequora-cli --bin aequora-registry -- rust . --check`.
 
 ## Existing-contract integration
 

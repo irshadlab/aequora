@@ -62,3 +62,16 @@ warning-denied Rustdoc, Guppy workspace policy, database-neutrality profiles, fo
 checks passed. The full workspace test run required permission for its loopback HTTP acceptance
 test; the permitted run passed. Legal review, signing infrastructure, and independent rebuild
 attestation remain distributor-owned evidence and were not claimed.
+
+## Crate consolidation
+
+The root and archived client lockfiles retain the same third-party package versions,
+crates.io sources, and checksums after the CLI, platform, and core moves. The existing
+BLAKE3 native build and its versioned-digest replacement plan follow the certification,
+registry, and authority modules. Serde and Postcard continue to encode the same
+typed contracts under their existing compatibility policy. The software crypto
+providers moved into `aequora_security::crypto`. The `crypto` feature activates the
+provider dependencies for consumers that previously imported the crypto package.
+Security retains ownership and the `CryptoProvider` replacement boundary in the
+[supply-chain policy](../supply-chain/policy.ron). Registry lock verification,
+crypto and protocol tests, and database-neutrality checks cover the affected boundaries.
