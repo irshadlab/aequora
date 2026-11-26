@@ -4,6 +4,9 @@ The governing design is
 [`sys-arch/40-dioxus-client-integration-reactive-state-architecture.md`](../sys-arch/40-dioxus-client-integration-reactive-state-architecture.md).
 This report records executable repository evidence and does not replace that design.
 
+`aequora-dioxus` now lives in [the archive](../archive/aequora-dioxus/Cargo.toml) with its own
+Cargo workspace and lockfile. The main workspace and release allowlist exclude it.
+
 ## Implemented boundary
 
 `aequora-dioxus` provides one provider-owned `AequoraHandle` per local store, explicit

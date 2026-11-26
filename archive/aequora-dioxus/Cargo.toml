@@ -1,0 +1,33 @@
+[package]
+name = "aequora-dioxus"
+version = "0.1.1"
+edition = "2024"
+rust-version = "1.87"
+license = "MIT"
+publish = false
+description = "Server-authoritative, database-agnostic local-first synchronization for Rust"
+repository = "https://github.com/irshadali5/aequora"
+
+[dependencies]
+aequora-adapter-sdk = { version = "0.1.1", path = "../../crates/aequora-adapter-sdk" }
+aequora-client = { version = "0.1.1", path = "../../crates/aequora-client" }
+aequora-operation = { version = "0.1.1", path = "../../crates/aequora-operation" }
+aequora-types = { version = "0.1.1", path = "../../crates/aequora-types" }
+dioxus = { version = "=0.7.10", default-features = false, features = ["hooks", "signals"] }
+tokio = { version = "1.45.1", features = ["macros", "net", "rt-multi-thread", "signal", "sync", "time"] }
+
+[dev-dependencies]
+async-trait = "0.1.89"
+
+[lints.rust]
+unsafe_code = "forbid"
+unused_must_use = "deny"
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+unwrap_used = { level = "deny", priority = 1 }
+expect_used = { level = "deny", priority = 1 }
+
+[workspace]
+resolver = "2"

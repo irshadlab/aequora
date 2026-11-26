@@ -12,7 +12,6 @@
         NeonPostgresProfile,
         SQLiteLocal,
         StoolapLocal,
-        DioxusIntegration,
         CliDevtools,
         TestkitConformance,
     ],

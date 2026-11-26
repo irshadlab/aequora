@@ -153,8 +153,10 @@ jobs:
         run: bash scripts/check-sqlite-local-adapter-architecture.sh
       - name: Enforce Axum server integration and middleware contracts
         run: bash scripts/check-axum-server-architecture.sh
-      - name: Enforce Dioxus reactive client boundary contracts
-        run: bash scripts/check-dioxus-client-architecture.sh
+      - name: Verify archived Dioxus client boundary contracts
+        run: |
+          cargo +stable fetch --manifest-path archive/aequora-dioxus/Cargo.toml --locked
+          bash scripts/check-dioxus-client-architecture.sh
       - name: Enforce CLI and developer toolchain contracts
         run: bash scripts/check-cli-toolchain-architecture.sh
       - name: Enforce configuration, secrets, runtime policy, and feature rollout contracts
