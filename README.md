@@ -310,7 +310,6 @@ Select each deployment axis independently:
 | `macros` | Derive macros for aggregates & operations | `#[derive(AequoraAggregate)]`, `#[derive(AequoraOperation)]` |
 | `testkit` | Deterministic reference components | in-memory stores and adapter contracts |
 | `aequora-quic` | Quinn request/snapshot/hint transport | `QuicTransport`, `QuicServer` |
-| `aequora-dioxus` | Reactive local-first state for Dioxus UI | `SyncProvider`, `use_durable_query` |
 | `aequora-mobile-runtime` | Android & iOS platform bridges | `MobileSyncEngine`, `MobilePlatformLifecycle` |
 | `aequora-desktop-runtime` | Desktop OS runtime & IPC agent mode | `DesktopHost`, `IpcClientSession` |
 | `aequora-config` | Strict validated RON configuration | `AequoraConfig`, `RuntimePolicy` |
@@ -475,13 +474,15 @@ Database URLs, access tokens, and TLS keys do not belong in this object.
 
 ### Storage Adapter SDK & Cross-Platform Engine
 
-Aequora decouples storage engines through `aequora-adapter-sdk` and `aequora-storage-core`. Local persistence engines (Stoolap, SQLite, or custom adapters) share capability manifests, transactional outbox semantics, background storage maintenance (`aequora-storage-maintenance`), encrypted staging directories (`aequora-storage-encryption`), and point-in-time snapshot backup contracts (`aequora-storage-backup`).
+Aequora decouples storage engines through `aequora-adapter-sdk` and `aequora-store`. The store crate defines transactional outbox contracts and exposes `storage_core`, `storage_profile`, `storage_maintenance`, `storage_backup`, `storage_encryption`, `storage_conformance`, and `blob_store` as public modules.
 
 ### Mobile & Desktop Runtimes
 
 - **Mobile Runtime (`aequora-mobile-runtime`)**: Provides lifecycle-aware, battery-conscious background scheduling for Android (`aequora-platform-android` via JNI) and iOS (`aequora-platform-ios` via Objective-C runtime bridges).
 - **Desktop Runtime (`aequora-desktop-runtime`)**: Supports embedded in-process execution as well as multi-process daemon mode (`aequora-agent`) coordinating across UI windows via local socket IPC (`aequora-ipc-protocol`).
-- **Reactive UI State (`aequora-dioxus`)**: High-performance local-first state hooks (`SyncProvider`, `use_durable_query`) providing optimistic UI updates with bounded cache invalidation.
+
+The Dioxus integration is archived under
+[`archive/aequora-dioxus`](archive/aequora-dioxus/Cargo.toml).
 
 ### Configuration, Secrets, Policy & Feature Flags
 
@@ -503,17 +504,17 @@ Aequora decouples storage engines through `aequora-adapter-sdk` and `aequora-sto
 
 ## Workspace map
 
-The workspace contains 100 crates strictly bounded into 9 architectural layers managed via `aequora-dev`. The functional architecture layers are:
+The workspace contains 92 crates strictly bounded into 9 architectural layers managed via `aequora-dev`. The functional architecture layers are:
 
 | Layer | Crates | Count | Description |
 |---|---|:---:|---|
-| **Foundation** | `aequora-types`, `aequora-schema`, `aequora-invariants`, `aequora-macros`, `aequora-registry-types`, `aequora-scheduler`, `aequora-coordination`, `aequora-compute`, `aequora-storage-core`, `aequora-ipc-protocol`, `aequora-blob`, `aequora-secrets`, `aequora-policy`, `aequora-feature-flags`, `aequora-workload` | 15 | Core domain identifiers, schema definitions, formal invariant registries, platform-neutral IPC framing, secrets, runtime policies, feature flags, and workload specifications. |
-| **Protocol Contracts** | `aequora-protocol`, `aequora-codec`, `aequora-transport`, `aequora-clock`, `aequora-scope`, `aequora-operation`, `aequora-compat`, `aequora-authority`, `aequora-security`, `aequora-routing`, `aequora-region`, `aequora-admin`, `aequora-observability`, `aequora-audit`, `aequora-governance`, `aequora-integrity`, `aequora-legacy`, `aequora-conformance`, `aequora-registry-codegen`, `aequora-registry-generated`, `aequora-storage-profile`, `aequora-storage-maintenance`, `aequora-storage-backup`, `aequora-storage-encryption`, `aequora-storage-conformance`, `aequora-benchkit` | 26 | AEQ1 binary protocol framing, Lamport/HLC clocks, session authorization, audit chains, storage profiles, maintenance routines, encryption contracts, and benchmark harnesses. |
+| **Foundation** | `aequora-types`, `aequora-schema`, `aequora-invariants`, `aequora-macros`, `aequora-registry-types`, `aequora-scheduler`, `aequora-coordination`, `aequora-compute`, `aequora-ipc-protocol`, `aequora-blob`, `aequora-secrets`, `aequora-policy`, `aequora-feature-flags`, `aequora-workload` | 14 | Core domain identifiers, schema definitions, formal invariant registries, platform-neutral IPC framing, secrets, runtime policies, feature flags, and workload specifications. |
+| **Protocol Contracts** | `aequora-protocol`, `aequora-codec`, `aequora-transport`, `aequora-clock`, `aequora-scope`, `aequora-operation`, `aequora-compat`, `aequora-authority`, `aequora-security`, `aequora-routing`, `aequora-region`, `aequora-admin`, `aequora-observability`, `aequora-audit`, `aequora-governance`, `aequora-integrity`, `aequora-legacy`, `aequora-conformance`, `aequora-registry-codegen`, `aequora-registry-generated`, `aequora-benchkit` | 21 | AEQ1 binary protocol framing, Lamport/HLC clocks, session authorization, audit chains, and benchmark harnesses. |
 | **Domain Execution** | `aequora-conflict`, `aequora-crypto`, `aequora-release`, `aequora-update`, `aequora-diagnostics`, `aequora-executor`, `aequora-feed`, `aequora-jobs`, `aequora-journal`, `aequora-mapping`, `aequora-metadata`, `aequora-migration`, `aequora-partition`, `aequora-performance`, `aequora-queue`, `aequora-replay`, `aequora-side-effects`, `aequora-supply-chain`, `aequora-validator`, `aequora-workflow` | 20 | Deterministic state execution, conflict resolution policies, signed release/update decisions, journal ledgers, change feeds, saga workflows, outboxes, supply-chain governance, and record migration. |
-| **Storage Contracts** | `aequora-adapter-sdk`, `aequora-store`, `aequora-blob-store`, `aequora-profile` | 4 | Unified client and authoritative storage contracts, capability manifests, zero-copy blob streaming, and storage profiles. |
+| **Storage Contracts** | `aequora-adapter-sdk`, `aequora-store`, `aequora-profile` | 3 | Unified client and authoritative storage contracts, capability manifests, storage policies and profiles, maintenance, backup, encryption, blob verification, and conformance. |
 | **Sync Engines** | `aequora-admission`, `aequora-bootstrap`, `aequora-client`, `aequora-crdt`, `aequora-live`, `aequora-server` | 6 | Local-first client sync engine, authoritative exchange server, resumable snapshot streaming, live push hints, and admission control. |
 | **Physical Adapters** | `aequora-store-postgres`, `aequora-store-sqlite`, `aequora-store-stoolap` | 3 | Official persistence implementations: embedded Stoolap replica, portable SQLite replica, and enterprise PostgreSQL/Neon authority. |
-| **Integration Platform** | `aequora-agent`, `aequora-axum`, `aequora-config`, `aequora-deployment`, `aequora-desktop-runtime`, `aequora-dioxus`, `aequora-http`, `aequora-legacy-api`, `aequora-mobile-bindings`, `aequora-mobile-runtime`, `aequora-platform-android`, `aequora-platform-ios`, `aequora-platform-linux`, `aequora-platform-macos`, `aequora-platform-windows`, `aequora-quic` | 16 | Axum HTTP server gateway, Reqwest client, Quinn QUIC transport, deployment manifests, Dioxus reactive UI state, OS bridges (Android JNI, iOS/macOS Objective-C, Windows, Linux), and background sync agent. |
+| **Integration Platform** | `aequora-agent`, `aequora-axum`, `aequora-config`, `aequora-deployment`, `aequora-desktop-runtime`, `aequora-http`, `aequora-legacy-api`, `aequora-mobile-bindings`, `aequora-mobile-runtime`, `aequora-platform-android`, `aequora-platform-ios`, `aequora-platform-linux`, `aequora-platform-macos`, `aequora-platform-windows`, `aequora-quic` | 15 | Axum HTTP server gateway, Reqwest client, Quinn QUIC transport, deployment manifests, OS bridges (Android JNI, iOS/macOS Objective-C, Windows, Linux), and background sync agent. |
 | **Applications** | `aequora`, `aequora-cli`, `aequora-cli-core`, `aequora-devtools`, `aequora-inspect`, `aequora-registry-cli` | 6 | Public Rust SDK facade, unified developer CLI toolchain, inspection tools, schema registry CLI, and diagnostics binaries. |
 | **Tooling & Verification** | `aequora-dev`, `aequora-loadgen`, `aequora-model`, `aequora-testkit` | 4 | Workspace boundary checker and dependency graph governance (`aequora-dev`), load generation tools (`aequora-loadgen`), state machine model testing (`aequora-model`), and end-to-end simulation testkit (`aequora-testkit`). |
 

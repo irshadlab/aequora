@@ -252,12 +252,24 @@ fn missing_package(name: &str) -> io::Error {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::collections::BTreeSet;
 
     #[test]
     fn embedded_policy_is_well_formed_and_unique() -> Result<(), Box<dyn Error>> {
         let policy = parse_policy()?;
         let assignments = assignments(&policy)?;
-        assert_eq!(assignments.len(), 100);
+        let graph = guppy::MetadataCommand::new()
+            .manifest_path(concat!(env!("CARGO_MANIFEST_DIR"), "/../../Cargo.toml"))
+            .no_deps()
+            .other_options(["--locked", "--offline"])
+            .build_graph()?;
+        let workspace = graph
+            .resolve_workspace()
+            .packages(DependencyDirection::Forward)
+            .map(|package| package.name())
+            .collect::<BTreeSet<_>>();
+        let assigned = assignments.keys().copied().collect::<BTreeSet<_>>();
+        assert_eq!(workspace, assigned);
         assert_eq!(
             policy.layers.first().map(|layer| layer.name.as_str()),
             Some("foundation")

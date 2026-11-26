@@ -8,7 +8,6 @@ aequora-authority
 aequora-axum
 aequora-benchkit
 aequora-blob
-aequora-blob-store
 aequora-bootstrap
 aequora-cli
 aequora-cli-core
@@ -27,7 +26,6 @@ aequora-deployment
 aequora-desktop-runtime
 aequora-devtools
 aequora-diagnostics
-aequora-dioxus
 aequora-executor
 aequora-feature-flags
 aequora-feed
@@ -79,12 +77,6 @@ aequora-secrets
 aequora-security
 aequora-server
 aequora-side-effects
-aequora-storage-backup
-aequora-storage-conformance
-aequora-storage-core
-aequora-storage-encryption
-aequora-storage-maintenance
-aequora-storage-profile
 aequora-store
 aequora-store-postgres
 aequora-store-sqlite
