@@ -43,9 +43,9 @@ Focused acceptance uses:
 CARGO_BUILD_JOBS=1 cargo test -p aequora-metadata
 CARGO_BUILD_JOBS=1 cargo clippy -p aequora-metadata --all-targets -- -D warnings
 CARGO_BUILD_JOBS=1 cargo test -p aequora-invariants
-bash scripts/check-metadata-architecture.sh
+cargo xtask check metadata
 cargo run -q -p aequora-dev -- check
-bash scripts/check-database-neutrality.sh
+cargo xtask check database-neutrality
 ```
 
 The contract tests cover schema validation, outbox payload identity, duplicate-ledger mismatch,

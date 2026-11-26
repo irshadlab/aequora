@@ -17,14 +17,14 @@ This report records executable evidence and does not replace that design.
 | Certification integration | New registry profiles `LocalAdapter`, `AuthoritativeAdapter`, `SnapshotAdapter`, and `FencingAdapter`; tests 49–58 cover `AEQ-INV-ADAPTER001`–`010`. Rust and Markdown registry snapshots are generated from canonical RON. |
 | Official manifests | PostgreSQL and Stoolap publish Part 36 manifests with roles, versioned capabilities, engine/target baselines, concurrency, ownership, and limitations. Runtime/deployment claims still require exact environment evidence. |
 | Ecosystem policy/docs | `docs/storage-adapter-sdk.md` provides adapter-author guidance, support matrix, conformance flow, security rules, and official/community release policy. SQLite is now implemented by Part 42; standalone object-store support remains explicitly unclaimed. |
-| Structural/release gate | `scripts/check-storage-adapter-sdk-architecture.sh` rejects physical dependencies/type leakage, checks invariants/registry/manifests, and runs focused tests; CI invokes it. |
+| Structural/release gate | `cargo xtask check storage-adapter-sdk` rejects physical dependencies/type leakage, checks invariants/registry/manifests, and runs focused tests; CI invokes it. |
 
 ## Verification contract
 
 The focused Part 36 gate is:
 
 ```bash
-bash scripts/check-storage-adapter-sdk-architecture.sh
+cargo xtask check storage-adapter-sdk
 ```
 
 Repository completion additionally requires formatting, strict Clippy, Rust 1.87 all-target/all-

@@ -18,14 +18,14 @@ This report records executable repository evidence and does not replace that des
 | Backup and corruption | SQLite's online backup API captures the complete database, including application data and all sync metadata. Restore verifies integrity first. Health and corruption detection preserve damaged files for forensics instead of deleting them. |
 | Platform placement and encryption boundary | `SQLitePlatform` distinguishes desktop, Android private-data, and iOS Application Support policies. The adapter accepts a durable path and does not own plaintext/encryption policy; encryption may remain below the same contract. |
 | Conformance and invariants | `SQLiteLocalCore`, `SQLiteDesktopLocalFull`, and `SQLiteMobileLocalFull`, conformance tests 109–113, and `AEQ-INV-SQLITE001`–`005` are registered in canonical RON and generated Rust/Markdown snapshots. Target-specific full profiles remain claims only when their environment-bound evidence exists. |
-| Structural gate | `scripts/check-sqlite-local-adapter-architecture.sh` verifies schema, pragmas, transaction/backup/recovery surfaces, neutral dependency isolation, invariants, registry parity, focused tests, and built-in manifest composition. CI executes the gate. |
+| Structural gate | `cargo xtask check sqlite-local-adapter` verifies schema, pragmas, transaction/backup/recovery surfaces, neutral dependency isolation, invariants, registry parity, focused tests, and built-in manifest composition. CI executes the gate. |
 
 ## Verification contract
 
 The focused gate is:
 
 ```bash
-bash scripts/check-sqlite-local-adapter-architecture.sh
+cargo xtask check sqlite-local-adapter
 ```
 
 Repository completion also requires formatting, strict Clippy, Rust 1.87 all-target/all-feature

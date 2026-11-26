@@ -38,7 +38,7 @@ the integration crate.
 
 ## Verification contract
 
-`scripts/check-dioxus-client-architecture.sh` verifies the crate layout, public surface, all ten
+`cargo xtask check dioxus-client` verifies the crate layout, public surface, all ten
 Part 40 invariants, Dioxus dependency isolation, absence of physical storage/transport dependencies,
 resource-bounded rust-analyzer settings, focused tests, conformance profile, and registry integrity.
 

@@ -123,7 +123,7 @@ The ACID implementation is part of the normal release gates:
 ```text
 cargo test --workspace --all-features --offline
 cargo run -q -p aequora-dev --locked -- check
-bash scripts/check-database-neutrality.sh
+cargo xtask check database-neutrality
 ```
 
 The PostgreSQL suite runs when `AEQUORA_TEST_POSTGRES_URL` is set. The same authoritative contract

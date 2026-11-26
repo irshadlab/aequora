@@ -27,4 +27,4 @@ SQLite and Stoolap remain adapters rather than architectural dependencies. Part 
 
 ## Verification
 
-The focused gate is `bash scripts/check-local-storage-architecture.sh`. It checks required artifacts, all ten invariant/profile integrations, neutral dependency manifests, focused crate tests, and testkit integration contracts. Repository-wide formatting, Clippy, tests, Rustdoc, Guppy direction, database neutrality, registry generation, and diff checks are recorded in the final task handoff after execution.
+The focused gate is `cargo xtask check local-storage`. It checks required artifacts, all ten invariant/profile integrations, neutral dependency manifests, focused crate tests, and testkit integration contracts. Repository-wide formatting, Clippy, tests, Rustdoc, Guppy direction, database neutrality, registry generation, and diff checks are recorded in the final task handoff after execution.

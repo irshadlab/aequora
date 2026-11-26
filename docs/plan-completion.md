@@ -69,10 +69,10 @@ Completion requires all of the following from the final workspace state:
 ```text
 cargo fmt --all -- --check
 cargo run -p aequora-dev --locked -- check
-bash scripts/check-database-neutrality.sh
-bash scripts/check-performance-architecture.sh
-bash scripts/check-client-resource-architecture.sh
-bash scripts/check-compatibility-architecture.sh
+cargo xtask check database-neutrality
+cargo xtask check performance
+cargo xtask check client-resource
+cargo xtask check compatibility
 cargo +1.87.0 check --workspace --all-targets --all-features --offline
 cargo check --workspace --all-targets --all-features --offline
 cargo clippy --workspace --all-targets --all-features --offline -- -D warnings

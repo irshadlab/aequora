@@ -76,7 +76,7 @@ CARGO_BUILD_JOBS=1 cargo clippy --workspace --all-targets --all-features --locke
 CARGO_BUILD_JOBS=1 cargo test --workspace --all-features --locked
 RUSTDOCFLAGS=-Dwarnings CARGO_BUILD_JOBS=1 cargo doc --workspace --all-features --no-deps --locked
 cargo run -q -p aequora-dev -- check
-bash scripts/check-database-neutrality.sh
+cargo xtask check database-neutrality
 ```
 
 Live PostgreSQL/Neon, backup/restore, TLS, capacity, staging, canary, rolling-upgrade, rollback,

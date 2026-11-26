@@ -131,33 +131,33 @@ Run the bounded, offline-friendly checks with one Cargo build job when memory is
 ```text
 cargo fmt --all -- --check
 cargo run -q -p aequora-dev -- check
-bash scripts/check-database-neutrality.sh
-bash scripts/check-performance-architecture.sh
-bash scripts/check-client-resource-architecture.sh
-bash scripts/check-compatibility-architecture.sh
-bash scripts/check-metadata-architecture.sh
-bash scripts/check-jobs-architecture.sh
-bash scripts/check-admin-architecture.sh
-bash scripts/check-diagnostics-architecture.sh
-bash scripts/check-legacy-architecture.sh
-bash scripts/check-mobile-architecture.sh
-bash scripts/check-desktop-architecture.sh
-bash scripts/check-local-storage-architecture.sh
-bash scripts/check-reference-implementation-architecture.sh
-bash scripts/check-postgres-authority-architecture.sh
-bash scripts/check-stoolap-local-persistence-architecture.sh
-bash scripts/check-axum-server-architecture.sh
-bash scripts/check-dioxus-client-architecture.sh
-bash scripts/check-cli-toolchain-architecture.sh
-bash scripts/check-sqlite-local-adapter-architecture.sh
-bash scripts/check-configuration-architecture.sh
-bash scripts/check-release-architecture.sh
-bash scripts/check-deployment-architecture.sh
-bash scripts/check-observability-architecture.sh
-bash scripts/check-benchmarking-architecture.sh
-bash scripts/check-verification-architecture.sh
-bash scripts/check-supply-chain-architecture.sh
-bash scripts/check-productization-architecture.sh
+cargo xtask check database-neutrality
+cargo xtask check performance
+cargo xtask check client-resource
+cargo xtask check compatibility
+cargo xtask check metadata
+cargo xtask check jobs
+cargo xtask check admin
+cargo xtask check diagnostics
+cargo xtask check legacy
+cargo xtask check mobile
+cargo xtask check desktop
+cargo xtask check local-storage
+cargo xtask check reference-implementation
+cargo xtask check postgres-authority
+cargo xtask check stoolap-local-persistence
+cargo xtask check axum-server
+cargo xtask check dioxus-client
+cargo xtask check cli-toolchain
+cargo xtask check sqlite-local-adapter
+cargo xtask check configuration
+cargo xtask check release
+cargo xtask check deployment
+cargo xtask check observability
+cargo xtask check benchmarking
+cargo xtask check verification
+cargo xtask check supply-chain
+cargo xtask check productization
 
 cargo check --workspace --all-targets --all-features --locked --offline
 cargo clippy --workspace --all-targets --all-features --locked --offline -- -D warnings

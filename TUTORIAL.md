@@ -1501,7 +1501,7 @@ git diff --check
 
 ```bash
 cargo run -q -p aequora-dev --locked -- check
-bash scripts/check-database-neutrality.sh
+cargo xtask check database-neutrality
 ```
 
 The first command uses Guppy to enforce dependency direction across the workspace. The second

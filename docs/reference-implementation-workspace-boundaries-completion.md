@@ -18,4 +18,4 @@ The two declared outward exceptions are explicit and reviewable: the umbrella fa
 
 ## Verification
 
-The focused gate is `bash scripts/check-reference-implementation-architecture.sh`. Repository-wide formatting, Clippy, tests, Rustdoc, Guppy direction, database neutrality, registry generation, and diff checks are recorded in the final task handoff after execution.
+The focused gate is `cargo xtask check reference-implementation`. Repository-wide formatting, Clippy, tests, Rustdoc, Guppy direction, database neutrality, registry generation, and diff checks are recorded in the final task handoff after execution.

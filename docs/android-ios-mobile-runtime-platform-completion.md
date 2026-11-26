@@ -15,7 +15,7 @@ The numbered specification remains the design authority.
 | Kotlin/Swift/Dioxus binding boundary | `aequora_mobile::bindings` exposes bounded high-level async commands/outcomes and coalesced UI invalidations, stable ABI/build identity, and panic containment. Cursor and operation-ledger mutation are not representable. Dioxus can call the same Rust host directly while retaining platform service adapters. |
 | Security and privacy | Opaque secure-key handles are preferred, fallback secret bytes zeroize and redact, push hints contain only bounded routing/reason data, store policy fails closed for public/traversing or backup-cloned state, and diagnostics use a sanitized export command. |
 | Compatibility and conformance | `MobileClientFull` selects client, protocol, and nine mobile runtime tests. Registry test IDs 21–29 and `AEQ-INV-MOBILE001..009` are generated, locked, and covered by the invariant registry. |
-| Repository acceptance | `scripts/check-mobile-architecture.sh`, focused cross-crate tests, CI wiring, Guppy dependency checks, and the database-neutrality gate enforce the reusable boundary. |
+| Repository acceptance | `cargo xtask check mobile`, focused cross-crate tests, CI wiring, Guppy dependency checks, and the database-neutrality gate enforce the reusable boundary. |
 
 The runtime deliberately reuses Aequora's existing durable outbox, cursor, bootstrap, conflict,
 compatibility, authority-epoch, local fencing, streaming, and diagnostics semantics. It does not

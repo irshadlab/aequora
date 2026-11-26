@@ -35,7 +35,7 @@ machine schema versioning, secret redaction, authority plan/apply requirements, 
 durable submission, migration fail-closed behavior, agent-aware store routing, fenced maintenance,
 secret field rendering, deterministic scaffolding, non-overwrite behavior, and production guards.
 
-`scripts/check-cli-toolchain-architecture.sh` verifies required artifacts and symbols, all ten
+`cargo xtask check cli-toolchain` verifies required artifacts and symbols, all ten
 invariants across the specification/registry/conformance layers, the thin binary boundary,
 database/runtime/transport neutrality of reusable tooling crates, absence of direct physical store
 access in the CLI, bounded rust-analyzer settings, focused tests, registry integrity, and a real

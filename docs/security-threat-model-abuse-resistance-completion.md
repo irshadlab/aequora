@@ -21,7 +21,7 @@ This file records implementation locations and verification without duplicating 
 - `docs/security-threat-matrix.md`, `docs/security-runbooks.md`, `docs/security-ownership.md`, and
   `SECURITY.md` maintain the threat register, incident response, review ownership, release checklist,
   and private disclosure path.
-- `scripts/check-security-architecture.sh`, the testkit abuse suite, the CLI `security` commands, the
+- `cargo xtask check security`, the testkit abuse suite, the CLI `security` commands, the
   Guppy dependency rule, and CI keep the architecture enforceable.
 
 Deployment evidence remains deployment-owned for TLS termination, mTLS/workload identity, private

@@ -14,7 +14,7 @@ The authoritative design is [Part 35](../sys-arch/35-public-rust-api-sdk-stabili
 ## Safety and evolution evidence
 
 - `AEQ-INV-SDK001` through `AEQ-INV-SDK010` are registered with model, property, adapter/gate, and diagnostic evidence hooks.
-- `scripts/check-public-sdk-architecture.sh` rejects forbidden physical/framework leaks, cursor mutation entry points, unbounded event channels, facade drift, missing stable codes, missing CI semver automation, and incomplete public documentation.
+- `cargo xtask check public-sdk` rejects forbidden physical/framework leaks, cursor mutation entry points, unbounded event channels, facade drift, missing stable codes, missing CI semver automation, and incomplete public documentation.
 - `architecture/public-rust-api-v0.1.txt` is the reviewed stable surface and error-code snapshot.
 - [SDK versioning and upgrades](sdk-versioning-and-upgrades.md) separates crate, protocol, store, operation, and adapter versions and defines MSRV/deprecation policy.
 - CI runs the focused structural gate on every quality build and `cargo-semver-checks` against the base revision for pull requests.

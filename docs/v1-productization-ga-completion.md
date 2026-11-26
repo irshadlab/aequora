@@ -33,7 +33,7 @@ registry. `GeneralAvailabilityFull` binds conformance test IDs 184 through 193 t
 The focused testkit suite verifies the frozen storage/transport path, conditional Stoolap status,
 the deliberately blocked development readiness snapshot, and registry parity.
 
-`scripts/check-productization-architecture.sh` enforces required artifacts, invariant parity,
+`cargo xtask check productization` enforces required artifacts, invariant parity,
 neutral release dependencies, CLI diagnostics, registry freshness, and focused Rust contracts. CI
 runs that gate after Parts 48 and 49.
 
@@ -55,7 +55,7 @@ release/deployment inputs and are never inferred from repository architecture.
 The focused gate is:
 
 ```bash
-bash scripts/check-productization-architecture.sh
+cargo xtask check productization
 ```
 
 Repository-wide completion additionally requires formatting, strict Clippy, Rust 1.87 MSRV,

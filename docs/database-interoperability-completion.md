@@ -65,7 +65,7 @@ cargo test -p aequora-store -p aequora-store-stoolap -p aequora-store-postgres -
 cargo test -p aequora-schema -p aequora-mapping -p aequora-migration -p aequora-cli
 cargo check -p aequora --all-features --all-targets
 cargo run -q -p aequora-dev -- check
-bash scripts/check-database-neutrality.sh
+cargo xtask check database-neutrality
 ```
 
 Live PostgreSQL/Neon conformance still requires the configured environment URLs and is not claimed

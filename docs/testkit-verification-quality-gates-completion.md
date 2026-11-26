@@ -18,7 +18,7 @@ trace reproduction.
 
 Executable evidence includes `AEQ-INV-VERIFY001` through `AEQ-INV-VERIFY010`, conformance profile
 `VerificationFull` and tests 164–173, the four bounded configurations under `config/test/`, the
-Part 48 quality-gate fixture and contract suite, and `scripts/check-verification-architecture.sh`.
+Part 48 quality-gate fixture and contract suite, and `cargo xtask check verification`.
 The structural gate also exercises the existing property, model, Tx/fault, bootstrap, scope,
 tenant-isolation, tombstone, ambiguous-commit, CLI, registry, and invariant suites.
 

@@ -21,7 +21,7 @@ This report records executable repository evidence and does not replace that des
 | Bootstrap and live hints | Bootstrap uses a distinct framed request/response kind and bounded page semantics. WebSocket/SSE routes remain an application composition concern over `aequora-live`; they are advisory only and normal cursor exchange remains authoritative. |
 | Admin and browser policy | The public router contains no admin route. Applications compose the Part 24 control plane on a separate router/listener. CORS and cookie-CSRF policy are deployment-owned and must use explicit origins; the native bearer sync router does not enable permissive CORS. |
 | Invariants and certification | `AEQ-INV-AXUM001`–`010`, `AxumServerFull`, and conformance tests 79–88 are present in the invariant registry, canonical RON registry, and generated Rust/Markdown snapshots. |
-| Structural enforcement | `scripts/check-axum-server-architecture.sh` verifies artifacts, routes, limits, symbols, invariant parity, transport-neutral dependency direction, focused tests, and registry integrity. CI runs this gate. |
+| Structural enforcement | `cargo xtask check axum-server` verifies artifacts, routes, limits, symbols, invariant parity, transport-neutral dependency direction, focused tests, and registry integrity. CI runs this gate. |
 
 ## Request order and deployment boundary
 
@@ -42,7 +42,7 @@ private admin listener remain deployment policy rather than synchronization sema
 The focused gate is:
 
 ```bash
-bash scripts/check-axum-server-architecture.sh
+cargo xtask check axum-server
 ```
 
 Repository completion also requires formatting, strict Clippy, Rust 1.87 all-target/all-feature

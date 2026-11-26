@@ -41,9 +41,9 @@ evidence, while the reusable safety contracts and failure models are executable 
 CARGO_BUILD_JOBS=1 cargo test -p aequora-jobs -p aequora-workflow -p aequora-side-effects
 CARGO_BUILD_JOBS=1 cargo test -p aequora-testkit --test job_workflow_side_effect_contracts
 CARGO_BUILD_JOBS=1 cargo clippy -p aequora-jobs -p aequora-workflow -p aequora-side-effects -p aequora-server --all-targets -- -D warnings
-bash scripts/check-jobs-architecture.sh
+cargo xtask check jobs
 cargo run -q -p aequora-dev -- check
-bash scripts/check-database-neutrality.sh
+cargo xtask check database-neutrality
 ```
 
 The focused suite covers lease expiry/reclaim fencing (including generated stale tokens), cyclic

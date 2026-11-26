@@ -40,7 +40,7 @@ collection, commit-with-lost-response explanation, protection requirements, prod
 rejection, minimization, and retention. The cross-crate test proves tenant authorization and
 sanitization at the server boundary.
 
-`scripts/check-diagnostics-architecture.sh` checks the neutral dependency boundary, required
+`cargo xtask check diagnostics` checks the neutral dependency boundary, required
 client/server/CLI/testkit surfaces, absence of private-key types, and all nine invariant IDs. CI
 runs the structural gate, focused core and integration tests, and read-only CLI capability output.
 

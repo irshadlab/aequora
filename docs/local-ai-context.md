@@ -26,18 +26,18 @@ octocode config --graphrag-enabled true --max-results 8 \
   --chunk-size 1800 --chunk-overlap 120 --similarity-threshold 0.25 \
   --code-embedding-model fastembed:Xenova/all-MiniLM-L6-v2 \
   --text-embedding-model fastembed:Xenova/all-MiniLM-L6-v2
-scripts/rag index
+cargo xtask rag index
 ```
 
 The active Octocode configuration uses the compact local MiniLM FastEmbed model, does not require
-an API key, and keeps LLM processing disabled while indexing. The `scripts/rag` wrapper fixes the
+an API key, and keeps LLM processing disabled while indexing. The `cargo xtask rag` wrapper fixes the
 retrieval threshold at `0.25`, returns at most the configured eight results per search mode, and
 uses partial text snippets. Disable `[search.reranker].enabled` in Octocode's generated
 configuration unless its separate local reranker model has also been installed.
 
 The database and embedding cache live under Octocode's user-local data directory, outside Git.
 `.codex/config.toml` starts the same index as an MCP server for trusted Codex clients; restart Codex
-after installing or changing the server. `scripts/rag index` intentionally uses Octocode's
+after installing or changing the server. `cargo xtask rag index` intentionally uses Octocode's
 `--no-git` mode so uncommitted working-tree edits are not skipped by commit-based indexing.
 
 ## Retrieval workflow
@@ -45,9 +45,9 @@ after installing or changing the server. `scripts/rag index` intentionally uses 
 Use semantic retrieval before opening broad modules:
 
 ```bash
-scripts/rag query "where are rejected operations reconciled atomically"
-scripts/rag code "database-neutral authority transaction boundary"
-scripts/rag docs "release verification gates"
+cargo xtask rag query "where are rejected operations reconciled atomically"
+cargo xtask rag code "database-neutral authority transaction boundary"
+cargo xtask rag docs "release verification gates"
 ```
 
 Results default to token-efficient text with partial snippets. Follow up with `rtk read` or
@@ -57,8 +57,8 @@ definition is necessary.
 After a material refactor, rebuild the index before using it for repository-wide conclusions:
 
 ```bash
-scripts/rag index
-scripts/rag stats
+cargo xtask rag index
+cargo xtask rag stats
 ```
 
 ## Guppy dependency evidence
@@ -73,5 +73,5 @@ cargo run -q -p aequora-dev -- check
 ```
 
 `check` rejects transitive coupling between the client/server layers and their opposite database or
-transport adapters. It complements `scripts/check-database-neutrality.sh`, which still proves the
+transport adapters. It complements `cargo xtask check database-neutrality`, which still proves the
 four supported feature profiles compile.

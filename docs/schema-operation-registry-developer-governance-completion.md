@@ -36,7 +36,7 @@ Runtime admission rejects unknown IDs and lifecycle-forbidden new operations. Ex
 
 `AEQ-INV-REGISTRY001` through `AEQ-INV-REGISTRY009` are registered in `aequora-invariants` with model, property, adapter, and diagnostic evidence names. Focused tests cover duplicate IDs, removed-ID reuse, missing owner, schema regression, unresolved references, required-safety fallback, unknown ID admission, retry-only lifecycle, generated lookup resolution, startup handler validation, ID parity, and reservation ranges.
 
-The repository gate is `scripts/check-registry-architecture.sh`; CI runs it, all four registry crate suites, and the cross-crate registry contracts. The gate also enforces that runtime registry layers remain free of database, transport, and async-runtime dependencies.
+The repository gate is `cargo xtask check registry`; CI runs it, all four registry crate suites, and the cross-crate registry contracts. The gate also enforces that runtime registry layers remain free of database, transport, and async-runtime dependencies.
 
 ## Explicit v1 decisions
 

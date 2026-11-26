@@ -45,7 +45,7 @@ The repository contains:
   fail-closed behavior, and stable error mappings;
 - `crates/aequora-testkit/tests/admin_control_plane_contracts.rs`, proving the server-facing plan
   and guarded execution path;
-- `scripts/check-admin-architecture.sh`, checking neutral dependencies, required integration
+- `cargo xtask check admin`, checking neutral dependencies, required integration
   surfaces, private-key type exclusion, and all nine Part 24 invariant identifiers;
 - CI execution of the architecture script, focused crate/contracts, and CLI capability discovery.
 

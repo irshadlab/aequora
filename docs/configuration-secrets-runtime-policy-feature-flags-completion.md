@@ -17,14 +17,14 @@ This report records executable repository evidence and does not replace that des
 | Adapter isolation | Logical PostgreSQL/Neon and SQLite/Stoolap selection is typed while credentials remain `SecretRef` values. Startup validation checks declared atomicity and snapshot capabilities and never silently downgrades. The three neutral Part 43 crates have no runtime, transport, UI, cloud-config-service, or physical database dependency. |
 | CLI and documentation metadata | `aequora config check`, `effective`, `explain`, and `diff` validate without service startup, emit sanitized effective state, describe typed setting metadata, and classify reload/restart/forbidden/security-sensitive changes. `CONFIGURATION_REFERENCE` is the documentation source. |
 | Tests, invariants, and conformance | Unit and testkit suites cover parsing, strict unknown fields, validation, precedence, production safety, redaction, provider failure, migration, capability rejection, policy merge, failed reload preservation, concurrent coherent reads, deterministic rollout, and entitlement separation. `AEQ-INV-CONFIG001`–`010`, conformance tests 114–123, and the `ConfigurationRuntimeFull` profile are registered and generated. |
-| Structural gate | `scripts/check-configuration-architecture.sh` verifies crate/symbol presence, invariant parity, neutral dependencies, absence of correctness-disabling switches, focused tests, registry parity, CLI validation, and effective-output redaction. CI executes it. |
+| Structural gate | `cargo xtask check configuration` verifies crate/symbol presence, invariant parity, neutral dependencies, absence of correctness-disabling switches, focused tests, registry parity, CLI validation, and effective-output redaction. CI executes it. |
 
 ## Verification contract
 
 The focused gate is:
 
 ```bash
-bash scripts/check-configuration-architecture.sh
+cargo xtask check configuration
 ```
 
 Repository completion also requires formatting, strict Clippy, Rust 1.87 all-target/all-feature

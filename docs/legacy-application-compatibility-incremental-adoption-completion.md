@@ -23,7 +23,7 @@ This report records implementation evidence only.
 
 ## Repository enforcement
 
-`scripts/check-legacy-architecture.sh` enforces neutral dependency direction, required modules,
+`cargo xtask check legacy` enforces neutral dependency direction, required modules,
 invariants, tooling, and contract-test presence. CI runs it with the focused crates and contract
 suite; the normal workspace, Clippy, Rustdoc, Guppy, and database-neutrality gates provide the
 cross-repository checks.

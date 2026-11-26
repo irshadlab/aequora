@@ -72,12 +72,12 @@ The following commands completed successfully with `CARGO_BUILD_JOBS=1` where Ca
 - `RUSTDOCFLAGS=-Dwarnings cargo doc --workspace --all-features --no-deps --locked --offline`
 - `cargo check --manifest-path fuzz/Cargo.toml --all-targets --locked --offline`
 - `cargo run -q -p aequora-dev --locked --offline -- check`
-- `bash scripts/check-database-neutrality.sh`
-- every `scripts/check-*-architecture.sh` gate
+- `cargo xtask check database-neutrality`
+- every architecture gate under `cargo xtask check`
 - `cargo audit --file Cargo.lock` and `cargo audit --file fuzz/Cargo.lock`, using the advisory
   snapshot identified above after the tool's integrated Git fetch encountered a transient I/O
   failure
-- `bash scripts/check-high-assurance-hardening.sh`
+- `cargo xtask check high-assurance-hardening`
 - release builds for all `aequora` examples
 - a Podman build from the digest-pinned Containerfile
 - a release-mode, loopback-only container smoke test under a non-root UID, read-only root,

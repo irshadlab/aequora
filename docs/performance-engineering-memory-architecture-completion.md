@@ -17,7 +17,7 @@ replace deployment-specific load, soak, database-plan, mobile, and capacity acce
 | Database/query shape | `HOT_QUERY_CONTRACTS` declares bounded provider-neutral journal cursor, pending/due outbox, entity-version, and snapshot-page index shapes. PostgreSQL and Stoolap retain adapter-owned prepared/indexed implementations; performance characterization remains separate from semantic certification. |
 | Benchmarks and regression | Versioned fixed-seed RON workloads cover school-day, mass-reconnect, large-bootstrap, and low-bandwidth profiles. Reports require CPU/RAM/OS/database/commit/durability metadata and unique phase metrics. `compare_reports` uses noise-tolerant relative thresholds and attributes failures to one phase. |
 | Profiling and allocator policy | The `profiling` Cargo profile keeps optimized symbols. `performance/README.md` defines flamegraph, heap, database explain, copy-budget, allocator, unsafe, and SIMD approval policy. |
-| Invariants and architecture gates | `AEQ-INV-PERF001` through `AEQ-INV-PERF009` are stable registry entries. `scripts/check-performance-architecture.sh`, focused tests, Guppy, database-neutrality, strict Clippy, and workspace tests enforce the implementation. |
+| Invariants and architecture gates | `AEQ-INV-PERF001` through `AEQ-INV-PERF009` are stable registry entries. `cargo xtask check performance`, focused tests, Guppy, database-neutrality, strict Clippy, and workspace tests enforce the implementation. |
 
 ## Ownership boundary
 

@@ -19,7 +19,7 @@ semantics.
 | Capability/privacy | `ClientCapabilityProfile` discloses only coarse `LowMemory`/`Standard` class plus transport ceilings and compression support. `ResourceConstrainedV1` is transport capability, never authorization evidence. |
 | Diagnostics | Bounded diagnostic rings, payload-free resource log events, local byte accounting, and sanitized user diagnostics avoid unbounded logs and domain payload disclosure. |
 | Store format and upgrades | `LocalStoreFormatVersion` rejects newer incompatible stores and requires explicit migration for older formats. Resource policy does not silently open or downgrade an incompatible store. |
-| Invariants and tests | `AEQ-INV-CLIENT001` through `AEQ-INV-CLIENT009`, `client_resource_contracts`, and `scripts/check-client-resource-architecture.sh` enforce intent, cursor, directive, memory, checkpoint, eviction, atomic-save, semantic-parity, and telemetry guarantees. |
+| Invariants and tests | `AEQ-INV-CLIENT001` through `AEQ-INV-CLIENT009`, `client_resource_contracts`, and `cargo xtask check client-resource` enforce intent, cursor, directive, memory, checkpoint, eviction, atomic-save, semantic-parity, and telemetry guarantees. |
 
 ## Fault profiles covered
 

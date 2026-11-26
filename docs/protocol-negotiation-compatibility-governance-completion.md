@@ -46,7 +46,7 @@ responsibilities behind these contracts.
 `aequora-protocol` also pins append-only capability wire discriminants to the canonical numeric
 registry IDs. `fuzz/fuzz_targets/compatibility_inputs.rs` exercises untrusted hello and extension
 decoding. The invariant registry contains `AEQ-INV-COMP001` through `AEQ-INV-COMP009`, and
-`scripts/check-compatibility-architecture.sh` keeps the crate layout, policy surfaces, registry,
+`cargo xtask check compatibility` keeps the crate layout, policy surfaces, registry,
 protocol marker, invariant IDs, and focused proofs in the repository gate.
 
 ## Verification commands
@@ -55,9 +55,9 @@ protocol marker, invariant IDs, and focused proofs in the repository gate.
 cargo test -p aequora-compat --locked --offline
 cargo test -p aequora-testkit --test compatibility_contracts --locked --offline
 cargo run -p aequora-cli --locked --offline -- compat registry
-bash scripts/check-compatibility-architecture.sh
+cargo xtask check compatibility
 cargo run -p aequora-dev --locked --offline -- check
-bash scripts/check-database-neutrality.sh
+cargo xtask check database-neutrality
 ```
 
 The workspace formatting, all-target/all-feature checking, strict Clippy, tests, rustdoc, fuzz-build,

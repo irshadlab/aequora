@@ -17,14 +17,14 @@ This report records executable repository evidence and does not replace that des
 | Restore and readiness | `record_restore_epoch_transition` accepts only a strictly increasing `RestoredTimeline` transition. Structured readiness checks reachability, writer state, exact schema, critical timeouts, and initialized authority metadata. |
 | Observability | Lock-free payload-free metrics cover pool wait, transaction/cursor latency, committed journal work, duplicate rates, and serialization/deadlock retries; safe snapshots can be exported by the deployment observability backend. |
 | Profiles and invariants | `PostgresAuthorityFull` and `NeonOperationalProfile`, conformance tests 59–68, and `AEQ-INV-PG001`–`010` are registered in canonical RON and generated Rust/Markdown snapshots. |
-| Structural gate | `scripts/check-postgres-authority-architecture.sh` verifies module ownership, DDL/contracts, neutral dependency boundaries, invariants/registry parity, focused tests, and registry integrity. CI runs the gate and the live PostgreSQL/optional Neon job. |
+| Structural gate | `cargo xtask check postgres-authority` verifies module ownership, DDL/contracts, neutral dependency boundaries, invariants/registry parity, focused tests, and registry integrity. CI runs the gate and the live PostgreSQL/optional Neon job. |
 
 ## Verification contract
 
 The focused architecture gate is:
 
 ```bash
-bash scripts/check-postgres-authority-architecture.sh
+cargo xtask check postgres-authority
 ```
 
 Repository completion also requires formatting, strict Clippy, Rust 1.87 all-target/all-feature

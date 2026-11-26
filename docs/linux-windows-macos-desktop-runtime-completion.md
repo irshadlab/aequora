@@ -22,7 +22,7 @@ Portable mode is accepted only with an explicit passphrase-encrypted secure-stor
 The focused gate is:
 
 ```text
-bash scripts/check-desktop-architecture.sh
+cargo xtask check desktop
 ```
 
 It verifies all required artifacts and invariant/profile wiring, checks neutral dependency manifests, runs focused crate tests, and runs the cross-crate desktop contract suite. Repository-wide formatting, Clippy, tests, Rustdoc, Guppy direction, database neutrality, registry generation, and diff checks are recorded in the final task handoff after execution.

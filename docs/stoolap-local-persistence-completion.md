@@ -18,14 +18,14 @@ This report records executable repository evidence and does not replace that des
 | Migrations and recovery | Checksummed, contiguous migrations reject drift and newer unsupported formats. Open initializes identity and scheduler state, backfills old outbox digests, recovers staged work through existing durable APIs, and never performs destructive downgrade. |
 | Adapter boundary and alternatives | Stoolap types remain in `aequora-store-stoolap`; neutral store, protocol, domain, and adapter SDK crates do not depend on the driver. Part 42 now implements the independent SQLite reference adapter and exercises the same public local-store contract. |
 | Profiles and invariants | `StoolapLocalCore`, `StoolapDesktopLocalFull`, and `StoolapMobileLocalFull`, conformance tests 69–78, and `AEQ-INV-STOOLAP001`–`010` are registered in canonical RON and generated Rust/Markdown snapshots. |
-| Structural gate | `scripts/check-stoolap-local-persistence-architecture.sh` verifies module ownership, DDL/contracts, neutral dependency boundaries, invariants/registry parity, focused tests, public adapter contracts, and registry integrity. CI runs the gate. |
+| Structural gate | `cargo xtask check stoolap-local-persistence` verifies module ownership, DDL/contracts, neutral dependency boundaries, invariants/registry parity, focused tests, public adapter contracts, and registry integrity. CI runs the gate. |
 
 ## Verification contract
 
 The focused architecture gate is:
 
 ```bash
-bash scripts/check-stoolap-local-persistence-architecture.sh
+cargo xtask check stoolap-local-persistence
 ```
 
 Repository completion also requires formatting, strict Clippy, Rust 1.87 all-target/all-feature

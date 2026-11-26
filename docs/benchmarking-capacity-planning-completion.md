@@ -17,7 +17,7 @@ supplies an allowlist, rate cap, isolated tenant, and operator confirmation.
 
 Executable evidence includes `AEQ-INV-BENCH001` through `AEQ-INV-BENCH010`, the
 `BenchmarkingFull` conformance profile and tests 154–163, the Part 47 testkit contract, and
-`scripts/check-benchmarking-architecture.sh`. The architecture gate verifies the eight workload
+`cargo xtask check benchmarking`. The architecture gate verifies the eight workload
 files, neutral dependency boundary, CLI safety behavior, registry parity, focused unit tests, and
 conformance/invariant coverage.
 

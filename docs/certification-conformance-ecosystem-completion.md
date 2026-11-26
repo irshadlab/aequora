@@ -23,6 +23,6 @@ The ecosystem catalog is deliberately empty until an exact built-in or third-par
 against the suite and its reproducible artifact is reviewed. This avoids falsely turning repository
 ownership or a fixture into an official certification.
 
-Repository acceptance is enforced by `scripts/check-certification-architecture.sh`, the CI Part 30
+Repository acceptance is enforced by `cargo xtask check certification`, the CI Part 30
 step, registry verification, strict Clippy, workspace tests/docs, Guppy boundaries, and database
 neutrality checks.

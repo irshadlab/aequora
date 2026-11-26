@@ -56,7 +56,7 @@ You are an expert distributed systems and security engineer performing a compreh
 #### Phase 4: Edge-Case & Invariant Verification
 - Run all verification scripts and gates:
   - Guppy crate boundary checks (`cargo run -q -p aequora-dev -- check`).
-  - Database neutrality and isolation gates (`bash scripts/check-database-neutrality.sh`).
+  - Database neutrality and isolation gates (`cargo xtask check database-neutrality`).
   - Domain-specific architecture gates (security, feed, registry, certification).
 - Run full test suite, contract tests, property-based tests (proptest), and fuzz targets.
 - Ensure 0 compiler warnings, 0 clippy warnings, and clean formatting.

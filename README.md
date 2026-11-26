@@ -234,7 +234,7 @@ Run the real-world distributed simulation and containerized chaos suites:
 cargo test -p aequora-testkit --test real_world_simulation -- --nocapture
 
 # Containerized high-load stress & chaos test suite (Podman / Kubernetes)
-bash scripts/run-chaos-stress-test.sh
+cargo xtask chaos
 ```
 
 ### Minimal in-process assembly
@@ -504,19 +504,19 @@ The Dioxus integration is archived under
 
 ## Workspace map
 
-The workspace contains 51 crates strictly bounded into 9 architectural layers managed via `aequora-dev`. The functional architecture layers are:
+The workspace contains 35 crates strictly bounded into 9 architectural layers managed via `aequora-dev`. The functional architecture layers are:
 
 | Layer | Crates | Count | Description |
 |---|---|:---:|---|
-| **Foundation** | `aequora-blob`, `aequora-workload`, `aequora-compute`, `aequora-macros`, `aequora-types` | 5 | Identifiers, schemas, invariants, scheduling, coordination, and workload specifications. |
-| **Protocol Contracts** | `aequora-transport`, `aequora-scope`, `aequora-routing`, `aequora-region`, `aequora-operation`, `aequora-legacy`, `aequora-integrity`, `aequora-compat`, `aequora-authority`, `aequora-codec`, `aequora-observability`, `aequora-protocol`, `aequora-registry`, `aequora-security` | 14 | AEQ1 wire types, codec and transport contracts, authority execution, security, and the durable registry. |
-| **Domain Execution** | `aequora-queue`, `aequora-partition`, `aequora-metadata`, `aequora-journal`, `aequora-feed`, `aequora-conflict`, `aequora-release`, `aequora-diagnostics`, `aequora-supply-chain` | 9 | Conflict policies, change feeds, storage metadata, release signing, and supply-chain governance. |
+| **Foundation** | `aequora-workload`, `aequora-compute`, `aequora-macros`, `aequora-types` | 4 | Identifiers, schemas, invariants, scheduling, coordination, and workload specifications. |
+| **Protocol Contracts** | `aequora-authority`, `aequora-codec`, `aequora-observability`, `aequora-protocol`, `aequora-registry`, `aequora-security` | 6 | AEQ1 wire types, codec and transport contracts, authority execution, security, and the durable registry. |
+| **Domain Execution** | `aequora-release`, `aequora-diagnostics`, `aequora-supply-chain` | 3 | Conflict policies, change feeds, storage metadata, release signing, and supply-chain governance. |
 | **Storage Contracts** | `aequora-adapter-sdk`, `aequora-profile`, `aequora-store` | 3 | Persistence, adapters, consistency profiles, and certification. |
-| **Sync Engines** | `aequora-crdt`, `aequora-bootstrap`, `aequora-client`, `aequora-live`, `aequora-server` | 5 | Local-first client and authoritative server runtimes, bootstrap, live hints, and CRDTs. |
+| **Sync Engines** | `aequora-client`, `aequora-live`, `aequora-server` | 3 | Local-first client and authoritative server runtimes, bootstrap, live hints, and CRDTs. |
 | **Physical Adapters** | `aequora-store-postgres`, `aequora-store-sqlite`, `aequora-store-stoolap` | 3 | Official persistence implementations: embedded Stoolap replica, portable SQLite replica, and enterprise PostgreSQL/Neon authority. |
 | **Integration Platform** | `aequora-axum`, `aequora-config`, `aequora-deployment`, `aequora-desktop`, `aequora-http`, `aequora-legacy-api`, `aequora-mobile`, `aequora-quic` | 8 | Gateways, deployment and configuration, and desktop and mobile runtimes. |
 | **Applications** | `aequora`, `aequora-cli` | 2 | Public Rust SDK facade and developer CLI, including the registry command. |
-| **Tooling & Verification** | `aequora-dev`, `aequora-testkit` | 2 | Architecture policy checks, simulation, model verification, load generation, and benchmarking. |
+| **Tooling & Verification** | `xtask`, `aequora-dev`, `aequora-testkit` | 3 | Architecture policy checks, simulation, model verification, load generation, and benchmarking. |
 
 The CLI package provides both `aequora` and `aequora-registry`. Run registry verification with
 `cargo run -p aequora-cli --bin aequora-registry -- verify .`. Test tools live under
@@ -568,18 +568,29 @@ cargo run -q -p aequora-cli -- init ./my-aequora-client client
 
 ## Verification
 
+Repository automation runs through `cargo xtask`. Use `cargo xtask check list` to
+list gates, `cargo xtask check <name>` to run one, and `cargo xtask check all` to run
+the full suite. Gate rules are in [architecture/checks](architecture/checks).
+The database matrix, chaos scenarios, and publish allowlist also use RON.
+
+```bash
+cargo xtask publish --plan
+cargo xtask supply-chain
+cargo xtask rag query "authoritative transaction idempotency"
+```
+
 The normal release gates are:
 
 ```bash
 cargo fmt --all -- --check
 cargo +1.87.0 check --workspace --all-targets --all-features --locked
 cargo run -q -p aequora-dev --locked -- check
-bash scripts/check-database-neutrality.sh
-bash scripts/check-performance-architecture.sh
-bash scripts/check-client-resource-architecture.sh
-bash scripts/check-benchmarking-architecture.sh
-bash scripts/check-supply-chain-architecture.sh
-bash scripts/check-deployment-architecture.sh
+cargo xtask check database-neutrality
+cargo xtask check performance
+cargo xtask check client-resource
+cargo xtask check benchmarking
+cargo xtask check supply-chain
+cargo xtask check deployment
 cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
 cargo test --workspace --all-features --locked
 RUSTDOCFLAGS='-D warnings' cargo doc --workspace --all-features --no-deps --locked
@@ -634,7 +645,7 @@ CARGO_BUILD_JOBS=1 cargo build --release -p aequora --example realworld_stress \
   --features axum,http-client,stoolap,testkit --locked
 podman build -f deploy/container/realworld.Containerfile \
   -t localhost/aequora-stress-harness:local .
-bash scripts/run-chaos-stress-test.sh
+cargo xtask chaos
 ```
 
 > [!IMPORTANT]
@@ -650,7 +661,7 @@ bash scripts/run-chaos-stress-test.sh
 | Component / File | Purpose | Characteristics |
 |:---|:---|:---|
 | [`realworld_stress.rs`](crates/aequora/examples/realworld_stress.rs) | Multi-client stress harness | Bounded inputs and telemetry; fail-closed worker, outbox-drain, and adversarial checks |
-| [`run-chaos-stress-test.sh`](scripts/run-chaos-stress-test.sh) | Automated chaos orchestrator | Ephemeral MAC key and manifest; container lifecycle chaos (`pause`, `unpause`, `restart`) |
+| `cargo xtask chaos` | Automated chaos orchestrator | Ephemeral MAC key and manifest; container lifecycle chaos (`pause`, `unpause`, `restart`) |
 | [`realworld-k8s.yaml`](deploy/kubernetes/realworld-k8s.yaml) | Podman/Kubernetes test manifest | Loopback-only host port, no service-account token, read-only root, dropped capabilities |
 | [`real_world_simulation.rs`](crates/aequora-testkit/tests/real_world_simulation.rs) | In-process simulation test suite | 1,447 lines; 10 mission-critical distributed failure scenarios |
 | Container Image | Ephemeral Axum test runtime | `localhost/aequora-stress-harness:local`; never publish or deploy as a production service |
@@ -774,10 +785,10 @@ keep automated development context bounded:
 
 ```bash
 # Index after material refactors
-scripts/rag index
+cargo xtask rag index
 
 # Retrieve architectural or semantic context
-scripts/rag query "authoritative transaction idempotency"
+cargo xtask rag query "authoritative transaction idempotency"
 
 # Find exact identifiers or policy strings
 rtk rg "TransactionCapabilityProvider" crates
