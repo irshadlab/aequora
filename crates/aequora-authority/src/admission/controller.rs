@@ -380,15 +380,25 @@ impl HierarchicalAdmission {
 
         let capacity_percent = self.inner.policy.load.capacity_percent(state.load_state);
         let global_limit = scaled_limit(self.inner.policy.global.max_in_flight, capacity_percent);
-        let unused_other_reservations = CLASSES
-            .into_iter()
-            .filter(|class| *class != request.class)
-            .map(|class| {
-                let reserved = self.inner.policy.class(class).reserved_in_flight;
+        let mut reservable = global_limit;
+        let mut unused_other_reservations = 0;
+        // Allocate the reduced capacity in priority order. Shed classes cannot use a reservation.
+        for class in CLASSES {
+            if !self.inner.policy.load.allows(state.load_state, class) {
+                continue;
+            }
+            let reserved = self
+                .inner
+                .policy
+                .class(class)
+                .reserved_in_flight
+                .min(reservable);
+            reservable -= reserved;
+            if class != request.class {
                 let used = state.classes.get(&class).map_or(0, |usage| usage.in_flight);
-                reserved.saturating_sub(used)
-            })
-            .sum::<usize>();
+                unused_other_reservations += reserved.saturating_sub(used);
+            }
+        }
         let class_aware_global_limit = global_limit.saturating_sub(unused_other_reservations);
         if state.global.in_flight >= class_aware_global_limit
             || !fits(state.global, self.inner.policy.global, bytes, cost)
@@ -741,5 +751,34 @@ mod tests {
         let _permit = controller
             .try_admit(&work(TenantId::new(), WorkClass::Interactive))
             .unwrap_or_else(|error| panic!("{error}"));
+    }
+
+    #[test]
+    fn critical_load_reserves_only_admissible_capacity_in_priority_order() {
+        let mut policy = small_policy();
+        policy.maintenance.reserved_in_flight = 1;
+        policy.interactive.reserved_in_flight = 2;
+        let controller =
+            HierarchicalAdmission::new(policy.clone()).unwrap_or_else(|error| panic!("{error}"));
+        controller.set_load_state(LoadState::Critical);
+        let tenant = TenantId::new();
+        let permit = controller
+            .try_admit(&work(tenant, WorkClass::Interactive))
+            .unwrap_or_else(|error| panic!("{error}"));
+        assert_eq!(controller.snapshot().global_in_flight, 1);
+        drop(permit);
+
+        policy.critical.reserved_in_flight = 1;
+        let controller =
+            HierarchicalAdmission::new(policy).unwrap_or_else(|error| panic!("{error}"));
+        controller.set_load_state(LoadState::Critical);
+        assert!(matches!(
+            controller.try_admit(&work(tenant, WorkClass::Interactive)),
+            Err(AdmissionRejection::ServerBusy { .. })
+        ));
+        let _critical = controller
+            .try_admit(&work(tenant, WorkClass::Critical))
+            .unwrap_or_else(|error| panic!("{error}"));
+        assert_eq!(controller.snapshot().global_in_flight, 1);
     }
 }
