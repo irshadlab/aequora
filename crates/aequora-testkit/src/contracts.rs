@@ -970,6 +970,7 @@ where
     let commit = CommitOperation {
         authority: None,
         operation_id,
+        event_id: EventId::new(),
         expected_version: Some(expected_version),
         next_version,
         ..baseline.clone()
@@ -1022,6 +1023,7 @@ where
     let mut left_commit = CommitOperation {
         authority: None,
         operation_id: OperationId::new(),
+        event_id: EventId::new(),
         entity,
         expected_version: None,
         next_version: EntityVersion::INITIAL,
@@ -1032,6 +1034,7 @@ where
     let mut right_commit = CommitOperation {
         authority: None,
         operation_id: OperationId::new(),
+        event_id: EventId::new(),
         payload: [baseline.payload.as_slice(), b"-race-right"].concat(),
         ..left_commit.clone()
     };

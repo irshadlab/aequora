@@ -31,8 +31,9 @@ use aequora_types::coordination::{
     LocalStoreGeneration,
 };
 use aequora_types::{
-    ActorId, CorrelationId, Cursor, DeviceId, EntityRef, EntityVersion, EventId, HybridTimestamp,
-    LineageContext, LineageRef, OperationId, Sequence, SnapshotId, SyncScopeId, TenantId,
+    ActorId, AuthorityId, CorrelationId, Cursor, DeviceId, EntityRef, EntityVersion, EventId,
+    HybridTimestamp, LineageContext, LineageRef, OperationId, Sequence, SnapshotId, SyncScopeId,
+    TenantId,
 };
 use async_trait::async_trait;
 use serde::Serialize;
@@ -1146,6 +1147,28 @@ pub trait ConflictInbox: Send + Sync {
 pub trait CursorStore: Send + Sync {
     /// Loads the last durably reconciled cursor for a scope.
     async fn load_cursor(&self, scope: SyncScopeId) -> Result<Option<Cursor>, StoreError>;
+}
+
+/// Compares an incoming snapshot boundary against the scope's installed cursor.
+///
+/// # Errors
+/// Returns an error if a bound authority changes identity, its epoch regresses, or the sequence
+/// moves backwards within the same timeline. A newer epoch has an independent sequence space.
+pub fn validate_snapshot_cursor(current: Cursor, next: Cursor) -> Result<(), StoreError> {
+    if current.authority_id != AuthorityId::LEGACY_UNBOUND
+        && (current.authority_id != next.authority_id
+            || current.authority_epoch > next.authority_epoch)
+    {
+        return Err(StoreError::permanent(
+            "snapshot cannot change authority identity or roll back its epoch",
+        ));
+    }
+    if current.same_timeline(next) && current.sequence > next.sequence {
+        return Err(StoreError::permanent(
+            "snapshot cursor would regress within its authority timeline",
+        ));
+    }
+    Ok(())
 }
 
 /// Atomic client reconciliation capability.

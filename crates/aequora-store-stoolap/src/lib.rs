@@ -50,6 +50,7 @@ use aequora_store::{
     LocalCoordinationStore, LocalIntegrityStore, OutboxState, OutboxStateStore, OutboxStats,
     OutboxStore, ReconciliationStore, ReplicaRepairReport, RetryMetadata, ScopeStateStore,
     SnapshotProgress, StoreError, TransactionCapabilities, TransactionCapabilityProvider,
+    validate_snapshot_cursor,
 };
 use aequora_types::coordination::{
     CoordinationSnapshot, FencingToken, LeaseGrant, LeaseKind, LeaseRequest,
@@ -2388,11 +2389,15 @@ fn stage_stoolap_snapshot(
         validate_coordination_fence(&mut transaction, grant, unix_time_millis())?;
     }
     let scope = response.cursor.scope;
+    if let Some(current) = load_cursor_transaction(&mut transaction, scope)? {
+        validate_snapshot_cursor(current, response.cursor)?;
+    }
     validate_authority_trust(&mut transaction, response.cursor)?;
     let existing = snapshot_progress_transaction(&mut transaction, scope)?;
     match existing {
         Some(progress)
             if progress.snapshot_id != response.snapshot_id
+                || progress.cursor != response.cursor
                 || progress.next_offset != response.offset =>
         {
             return Err(StoreError::permanent(
@@ -2427,6 +2432,16 @@ fn stage_stoolap_snapshot(
             },
         )?;
     } else {
+        // Markers above the installed boundary cannot represent applied changes on this timeline.
+        transaction
+            .execute(
+                "DELETE FROM aequora_applied_events WHERE scope_id = $1 AND sequence > $2",
+                (
+                    scope.to_string(),
+                    to_i64(response.cursor.sequence.0, "snapshot sequence")?,
+                ),
+            )
+            .map_err(stoolap_error)?;
         transaction
             .execute(
                 "DELETE FROM aequora_local_entities WHERE scope_id = $1",
@@ -3742,6 +3757,77 @@ mod tests {
         assert_eq!(
             backend.load_cursor(scope).await,
             Ok(Some(Cursor::new(trusted, epoch_two, scope, Sequence(0))))
+        );
+    }
+
+    #[tokio::test]
+    async fn snapshot_epoch_switch_releases_obsolete_applied_sequences() {
+        let backend = StoolapDatabase::open_in_memory().unwrap_or_else(|error| panic!("{error}"));
+        let scope = SyncScopeId::new();
+        let authority = AuthorityId::new();
+        let operation = operation(entity());
+        let mut exchange = empty_sync_response(scope);
+        exchange.next_cursor = Cursor::new(authority, AuthorityEpoch::INITIAL, scope, Sequence(1));
+        exchange.changes.push(RemoteChange {
+            tenant_id: operation.tenant_id,
+            scope_id: scope,
+            sequence: Sequence(1),
+            operation_id: operation.operation_id,
+            event_id: EventId::new(),
+            lineage: operation.metadata.lineage,
+            entity: operation.entity,
+            version: EntityVersion::INITIAL,
+            change_kind: ChangeKind::Upsert,
+            payload: operation.payload,
+            timestamp: operation.created_at,
+        });
+        backend
+            .reconcile(&exchange)
+            .await
+            .unwrap_or_else(|error| panic!("{error}"));
+
+        let mut snapshot = BootstrapResponse {
+            protocol: ProtocolVersion::V1,
+            snapshot_id: SnapshotId::new(),
+            cursor: Cursor::new(authority, AuthorityEpoch::INITIAL, scope, Sequence(0)),
+            offset: 0,
+            entities: Vec::new(),
+            next_offset: 0,
+            has_more: false,
+            server_time: operation.created_at,
+        };
+        assert!(backend.stage_snapshot(&snapshot).await.is_err());
+        assert_eq!(
+            backend.load_cursor(scope).await,
+            Ok(Some(exchange.next_cursor))
+        );
+
+        let next_epoch = AuthorityEpoch::new(2).unwrap_or_else(|error| panic!("{error}"));
+        snapshot.cursor.authority_epoch = next_epoch;
+        backend
+            .stage_snapshot(&snapshot)
+            .await
+            .unwrap_or_else(|error| panic!("{error}"));
+        assert_eq!(backend.load_cursor(scope).await, Ok(Some(snapshot.cursor)));
+
+        exchange.next_cursor.authority_epoch = next_epoch;
+        exchange.changes[0].operation_id = OperationId::new();
+        exchange.changes[0].event_id = EventId::new();
+        exchange.changes[0].payload = b"first event in the new epoch".to_vec();
+        backend
+            .reconcile(&exchange)
+            .await
+            .unwrap_or_else(|error| panic!("{error}"));
+        let stored_payload = backend
+            .database()
+            .query_one::<String, _>(
+                "SELECT payload FROM aequora_local_entities WHERE scope_id = $1",
+                (scope.to_string(),),
+            )
+            .unwrap_or_else(|error| panic!("{error}"));
+        assert_eq!(
+            hex::decode(stored_payload),
+            Ok(exchange.changes[0].payload.clone())
         );
     }
 

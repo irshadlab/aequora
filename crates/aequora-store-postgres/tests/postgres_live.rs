@@ -1,5 +1,5 @@
 use aequora_protocol::ChangeKind;
-use aequora_store::{AuditOffset, CommitOperation};
+use aequora_store::{AuditOffset, CommitOperation, CommitOutcome};
 use aequora_store_postgres::{
     POSTGRES_SCHEMA_VERSION, PostgresBackend, PostgresCommitHook, PostgresCommitHookError,
     PostgresCommitHookOutcome, PostgresPoolConfig, PostgresSideEffectIntent, PostgresStore,
@@ -98,15 +98,33 @@ async fn exercise_backend(backend: &SqlxPostgresBackend) {
     };
 
     let store = PostgresStore::new(backend.clone());
-    let reference =
-        verify_authoritative_store(&InMemoryAuthoritativeStore::default(), commit.clone())
-            .await
-            .unwrap_or_else(|error| panic!("reference contract failed: {error}"));
-    let report = verify_authoritative_store(&store, commit.clone())
+    // The shared contract publishes additional events during its races. Give it a separate
+    // journal so the single-commit snapshot and compaction assertions below stay exact.
+    let contract_commit = CommitOperation {
+        tenant_id: TenantId::new(),
+        scope_id: SyncScopeId::new(),
+        operation_id: OperationId::new(),
+        event_id: EventId::new(),
+        ..commit.clone()
+    };
+    let reference = verify_authoritative_store(
+        &InMemoryAuthoritativeStore::default(),
+        contract_commit.clone(),
+    )
+    .await
+    .unwrap_or_else(|error| panic!("reference contract failed: {error}"));
+    let report = verify_authoritative_store(&store, contract_commit)
         .await
         .unwrap_or_else(|error| panic!("{error}"));
-    assert_eq!(report.acknowledgement.operation_id, operation_id);
     assert_eq!(report.acknowledgement, reference.acknowledgement);
+    let outcome = backend
+        .commit_operation(commit.clone())
+        .await
+        .unwrap_or_else(|error| panic!("{error}"));
+    let CommitOutcome::Applied(acknowledgement) = outcome else {
+        panic!("fresh operation did not apply: {outcome:?}");
+    };
+    assert_eq!(acknowledgement.operation_id, operation_id);
     let metrics = backend.metrics().snapshot();
     assert!(metrics.committed_transactions >= 1);
     assert!(metrics.duplicate_operations >= 1);

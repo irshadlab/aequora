@@ -24,7 +24,7 @@ use aequora_store::{
     AdapterCapabilities, AdapterManifest, AdapterManifestProvider, AdapterRole, AdapterTier,
     ConflictInbox, ConflictRecord, ConflictResolution, CursorStore, OutboxState, OutboxStateStore,
     OutboxStats, OutboxStore, ReconciliationStore, RetryMetadata, SnapshotProgress, StoreError,
-    TransactionCapabilities, TransactionCapabilityProvider,
+    TransactionCapabilities, TransactionCapabilityProvider, validate_snapshot_cursor,
 };
 use aequora_types::{
     AuthorityEpoch, AuthorityId, Cursor, EntityType, OperationId, Sequence, SnapshotId, SyncScopeId,
@@ -508,6 +508,68 @@ impl SQLiteDatabase {
             .map_err(sqlite_error)
     }
 
+    fn install_snapshot(
+        &self,
+        transaction: &Transaction<'_>,
+        cursor: Cursor,
+    ) -> Result<(), StoreError> {
+        let scope = cursor.scope;
+        // Markers above the installed boundary cannot represent applied changes on this timeline.
+        transaction
+            .execute(
+                "DELETE FROM applied_authoritative_change WHERE scope_id=?1 AND sequence>?2",
+                params![
+                    scope.to_string(),
+                    to_i64(cursor.sequence.0, "snapshot sequence")?,
+                ],
+            )
+            .map_err(sqlite_error)?;
+        transaction
+            .execute(
+                "DELETE FROM local_entity WHERE scope_id=?1",
+                [scope.to_string()],
+            )
+            .map_err(sqlite_error)?;
+        transaction
+            .execute(
+                "INSERT INTO local_entity(scope_id,entity_type,entity_id,version,payload,tombstone)
+                 SELECT scope_id,entity_type,entity_id,version,payload,tombstone
+                 FROM snapshot_staging WHERE scope_id=?1",
+                [scope.to_string()],
+            )
+            .map_err(sqlite_error)?;
+        let mut statement = transaction
+            .prepare(
+                "SELECT entity_type,entity_id,version,payload,tombstone
+                 FROM snapshot_staging WHERE scope_id=?1 ORDER BY entity_type,entity_id",
+            )
+            .map_err(sqlite_error)?;
+        let rows = statement
+            .query_map([scope.to_string()], snapshot_from_row)
+            .map_err(sqlite_error)?;
+        for entity in rows {
+            self.projection_hook.apply_snapshot_entity(
+                transaction,
+                scope,
+                &entity.map_err(sqlite_error)?,
+            )?;
+        }
+        drop(statement);
+        transaction
+            .execute(
+                "DELETE FROM snapshot_staging WHERE scope_id=?1",
+                [scope.to_string()],
+            )
+            .map_err(sqlite_error)?;
+        transaction
+            .execute(
+                "DELETE FROM snapshot_progress WHERE scope_id=?1",
+                [scope.to_string()],
+            )
+            .map_err(sqlite_error)?;
+        write_cursor(transaction, cursor)
+    }
+
     fn writer(&self) -> Result<MutexGuard<'_, Connection>, StoreError> {
         self.writer
             .lock()
@@ -811,12 +873,17 @@ impl ReconciliationStore for SQLiteDatabase {
             .transaction_with_behavior(TransactionBehavior::Immediate)
             .map_err(sqlite_error)?;
         let scope = response.cursor.scope;
+        if let Some(current) = load_cursor(&transaction, scope)? {
+            validate_snapshot_cursor(current, response.cursor)?;
+        }
         let progress = load_snapshot_progress(&transaction, scope)?;
         if let Some(current) = progress {
-            if current.snapshot_id != response.snapshot_id || current.next_offset != response.offset
+            if current.snapshot_id != response.snapshot_id
+                || current.cursor != response.cursor
+                || current.next_offset != response.offset
             {
                 return Err(StoreError::permanent(
-                    "SQLite snapshot resume identity or offset mismatch",
+                    "SQLite snapshot resume identity, cursor, or offset mismatch",
                 ));
             }
         } else if response.offset != 0 {
@@ -845,50 +912,7 @@ impl ReconciliationStore for SQLiteDatabase {
         if response.has_more {
             write_snapshot_progress(&transaction, response)?;
         } else {
-            transaction
-                .execute(
-                    "DELETE FROM local_entity WHERE scope_id=?1",
-                    [scope.to_string()],
-                )
-                .map_err(sqlite_error)?;
-            transaction
-                .execute(
-                    "INSERT INTO local_entity(scope_id,entity_type,entity_id,version,payload,tombstone)
-                     SELECT scope_id,entity_type,entity_id,version,payload,tombstone
-                     FROM snapshot_staging WHERE scope_id=?1",
-                    [scope.to_string()],
-                )
-                .map_err(sqlite_error)?;
-            let mut statement = transaction
-                .prepare(
-                    "SELECT entity_type,entity_id,version,payload,tombstone
-                     FROM snapshot_staging WHERE scope_id=?1 ORDER BY entity_type,entity_id",
-                )
-                .map_err(sqlite_error)?;
-            let rows = statement
-                .query_map([scope.to_string()], snapshot_from_row)
-                .map_err(sqlite_error)?;
-            for entity in rows {
-                self.projection_hook.apply_snapshot_entity(
-                    &transaction,
-                    scope,
-                    &entity.map_err(sqlite_error)?,
-                )?;
-            }
-            drop(statement);
-            transaction
-                .execute(
-                    "DELETE FROM snapshot_staging WHERE scope_id=?1",
-                    [scope.to_string()],
-                )
-                .map_err(sqlite_error)?;
-            transaction
-                .execute(
-                    "DELETE FROM snapshot_progress WHERE scope_id=?1",
-                    [scope.to_string()],
-                )
-                .map_err(sqlite_error)?;
-            write_cursor(&transaction, response.cursor)?;
+            self.install_snapshot(&transaction, response.cursor)?;
         }
         transaction.commit().map_err(sqlite_error)
     }
@@ -1362,6 +1386,19 @@ mod tests {
         }
     }
 
+    fn snapshot_response(cursor: Cursor) -> BootstrapResponse {
+        BootstrapResponse {
+            protocol: ProtocolVersion::V1,
+            snapshot_id: SnapshotId::new(),
+            cursor,
+            offset: 0,
+            entities: Vec::new(),
+            next_offset: 0,
+            has_more: false,
+            server_time: timestamp(),
+        }
+    }
+
     fn response(operation: &OperationEnvelope, scope: SyncScopeId) -> SyncResponse {
         let event_id = EventId::new();
         let lineage = operation
@@ -1586,6 +1623,108 @@ mod tests {
             database.load_cursor(scope).await,
             Ok(Some(Cursor::legacy(scope, Sequence(1))))
         );
+    }
+
+    #[tokio::test]
+    async fn snapshot_activation_preserves_the_trusted_cursor_and_staged_boundary() {
+        let (_directory, database) = open_store();
+        let scope = SyncScopeId::new();
+        let authority = AuthorityId::new();
+        let epoch = AuthorityEpoch::new(2).unwrap_or_else(|error| panic!("{error}"));
+        let current = Cursor::new(authority, epoch, scope, Sequence(1));
+        let previous = operation(entity());
+        database
+            .append_operation(previous.clone())
+            .await
+            .unwrap_or_else(|error| panic!("{error}"));
+        let mut installed = response(&previous, scope);
+        installed.next_cursor = current;
+        database
+            .reconcile(&installed)
+            .await
+            .unwrap_or_else(|error| panic!("{error}"));
+        let pending = operation(entity());
+        database
+            .append_operation(pending.clone())
+            .await
+            .unwrap_or_else(|error| panic!("{error}"));
+
+        for cursor in [
+            Cursor::new(authority, epoch, scope, Sequence(0)),
+            Cursor::new(authority, AuthorityEpoch::INITIAL, scope, Sequence(100)),
+            Cursor::new(AuthorityId::new(), epoch, scope, Sequence(100)),
+        ] {
+            assert!(
+                database
+                    .stage_snapshot(&snapshot_response(cursor))
+                    .await
+                    .is_err()
+            );
+            assert_eq!(database.load_cursor(scope).await, Ok(Some(current)));
+            assert_eq!(database.snapshot_progress(scope).await, Ok(None));
+        }
+
+        let promoted_epoch = AuthorityEpoch::new(3).unwrap_or_else(|error| panic!("{error}"));
+        let next = BootstrapResponse {
+            entities: vec![SnapshotEntity {
+                entity: pending.entity,
+                version: EntityVersion::INITIAL,
+                payload: b"snapshot".to_vec(),
+                tombstone: false,
+            }],
+            next_offset: 1,
+            has_more: true,
+            ..snapshot_response(Cursor::new(authority, promoted_epoch, scope, Sequence(0)))
+        };
+        database
+            .stage_snapshot(&next)
+            .await
+            .unwrap_or_else(|error| panic!("{error}"));
+        assert_eq!(database.load_cursor(scope).await, Ok(Some(current)));
+        let staged = database.snapshot_progress(scope).await;
+        let final_page = BootstrapResponse {
+            offset: 1,
+            entities: Vec::new(),
+            has_more: false,
+            ..next
+        };
+        let drifted_page = BootstrapResponse {
+            cursor: Cursor::new(authority, promoted_epoch, scope, Sequence(2)),
+            ..final_page.clone()
+        };
+        assert!(database.stage_snapshot(&drifted_page).await.is_err());
+        assert_eq!(database.snapshot_progress(scope).await, staged);
+        assert_eq!(database.load_cursor(scope).await, Ok(Some(current)));
+
+        database
+            .stage_snapshot(&final_page)
+            .await
+            .unwrap_or_else(|error| panic!("{error}"));
+        assert_eq!(
+            database.load_cursor(scope).await,
+            Ok(Some(final_page.cursor))
+        );
+        assert_eq!(database.snapshot_progress(scope).await, Ok(None));
+        assert_eq!(
+            database.operation_state(pending.operation_id).await,
+            Ok(Some(OutboxState::Pending))
+        );
+        let mut first_change = response(&pending, scope);
+        first_change.next_cursor = Cursor::new(authority, promoted_epoch, scope, Sequence(1));
+        database
+            .reconcile(&first_change)
+            .await
+            .unwrap_or_else(|error| panic!("{error}"));
+        let installed_payload: Vec<u8> = database
+            .reader()
+            .unwrap_or_else(|error| panic!("{error}"))
+            .query_row(
+                "SELECT payload FROM local_entity WHERE scope_id=?1 AND entity_id=?2",
+                params![scope.to_string(), pending.entity.entity_id.to_string()],
+                |row| row.get(0),
+            )
+            .unwrap_or_else(|error| panic!("{error}"));
+        assert_eq!(installed_payload, b"authority");
     }
 
     #[tokio::test]
