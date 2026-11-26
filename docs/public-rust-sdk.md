@@ -38,6 +38,9 @@ let result = client.sync_now().await?;
 - `client.blobs()` is capability-gated and returns `UnsupportedCapability` when no provider exists.
 - `client.diagnostics()` returns bounded, redacted summaries.
 
+The change-feed and security contracts are available under
+`aequora::experimental::feed` and `aequora::experimental::security`.
+
 ## Server quickstart
 
 ```rust,ignore
