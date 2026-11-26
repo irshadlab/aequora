@@ -1,5 +1,7 @@
 //! Stable wire data-transfer objects for synchronization exchanges.
 
+pub mod clock;
+
 use aequora_types::{
     ActorId, AuthorityEpoch, AuthorityId, Cursor, DeviceId, EntityRef, EntityVersion, EventId,
     HybridTimestamp, LineageContext, OperationId, ProtocolVersion, RegionId, RequestId,
