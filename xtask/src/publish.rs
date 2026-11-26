@@ -190,19 +190,8 @@ pub(super) fn run(root: &Path, args: impl Iterator<Item = String>) -> Result {
     }
     let options = Options::parse(args)?;
     let plan = Plan::load(root)?;
+    validate_selection(&plan.layers, options.crate_name.as_deref(), options.layer)?;
     plan.print();
-    if let Some(name) = &options.crate_name {
-        ensure(
-            plan.policy.crates.contains(name),
-            format!("{name} is not publishable"),
-        )?;
-    }
-    if let Some(layer) = options.layer {
-        ensure(
-            (1..=plan.layers.len()).contains(&layer),
-            format!("unknown publish layer {layer}"),
-        )?;
-    }
     if options.plan {
         return Ok(());
     }
@@ -220,6 +209,29 @@ pub(super) fn run(root: &Path, args: impl Iterator<Item = String>) -> Result {
             }
             publish(root, &plan, &options, &plan.packages[name])?;
         }
+    }
+    Ok(())
+}
+
+fn validate_selection(layers: &[Vec<String>], name: Option<&str>, layer: Option<usize>) -> Result {
+    let selected = if let Some(layer) = layer {
+        let index = layer
+            .checked_sub(1)
+            .ok_or_else(|| failure("publish layers start at 1"))?;
+        layers
+            .get(index..=index)
+            .ok_or_else(|| failure(format!("unknown publish layer {layer}")))?
+    } else {
+        layers
+    };
+    if let Some(name) = name {
+        ensure(
+            selected.iter().flatten().any(|package| package == name),
+            match layer {
+                Some(layer) => format!("{name} is not publishable in layer {layer}"),
+                None => format!("{name} is not publishable"),
+            },
+        )?;
     }
     Ok(())
 }
@@ -318,5 +330,20 @@ fn publish(root: &Path, plan: &Plan, options: &Options, package: &Package) -> Re
         } else {
             return Err(failure(format!("publish failed for {name}: {stderr}")));
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::validate_selection;
+
+    #[test]
+    fn conflicting_publish_selectors_are_rejected() {
+        let layers = [vec!["types".into()], vec!["protocol".into()]];
+        assert!(validate_selection(&layers, Some("types"), Some(1)).is_ok());
+        assert!(validate_selection(&layers, Some("types"), Some(2)).is_err());
+        assert!(validate_selection(&layers, Some("missing"), None).is_err());
+        assert!(validate_selection(&layers, None, Some(0)).is_err());
+        assert!(validate_selection(&layers, None, Some(3)).is_err());
     }
 }

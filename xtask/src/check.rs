@@ -246,19 +246,64 @@ fn match_paths(
 }
 
 fn pinned_actions(root: &Path) -> Result {
-    let action = Regex::new(r"uses:\s*([^[:space:]#]+)@([^[:space:]#]+)")?;
-    let revision = Regex::new(r"^[0-9a-f]{40}$")?;
+    let action = Regex::new(r#"^\s*(?:-\s+)?(?:uses|"uses"|'uses')\s*:\s*(.*)$"#)?;
+    let inline = Regex::new(r"uses:\s*[^[:space:]#]+@([^[:space:]#]+)")?;
     files(&root.join(".github/workflows"), &mut |path| {
-        for line in fs::read_to_string(path)?.lines() {
-            if let Some(capture) = action.captures(line) {
-                ensure(
-                    revision.is_match(&capture[2]),
-                    format!("mutable GitHub Action reference in {}", path.display()),
-                )?;
-            }
+        for (index, line) in fs::read_to_string(path)?.lines().enumerate() {
+            let pinned = action.captures(line).map_or_else(
+                || {
+                    inline
+                        .captures(line)
+                        .is_none_or(|capture| commit_pin(&capture[1]))
+                },
+                |capture| pinned_action_reference(&capture[1]),
+            );
+            ensure(
+                pinned,
+                format!(
+                    "expected a pinned GitHub Action reference in {}:{}",
+                    path.display(),
+                    index + 1
+                ),
+            )?;
         }
         Ok(())
     })
+}
+
+fn pinned_action_reference(value: &str) -> bool {
+    let mut parts = value.splitn(2, char::is_whitespace);
+    let Some(token) = parts.next() else {
+        return false;
+    };
+    if parts.next().is_some_and(|tail| {
+        let tail = tail.trim_start();
+        !tail.is_empty() && !tail.starts_with('#')
+    }) {
+        return false;
+    }
+    let reference = token
+        .strip_prefix('"')
+        .and_then(|value| value.strip_suffix('"'))
+        .or_else(|| {
+            token
+                .strip_prefix('\'')
+                .and_then(|value| value.strip_suffix('\''))
+        })
+        .unwrap_or(token);
+    if let Some(path) = reference.strip_prefix("./") {
+        return !path.is_empty();
+    }
+    reference
+        .rsplit_once('@')
+        .is_some_and(|(action, revision)| !action.is_empty() && commit_pin(revision))
+}
+
+fn commit_pin(revision: &str) -> bool {
+    revision.len() == 40
+        && revision
+            .bytes()
+            .all(|byte| matches!(byte, b'0'..=b'9' | b'a'..=b'f'))
 }
 
 fn matches(pattern: &str, text: &str) -> Result<bool> {
@@ -371,4 +416,29 @@ fn database_profiles(root: &Path) -> Result {
         println!("database-neutrality policy: {} compiles", profile.name);
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::pinned_action_reference;
+
+    #[test]
+    fn remote_actions_require_a_complete_commit_pin() {
+        let commit = "34e114876b0b11c390a56381ad16ebd13914f8d5";
+        assert!(pinned_action_reference(&format!(
+            "actions/checkout@{commit} # v4"
+        )));
+        assert!(pinned_action_reference(&format!(
+            "'actions/checkout@{commit}'"
+        )));
+        assert!(pinned_action_reference("./.github/actions/setup"));
+        assert!(!pinned_action_reference("actions/checkout"));
+        assert!(!pinned_action_reference("actions/checkout@v4"));
+        assert!(!pinned_action_reference(&format!(
+            "actions/checkout@{commit}#suffix"
+        )));
+        assert!(!pinned_action_reference(&format!(
+            "actions/checkout@{commit} suffix"
+        )));
+    }
 }
