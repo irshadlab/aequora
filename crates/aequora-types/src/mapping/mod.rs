@@ -3,7 +3,7 @@
 //! This crate validates declarations only. Database adapters remain responsible for native query,
 //! transaction, and conversion implementations. No mapping is inferred from similar names.
 
-use aequora_schema::{
+use crate::schema::{
     CanonicalEntityId, CanonicalFieldId, CanonicalType, CanonicalValue, EntitySchema,
     SchemaRegistry,
 };
@@ -391,7 +391,7 @@ pub enum MappingError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use aequora_schema::{FieldSchema, SchemaError};
+    use crate::schema::{FieldSchema, SchemaError};
 
     struct TextBytes;
 

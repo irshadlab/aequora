@@ -1,5 +1,11 @@
 //! Database-independent primitives used throughout Aequora.
 
+pub mod coordination;
+pub mod invariants;
+pub mod mapping;
+pub mod scheduler;
+pub mod schema;
+
 use core::{fmt, str::FromStr};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;

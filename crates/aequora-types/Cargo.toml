@@ -12,6 +12,9 @@ serde.workspace = true
 thiserror.workspace = true
 uuid.workspace = true
 
+[dev-dependencies]
+loom.workspace = true
+proptest = "1.6.0"
+
 [lints]
 workspace = true
-
