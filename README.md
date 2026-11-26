@@ -568,6 +568,9 @@ cargo run -q -p aequora-cli -- init ./my-aequora-client client
 
 ## Verification
 
+Cargo defaults to `.cargo/tmp` for temporary files on hosts that use `TMPDIR`. An explicitly
+set `TMPDIR` takes precedence.
+
 Repository automation runs through `cargo xtask`. Use `cargo xtask check list` to
 list gates, `cargo xtask check <name>` to run one, and `cargo xtask check all` to run
 the full suite. Gate rules are in [architecture/checks](architecture/checks).
