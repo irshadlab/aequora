@@ -65,7 +65,7 @@
     Match(pattern: "TwoPersonDestructiveApproval", paths: ["crates/aequora-security/src/lib.rs"]),
     Match(pattern: "from_validated_security", paths: ["crates/aequora-authority/src/executor/mod.rs"]),
     Match(pattern: "pub use aequora_security as security", paths: ["crates/aequora/src/lib.rs"]),
-    Match(pattern: "Some\\(\"security\"\\)", paths: ["crates/aequora-cli/src/main.rs"]),
+    Match(pattern: "Some\\(\"security\"\\)", paths: ["crates/aequora-cli/src/lib.rs"]),
     Match(pattern: "\"aequora-security\"", paths: ["crates/aequora-dev/src/main.rs"]),
     Cargo(args: ["run", "-q", "-p", "aequora-cli", "--locked", "--", "security", "validate", "config/security.ron"], quiet: true),
 ]

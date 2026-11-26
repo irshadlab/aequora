@@ -58,7 +58,7 @@
     Match(pattern: "ResetConsumer", paths: ["crates/aequora-authority/src/admin/mod.rs"]),
     Match(pattern: "ConsumersReset", paths: ["crates/aequora-authority/src/admin/mod.rs"]),
     Match(pattern: "pub use aequora_protocol::feed", paths: ["crates/aequora/src/lib.rs"]),
-    Match(pattern: "Some\\(\"feed\"\\)", paths: ["crates/aequora-cli/src/main.rs"]),
-    Match(pattern: "\"aequora-feed\"", paths: ["crates/aequora-dev/src/main.rs"]),
+    Match(pattern: "Some\\(\"feed\"\\)", paths: ["crates/aequora-cli/src/lib.rs"]),
+    Match(pattern: "\"aequora-protocol\"", paths: ["crates/aequora-dev/src/main.rs"]),
     Cargo(args: ["run", "-q", "-p", "aequora-cli", "--locked", "--", "feed", "validate", "config/change-feed.ron"], quiet: true),
 ]
