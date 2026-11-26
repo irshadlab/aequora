@@ -6,3 +6,10 @@ required = false
 startup_timeout_sec = 1200
 tool_timeout_sec = 1200
 default_tools_approval_mode = "writes"
+
+[mcp_servers.xerj]
+command = "/home/irshad/.local/bin/xerj"
+args = ["mcp"]
+
+[mcp_servers.xerj.env]
+XERJ_URL = "http://localhost:9200"
