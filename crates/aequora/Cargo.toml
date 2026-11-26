@@ -31,6 +31,7 @@ aequora-protocol = { version = "0.1.1", path = "../aequora-protocol" }
 aequora-adapter-sdk = { version = "0.1.1", path = "../aequora-adapter-sdk" }
 aequora-client = { version = "0.1.1", path = "../aequora-client" }
 aequora-registry = { version = "0.1.1", path = "../aequora-registry" }
+aequora-security = { version = "0.1.1", path = "../aequora-security" }
 aequora-server = { version = "0.1.1", path = "../aequora-server" }
 aequora-types = { version = "0.1.1", path = "../aequora-types" }
 aequora-authority = { version = "0.1.1", path = "../aequora-authority", optional = true }

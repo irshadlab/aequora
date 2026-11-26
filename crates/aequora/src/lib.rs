@@ -40,7 +40,10 @@ pub mod prelude {
 }
 
 /// Unstable APIs may be added here without the facade's stable semver guarantee.
-pub mod experimental {}
+pub mod experimental {
+    pub use aequora_protocol::feed;
+    pub use aequora_security as security;
+}
 
 #[cfg(feature = "macros")]
 pub use aequora_authority::executor;
