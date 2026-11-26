@@ -11,9 +11,22 @@ repository.workspace = true
 aequora-types = { version = "0.1.1", path = "../aequora-types" }
 serde.workspace = true
 smallvec.workspace = true
+async-trait.workspace = true
+blake3.workspace = true
+bytes.workspace = true
+thiserror.workspace = true
+postcard.workspace = true
+uuid.workspace = true
+ron.workspace = true
+hex.workspace = true
 
 [dev-dependencies]
 postcard.workspace = true
+futures-executor = "0.3.33"
+proptest = "=1.6.0"
+futures-util.workspace = true
+ron.workspace = true
+uuid.workspace = true
 
 [lints]
 workspace = true

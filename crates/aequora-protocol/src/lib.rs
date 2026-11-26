@@ -2,6 +2,24 @@
 
 pub mod clock;
 
+pub mod blob;
+pub mod bootstrap;
+pub mod compat;
+pub mod conflict;
+pub mod crdt;
+pub mod feed;
+pub mod integrity;
+pub mod journal;
+pub mod legacy;
+pub mod metadata;
+pub mod operation;
+pub mod partition;
+pub mod queue;
+pub mod region;
+pub mod routing;
+pub mod scope;
+pub mod transport;
+
 use aequora_types::{
     ActorId, AuthorityEpoch, AuthorityId, Cursor, DeviceId, EntityRef, EntityVersion, EventId,
     HybridTimestamp, LineageContext, OperationId, ProtocolVersion, RegionId, RequestId,
