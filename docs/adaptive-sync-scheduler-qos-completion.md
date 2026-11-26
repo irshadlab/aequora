@@ -1,5 +1,7 @@
 # Part 06 Adaptive Sync Scheduler and QoS Completion
 
+Governing specification is [Part 06](../sys-arch/06-adaptive-sync-scheduler-qos.md).
+
 This record maps `06-adaptive-sync-scheduler-qos.md` to repository-owned implementation and
 verification. It covers the reusable scheduler and its client integration. It does not claim that
 an application's Android, iOS, desktop, carrier, battery, or background-execution integration has
@@ -9,7 +11,7 @@ passed deployment acceptance.
 
 | Requirement | Repository evidence |
 |---|---|
-| Correctness boundary | `aequora-scheduler` is a database- and platform-neutral planner. Work descriptors carry no payload, and scheduling cannot rewrite operation identity, meaning, dependencies, authorization, authoritative order, or durable state. |
+| Correctness boundary | `aequora_types::scheduler` is a database- and platform-neutral planner. Work descriptors carry no payload, and scheduling cannot rewrite operation identity, meaning, dependencies, authorization, authoritative order, or durable state. |
 | Classification | `WorkClass`, `WorkKind`, `OperationPriorityMetadata`, and `OperationPriorityRegistry` provide trusted defaults plus bounded caller hints. Bootstrap, integrity, repair, compaction, blob, and maintenance work have conservative built-in classes. |
 | Normalized context | `SchedulingContext` combines network, metering, roaming, bandwidth, power, activity, pressure, server hints, authentication, storage health, leadership, pause state, and remaining execution budget. Unknown platform signals remain explicit and normalization clamps untrusted values. |
 | Eligibility | Pure policy decisions defer work for pause, offline state, invalid leadership, missing authentication, unhealthy storage, retry deadlines, unmet dependencies, constrained-network policy, low power, server background pauses, and expiring execution budgets. Only explicitly certified critical work may bypass network/power deferral. |

@@ -56,3 +56,19 @@ Verified on 2026-09-02 with `CARGO_BUILD_JOBS=1`:
 The first sandboxed workspace test attempt could not bind the existing `aequora-http` loopback
 listener. The permitted rerun passed; this was an execution-environment restriction rather than a
 source failure.
+
+## Adapter discovery
+
+`aequora-cli` reads `aequora_store_sqlite::SQLITE_ADAPTER_MANIFEST` for
+`inspect adapters`, `inspect adapter sqlite`, `verify pair sqlite postgresql`, and
+`doctor adapters`. The CLI checks declared roles and capabilities offline. The target-profile
+acceptance listed above still applies.
+
+## Snapshot timeline safety
+
+`SQLiteDatabase::stage_snapshot` validates the installed scope cursor and the staged cursor
+inside the activation transaction. It drops obsolete applied-sequence markers above the snapshot
+boundary, preserving replay in a newer epoch and retaining pending outbox entries.
+`snapshot_activation_preserves_the_trusted_cursor_and_staged_boundary` covers rollback,
+boundary drift, and reused sequence numbers. Store-wide trust for an uninstalled scope is
+tracked in the [Part 16 report](authority-failover-timeline-epochs-fork-detection-completion.md).

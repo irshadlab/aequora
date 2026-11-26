@@ -6,13 +6,13 @@ This document records implementation locations and verification only.
 
 ## Implementation map
 
-- `aequora-feed` provides stable consumer/group/worker/partition IDs and numeric kinds/versions;
+- `aequora_protocol::feed` provides stable consumer/group/worker/partition IDs and numeric kinds/versions;
   independent authority-bound cursors; registration and lifecycle; server-controlled tenant filters;
   bounded batches; deterministic projector and dedup contracts; durable-effect-before-ACK; fenced
   leases; ordering/partitioning; lag; floor/epoch recovery; quarantine; reset/rebuild plans; archive
   and batch integrity; minimized external integration events; broker and storage traits; governance
   surfaces; admin/incident views; and `AEQ-INV-FEED001` through `AEQ-INV-FEED009`.
-- `aequora-journal::CompactionInputs` includes the slowest justified `PinJournal` consumer without
+- `aequora_protocol::journal::CompactionInputs` includes the slowest justified `PinJournal` consumer without
   allowing ordinary rebuildable consumers to pin history forever.
 - `config/change-feed.ron` is a validated search-consumer example. The facade, CLI, testkit, Guppy
   rule, structural gate, and CI expose and enforce the implementation without selecting PostgreSQL,
@@ -20,10 +20,15 @@ This document records implementation locations and verification only.
 - `docs/change-feed-event-contract.md` defines the current visibility and compatibility boundary.
   Side-effect consumers materialize Part 23 jobs; governance/storage adapters register derived copies.
 
-Logical metadata table names and neutral `ConsumerStore`/`ChangeFeedSource` contracts are defined for
-PostgreSQL or other adapters. Physical DDL, read pools/replicas, broker infrastructure, object storage,
-tenant residency placement, SLO thresholds, and 10–100 consumer load acceptance remain deployment or
-adapter responsibilities and cannot be truthfully claimed by the neutral core.
+## Remaining / Left & Environment Gates
+
+**Repository and adapter integration.** The neutral `ConsumerStore` and `ChangeFeedSource`
+contracts define durable consumer offset and effect ownership. Physical adapter DDL and atomic
+effect/offset commits, broker forwarding, and archived feed storage still require implementation
+for each production composition.
+
+**Environment.** Verify tenant residency, live partition/recovery, consumer SLOs, and the
+10–100-consumer load campaign against the deployed store, replicas, and any brokers.
 
 ## Verification record
 

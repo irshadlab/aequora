@@ -1,14 +1,21 @@
 # Aequora implementation completion audit
 
-This matrix is the implementation evidence index for the numbered `sys-arch/` specifications.
-The architecture documents are the release specifications; `plan.md` contains only sequencing,
-status, and links. “Implemented” requires code and direct test or build evidence. “Boundary” means
-the database- or application-owned contract exists but no concrete reference integration proves it.
-“Open” is required work; it is not hidden by the broader phase labels.
+[plan.md](../plan.md#implementation-status) is the active tier-by-tier index for the 49 numbered
+specifications and the three root specifications. It links each specification to its dedicated
+report and tracks remaining implementation, host integrations, and target acceptance.
 
-The historical section ranges in the first column are retained as traceability identifiers for the
-original implementation audit; they are not architecture content and are not sections of the
-current `plan.md`.
+Parts [01](formal-correctness-completion.md), [16](authority-failover-timeline-epochs-fork-detection-completion.md),
+and [18](backpressure-admission-fairness-overload-completion.md) now have dedicated reports.
+[Part 40](dioxus-client-integration-completion.md) is archived. The active release scope is defined
+by [Part 50](v1-productization-ga-completion.md) and the checked-in v1 manifests.
+
+The historical section ranges below identify the original implementation audit. The dated
+verification record documents that revision.
+
+The November 27, 2026 audit ran the focused tier gates, the formal/invariant TestKit suites,
+the archived Part 40 gate, the official adapter library suites, and the loopback PostgreSQL
+authority case. Deployment evidence remains tracked in the individual reports and
+[plan.md](../plan.md#open-environment-and-release-gates).
 
 | Sections | Requirement area | Current evidence | Status / remaining proof |
 |---|---|---|---|
@@ -60,7 +67,7 @@ current `plan.md`.
 | 171 | Phase 10 Part 18 overload architecture | Runtime-neutral hierarchical admission, resource permits, request-shape limits, bounded fair queues, load hysteresis, security-preserving brownout, transport/server integration, and `AEQ-INV-LOAD001` through `LOAD009` | Implemented |
 | 172 | Phase 11 Part 19 performance and memory architecture | Runtime-neutral profiles/budgets, `Bytes` and borrowed codec boundaries, header-first rejection, bounded CPU submission, streaming snapshot/blob APIs, paged UI state, hot-query contracts, fixed workloads, attributed regression reports, and `AEQ-INV-PERF001` through `PERF009` | Implemented |
 | 173 | Phase 12 Part 20 resource-constrained client architecture | Platform-neutral device context, four validated profiles, resource admission and scheduler caps, protected eviction/preflight, durable checkpoints, lifecycle hooks, coarse negotiation, fault-profile contracts, and `AEQ-INV-CLIENT001` through `CLIENT009` | Implemented |
-| 174 | Phase 13 Part 21 protocol negotiation and compatibility governance | Runtime-neutral `aequora-compat`, independent version domains, bounded server-selected negotiation, fail-closed required capabilities, stable registry IDs, retry-only/upcaster contracts, read-only grace, fleet-aware feature gates, golden hello fixture, compatibility CLI, and `AEQ-INV-COMP001` through `COMP009` | Implemented |
+| 174 | Phase 13 Part 21 protocol negotiation and compatibility governance | Runtime-neutral `aequora_protocol::compat`, independent version domains, bounded server-selected negotiation, fail-closed required capabilities, stable registry IDs, retry-only/upcaster contracts, read-only grace, fleet-aware feature gates, golden hello fixture, compatibility CLI, and `AEQ-INV-COMP001` through `COMP009` | Implemented |
 
 ## Release gates
 
@@ -89,9 +96,9 @@ The PostgreSQL gate runs when `AEQUORA_TEST_POSTGRES_URL` is set. Neon runs the 
 suite when both `AEQUORA_TEST_NEON_POOLED_URL` and `AEQUORA_TEST_NEON_DIRECT_URL` are set. Stoolap
 real-engine tests run in every normal workspace test invocation.
 
-## Final verification record
+## Historical verification record
 
-Verified from the final source state on 2026-08-11:
+Verified from the 2026-08-11 source state:
 
 - formatting, Rust 1.87 all-target/all-feature checking, stable strict Clippy, rustdoc warnings,
   Guppy boundaries, database-neutrality profiles, fuzz-target builds, benchmark build, packaging,

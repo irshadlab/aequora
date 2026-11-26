@@ -2,7 +2,7 @@
 
 The governing specification is
 [`sys-arch/22-sync-metadata-schema-internal-persistence.md`](../sys-arch/22-sync-metadata-schema-internal-persistence.md).
-The canonical implementation is the database- and runtime-neutral `aequora-metadata` crate.
+The canonical implementation is the database- and runtime-neutral `aequora_protocol::metadata` module.
 
 ## Executable scope
 
@@ -20,7 +20,7 @@ The canonical implementation is the database- and runtime-neutral `aequora-metad
 | Recovery and verification | Typed persistence errors/retry classes, ambiguous commit outcome, startup status, crash injection points, verification findings, snapshot publication checks, and stale-fence rejection |
 | Cross-database equivalence | Deterministic `MetadataExport` validates bounded sanitized canonical records and compares semantic state while ignoring adapter layout/name |
 | Security boundary | Key records contain public material or secure-store references only; sanitized exports reject secret/private-key field names |
-| Normative invariants | `AEQ-INV-META001` through `AEQ-INV-META009` are registered both in `aequora-metadata` and the workspace-wide `aequora-invariants` registry |
+| Normative invariants | `AEQ-INV-META001` through `AEQ-INV-META009` are registered both in `aequora_protocol::metadata` and the workspace-wide `aequora_types::invariants` registry |
 
 ## Adapter responsibility boundary
 
@@ -40,9 +40,9 @@ recovery procedures but are intentionally not imported into the provider-neutral
 Focused acceptance uses:
 
 ```text
-CARGO_BUILD_JOBS=1 cargo test -p aequora-metadata
-CARGO_BUILD_JOBS=1 cargo clippy -p aequora-metadata --all-targets -- -D warnings
-CARGO_BUILD_JOBS=1 cargo test -p aequora-invariants
+CARGO_BUILD_JOBS=1 cargo test -p aequora-protocol
+CARGO_BUILD_JOBS=1 cargo clippy -p aequora-protocol --all-targets -- -D warnings
+CARGO_BUILD_JOBS=1 cargo test -p aequora-types
 cargo xtask check metadata
 cargo run -q -p aequora-dev -- check
 cargo xtask check database-neutrality

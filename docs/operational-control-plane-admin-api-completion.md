@@ -5,7 +5,7 @@
 The reusable implementation of
 [`sys-arch/24-operational-control-plane-admin-api.md`](../sys-arch/24-operational-control-plane-admin-api.md)
 is centered on the runtime-, transport-, authentication-vendor-, and database-neutral
-`aequora-admin` crate.
+`aequora_authority::admin` module.
 
 Delivered contracts include:
 
@@ -57,10 +57,13 @@ outside the filesystem/network sandbox because the sandbox forbids the `aequora-
 socket; the exact loopback test and then the complete workspace suite passed there. The refreshed
 RAG/GraphRAG index processed all 334 repository files.
 
-## Deployment-owned boundaries
+## Remaining / Left & Environment Gates
 
-An application or deployment still supplies the identity provider or mTLS verifier, concrete RBAC
+**Repository and host integration.** An application still supplies the identity provider or mTLS verifier, concrete RBAC
 or ABAC mapping, durable admin/audit adapter, subsystem executors, private listener and network
 policy, optional Axum JSON routes/OpenAPI, CSRF/CORS middleware, telemetry/alerts, and CLI transport
 credentials. Those choices are intentionally outside a database-neutral library and must satisfy
 the fail-closed contracts before mutating endpoints are enabled.
+
+**Environment.** Qualify the private listener, identity and privilege policy, durable audit retention,
+and action recovery against the deployed admin executors.

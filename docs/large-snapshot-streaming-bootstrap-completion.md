@@ -1,5 +1,7 @@
 # Part 10 Large Snapshot, Streaming Bootstrap, and Resumable Transfer Completion
 
+Governing specification is [Part 10](../sys-arch/10-large-snapshot-streaming-bootstrap.md).
+
 Part 10 is implemented at Aequora's database-neutral reusable boundary. The framework defines and
 tests portable manifest, transfer, staging, and activation safety; adapters provide consistent
 database views, physical chunk delivery, and native generation transactions.
@@ -31,7 +33,7 @@ database views, physical chunk delivery, and native generation transactions.
 
 ## Executable evidence
 
-`aequora-bootstrap` unit and property tests cover input-order-independent manifests, chunk/root
+`aequora_protocol::bootstrap` unit and property tests cover input-order-independent manifests, chunk/root
 tampering, strict job transitions, manifest drift on resume, partial range continuation, object
 identity drift, chunk phase progression, lease coverage, disk/memory preflight, and complete
 activation evidence.

@@ -1,5 +1,7 @@
 # Part 11 Operation Semantics and Consistency Profiles Completion
 
+Governing specification is [Part 11](../sys-arch/11-operation-semantics-consistency-profiles.md).
+
 Part 11 is implemented at Aequora's database-neutral reusable boundary. The framework owns coherent
 semantic declarations and validation; applications classify their domain, and adapters prove the
 native guarantees required by the selected profiles.

@@ -1,5 +1,7 @@
 # Part 07 Subscription, Scope, and Dynamic Dataset Completion
 
+Governing specification is [Part 07](../sys-arch/07-subscription-scope-dynamic-dataset.md).
+
 This record maps `07-subscription-scope-dynamic-dataset.md` to repository-owned implementation and
 verification. It covers canonical semantics, reusable contracts, the reference adapter, and the
 built-in Stoolap local adapter. It does not claim that an application's roles, relationships,
@@ -9,7 +11,7 @@ projection policy, revocation feed, or shared-device privacy model has passed de
 
 | Requirement | Repository evidence |
 |---|---|
-| Canonical identity | `aequora-scope` defines non-zero `ScopeDefinitionId`, opaque `SyncScopeId`, monotonic `ScopeVersion` and `ScopeGeneration`, retry-stable subscription/transition identities, bounded canonical partitions, and separately versioned projections. |
+| Canonical identity | `aequora_protocol::scope` defines non-zero `ScopeDefinitionId`, opaque `SyncScopeId`, monotonic `ScopeVersion` and `ScopeGeneration`, retry-stable subscription/transition identities, bounded canonical partitions, and separately versioned projections. |
 | Server authority | `ScopePrincipal`, bounded `ScopeRequest`, `ScopeResolver`, and duplicate-safe `ScopeRegistry` ensure the authenticated tenant and registered server policy produce `ResolvedScope`. Client parameters contain no SQL or executable predicate and never confer access. |
 | Cursor semantics | `ScopeCursor` binds scope identity, version, generation, and sequence. Validation distinguishes changed scope and incompatible generation/retention. `project_filtered_page` advances an evaluated watermark across intentionally excluded journal entries while rejecting unordered or mixed-boundary input. |
 | Membership and projection | Pure `MembershipEvaluator` and `ProjectionRule` boundaries separate deterministic dataset membership from field-level authorized projection. `ScopeResourceAuthorizer` covers scope-aware blobs, integrity artifacts, indexes, and other resources. Projection versions namespace overlapping views. |

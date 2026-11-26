@@ -54,3 +54,9 @@ Verified on 2026-09-01 with `CARGO_BUILD_JOBS=1`:
 
 The first sandboxed workspace test attempt could not bind the HTTP loopback listener. The permitted
 rerun passed; this was an execution-environment restriction rather than a source failure.
+## Snapshot timeline safety
+
+`StoolapDatabase::stage_snapshot` checks both the installed and staged scope cursor. The final
+transaction clears obsolete applied markers above the activated boundary so a newer epoch can
+reuse sequence numbers. `snapshot_epoch_switch_releases_obsolete_applied_sequences` covers
+same-epoch rollback rejection and reconciliation of the first sequence after promotion.

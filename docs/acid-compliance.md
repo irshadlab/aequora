@@ -1,5 +1,7 @@
 # ACID compliance evidence
 
+Governing specification is [ACID.md](../ACID.md).
+
 This document maps the requirements in `ACID.md` to executable Aequora contracts and built-in
 adapter behavior. It is an implementation record, not a replacement for the architecture.
 
@@ -29,6 +31,7 @@ treated as evidence of production durability.
 
 | Adapter | Declared level | Durable boundaries |
 |---|---|---|
+| `SQLiteDatabase` | `FullLocal` | local mutation + outbox, reconciliation + cursor, staged snapshot activation |
 | `StoolapDatabase` / `StoolapStore` | `FullLocal` | local mutation + outbox; reconciliation + cursor; checksummed migrations |
 | `SqlxPostgresBackend` / `PostgresStore` | `FullAuthoritative` | authoritative commit; concurrent idempotency; consistent snapshots; checksummed migrations |
 | testkit in-memory stores | `Reference` / `Volatile` | deterministic semantic and fault testing only |
@@ -105,7 +108,15 @@ operations, version-race rollbacks, persistence failures, and dedup hits. Existi
 journal lag, readiness, deadline, overload, and lifecycle metrics cover the surrounding delivery
 and recovery path.
 
-## Deliberately unsupported semantics
+## Remaining / Left & Environment Gates
+
+**Repository and application scope.** The shared adapter contracts map to `AEQ-INV-001`,
+`AEQ-INV-002`, `AEQ-INV-003`, `AEQ-INV-004`, and storage conformance IDs 1–4.
+`aequora-store-sqlite` exercises Tx A reopen and Tx C rollback in
+`tx_a_commits_domain_and_outbox_together_and_survives_reopen` and
+`tx_c_rolls_back_authoritative_state_outcome_and_cursor_together`.
+Application finance and effect integrations must prove their own transaction participation.
+The protocol supports per-operation commits, with the following limits.
 
 - A request batch is not advertised as one transaction. Each operation is independently atomic.
   Dependency ordering does not imply group rollback.
@@ -126,6 +137,13 @@ cargo run -q -p aequora-dev --locked -- check
 cargo xtask check database-neutrality
 ```
 
-The PostgreSQL suite runs when `AEQUORA_TEST_POSTGRES_URL` is set. The same authoritative contract
+**Environment.** The PostgreSQL suite runs when `AEQUORA_TEST_POSTGRES_URL` is set. The same authoritative contract
 runs against Neon when both pooled and direct Neon URLs are set. A skipped environment-gated run
 must never be reported as a current live-database pass.
+
+### November 27, 2026 verification
+
+The authoritative `postgres_live` case passed on a fresh loopback PostgreSQL 18.7 cluster.
+The TestKit concurrency fixtures now give distinct operations distinct journal event IDs.
+The live test uses separate journals for the shared concurrency contracts and single-commit
+snapshot/compaction checks, preserving exact cursor, audit, and journal assertions.

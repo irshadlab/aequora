@@ -7,7 +7,7 @@ The authoritative design is [Part 34](../sys-arch/34-reference-implementation-wo
 - `architecture/workspace-boundaries.ron` assigns every workspace crate to one of the nine ordered implementation layers. It declares the narrowly justified tooling edges, dependency budgets for critical crates, and exclusive ownership of database, transport-framework, and platform dependencies.
 - `aequora-dev architecture check` parses that policy and uses Guppy metadata to fail on unclassified crates, outward production edges, dependency-budget growth, duplicate assignments, missing policy crates, and isolated dependencies imported by the wrong owner.
 - `aequora-dev architecture map` emits a deterministic, reviewable map of the declared layers and their direct production edges. The existing `aequora-dev check` command now runs both the established transitive boundary rules and the Part 34 policy.
-- `aequora-invariants` registers `AEQ-INV-IMPL001` through `AEQ-INV-IMPL010` with stable identifiers and evidence hooks.
+- `aequora_types::invariants` registers `AEQ-INV-IMPL001` through `AEQ-INV-IMPL010` with stable identifiers and evidence hooks.
 - The focused structural gate checks the neutral public-contract manifests and source boundary, client/UI and server/HTTP separation, the Guppy policy, invariant registry, and canonical/generated registry parity. CI executes this gate before workspace linting and tests.
 
 ## Deliberate boundaries

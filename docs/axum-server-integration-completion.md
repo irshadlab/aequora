@@ -8,7 +8,7 @@ This report records executable repository evidence and does not replace that des
 
 | Requirement | Executable evidence |
 |---|---|
-| Thin transport boundary | `aequora-axum` depends on `ExchangeService` and canonical protocol/core types. `aequora-server`, `aequora-executor`, and `aequora-store` have no Axum, Tower, HTTP request, or bearer-header dependency. |
+| Thin transport boundary | `aequora-axum` depends on `ExchangeService` and canonical protocol/core types. `aequora-server`, `aequora-authority`, and `aequora-store` have no Axum, Tower, HTTP request, or bearer-header dependency. |
 | Public routes | The router owns `POST /sync/v1/exchange`, `POST /sync/v1/bootstrap`, `GET /sync/v1/health`, and canonical `GET /sync/v1/ready`. Compatibility aliases `/sync/v1/health/live` and `/sync/v1/health/ready` remain available. |
 | Authentication | `HttpAuthenticator` consumes a bounded, debug-redacted `PresentedCredential` and returns only `AuthContext`. Authentication runs before admission and body decode. Existing host middleware can continue injecting `Extension<AuthContext>` during migration. |
 | Identity binding | Server core validates session, operation, tenant, actor, device, and scope claims against the authenticated context before authoritative execution. Raw authorization headers are not passed into that boundary. |

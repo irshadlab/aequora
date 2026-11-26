@@ -1,5 +1,7 @@
 # Part 12 Deterministic Execution and Replay Completion
 
+Governing specification is [Part 12](../sys-arch/12-deterministic-execution-replay.md).
+
 Part 12 is implemented at Aequora's database-neutral reusable boundary. The framework makes every
 decision-affecting nondeterministic value explicit and replayable; applications and adapters own
 authenticated capture, canonical domain data, durable storage, secret governance, and production

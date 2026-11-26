@@ -1,5 +1,7 @@
 # Part 14 Data Governance, Retention, Legal Hold, and Erasure Completion
 
+Governing specification is [Part 14](../sys-arch/14-data-governance-retention-erasure.md).
+
 Part 14 is implemented at Aequora's database-neutral reusable boundary. Core plans and verifies
 lifecycle transitions; applications choose legal policy and adapters execute destructive work.
 

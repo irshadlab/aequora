@@ -1,5 +1,7 @@
 # Part 08 Live Sync, Push Hints, and Presence Completion
 
+Governing specification is [Part 08](../sys-arch/08-live-sync-push-presence.md).
+
 Part 08 is implemented at Aequora's reusable repository boundary. Live delivery accelerates the
 normal durable exchange; it is not a second replication protocol and it is never required for
 convergence.
@@ -22,7 +24,7 @@ convergence.
 | Presence | `PresenceDirectory` is bounded, tenant-isolated, privacy-filtered by host policy, TTL-expiring, and intentionally restart-empty |
 | Scheduler | `SyncCoordinatorHandle::observe_live_hint`, `SyncTrigger::PushHint`, and `WorkKind::LiveCatchUp` schedule the established reconciliation path |
 | Diagnostics | `MetricEvent::Live`, aggregate live/presence metrics, and `aequora-dev live explain` |
-| Normative invariants | `AEQ-INV-LIVE001` through `AEQ-INV-LIVE005` in `aequora-invariants` |
+| Normative invariants | `AEQ-INV-LIVE001` through `AEQ-INV-LIVE005` in `aequora_types::invariants` |
 
 The existing `SyncTransport` HTTP/QUIC exchange request and response bodies are unchanged. The
 new live capability is append-only and separately negotiated, so peers without Part 08 continue

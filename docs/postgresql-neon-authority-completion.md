@@ -54,3 +54,8 @@ payload-mismatch handling, snapshot boundaries, compaction, and rollback after a
 mid-transaction SQL failure. Neon cold start, connection churn, branch rehearsal, and restore drills
 run only when deployment URLs and operational infrastructure are supplied. No repository-only run
 claims a Neon environment certification.
+
+On November 27, 2026, `postgres_live::authoritative_transaction_snapshot_and_compaction_are_real`
+passed on a disposable PostgreSQL 18.7 cluster. The fixture exercises concurrent idempotency,
+version races, and Tx B rollback while keeping exact single-commit journal and snapshot checks.
+Hosted Neon evidence remains open.

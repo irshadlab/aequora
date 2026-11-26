@@ -1,5 +1,7 @@
 # Part 15 Cryptographic Integrity, Key Management, and Protected Payload Completion
 
+Governing specification is [Part 15](../sys-arch/15-cryptographic-integrity-key-management-e2e.md).
+
 Part 15 is implemented at Aequora's database-neutral reusable boundary. The framework owns
 canonical cryptographic composition and verification; deployments own credentials, authorization,
 provider custody, platform secure storage, and recovery operations.
@@ -8,7 +10,7 @@ provider custody, platform secure storage, and recovery operations.
 
 | Requirement | Evidence |
 |---|---|
-| Layer separation | Transport TLS remains outside aequora-crypto; typed digest, signature, artifact trust, application-level encryption, and opaque E2E contracts are separate APIs. |
+| Layer separation | Transport TLS remains outside aequora_security::crypto; typed digest, signature, artifact trust, application-level encryption, and opaque E2E contracts are separate APIs. |
 | Canonical hashing | Length-framed BLAKE3 domain separation and non-interchangeable digest newtypes cover snapshots, operations, audit checkpoints, blobs, artifacts, registries, ciphertext, and plaintext. |
 | Artifact authenticity | SignedArtifactManifest, SignedCheckpoint, TrustContext, and fail-closed verification bind artifact type, format, policy, tenant, content digest, purpose, key, and signing time. |
 | Signing providers | KeyProvider separates private-key custody from public metadata. Ed25519 secrets are non-serializable, redacted, and zeroized. The in-memory provider is explicitly test/development-only. |

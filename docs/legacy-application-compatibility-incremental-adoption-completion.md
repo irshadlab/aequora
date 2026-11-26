@@ -6,7 +6,7 @@ This report records implementation evidence only.
 
 ## Delivered surfaces
 
-- `aequora-legacy` provides explicit discovery/manifests, canonical reader and mapper contracts,
+- `aequora_protocol::legacy` provides explicit discovery/manifests, canonical reader and mapper contracts,
   provenance, bounded CDC batches, atomic ledger/cursor persistence, quarantine, reconciliation,
   ID mapping, generation-checked aggregate ownership, writer and side-effect inventory, pure shadow
   planning, readiness, verified cutover, rollback refusal, governance coverage, control-plane

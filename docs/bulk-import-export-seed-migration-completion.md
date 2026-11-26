@@ -1,5 +1,7 @@
 # Part 09 Bulk Import, Export, Seed, and Migration Completion
 
+Governing specification is [Part 09](../sys-arch/09-bulk-import-export-seed-migration.md).
+
 Part 09 is implemented at Aequora's database-neutral reusable boundary. The framework defines and
 tests the safety contracts; applications supply semantic mappings and adapters execute the actual
 source/target transactions.
@@ -29,7 +31,7 @@ source/target transactions.
 
 ## Executable evidence
 
-`aequora-migration` tests cover canonical chunk/root verification, bounded source paging, resumable
+`aequora_authority::migration` tests cover canonical chunk/root verification, bounded source paging, resumable
 artifact staging, legal job transitions, source mutation and policy drift, generated deterministic
 identity stability, exact checkpoint progression, quarantine thresholds, dependency cycles,
 baseline version policy, export-manifest binding, and the complete cutover gate.

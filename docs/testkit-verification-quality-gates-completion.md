@@ -1,5 +1,7 @@
 # Part 48 testkit, verification, fault injection, and quality-gate completion
 
+Governing specification is [Part 48](../sys-arch/48-testkit-verification-fault-injection-property-model-integration-e2e-release-quality-gates-architecture.md).
+
 Part 48 is implemented by extending the existing neutral verification layers instead of creating
 parallel substitutes. `aequora-testkit` now exposes a seeded `TestContext`, simulated wall and
 monotonic clocks, deterministic test-only identifiers, a one-shot fault schedule covering the
@@ -8,7 +10,7 @@ profiles. Production crates have no normal dependency on testkit; the public fac
 legacy `testkit` feature spelling as an empty example compatibility switch backed by a
 dev-dependency.
 
-`aequora_testkit::certification::verification` owns the database-, runtime-, and transport-neutral release
+`aequora_adapter_sdk::certification::verification` owns the database-, runtime-, and transport-neutral release
 contracts: profile-specific required suites, evidence-bound gate results, release-blocking
 decisions, explicit expiring waivers, seeded verification reports, and typed invariant-to-test
 coverage maps. The existing `aequora_testkit::model` remains the executable semantic oracle and continues

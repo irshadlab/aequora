@@ -28,7 +28,7 @@ snapshot generally available.
 
 ## Registered evidence and enforcement
 
-`AEQ-INV-GA001` through `AEQ-INV-GA010` are registered in `aequora-invariants` and the durable
+`AEQ-INV-GA001` through `AEQ-INV-GA010` are registered in `aequora_types::invariants` and the durable
 registry. `GeneralAvailabilityFull` binds conformance test IDs 184 through 193 to those invariants.
 The focused testkit suite verifies the frozen storage/transport path, conditional Stoolap status,
 the deliberately blocked development readiness snapshot, and registry parity.
@@ -37,18 +37,24 @@ the deliberately blocked development readiness snapshot, and registry parity.
 neutral release dependencies, CLI diagnostics, registry freshness, and focused Rust contracts. CI
 runs that gate after Parts 48 and 49.
 
-## Honest current readiness state
+## Remaining / Left & Environment Gates
 
-`release/v1-readiness.ron` is a development snapshot, not an RC or GA attestation. It records
+**Repository.** `release/v1-readiness.ron` records development readiness. It records
 repository evidence and explicit limitations, keeps unresolved risk areas owned, leaves M0-M11
 release evidence unclaimed, supplies no fictional upgrade/production-review artifacts, and uses
 different placeholder candidate/promotion digests. Its expected decision is `eligible=false`.
 
-An actual RC/GA decision still requires exact-artifact evidence from protected release systems,
+**Environment and release acceptance.** An RC/GA decision requires exact-artifact evidence from protected release systems,
 real PostgreSQL and declared Tier 1 target campaigns, production workload capacity and soak
 results, upgrade/restore/incident exercises, signing custody, vulnerability response, support
 ownership, pilot evidence, and approval of the release-specific known-issues set. These are
 release/deployment inputs and are never inferred from repository architecture.
+
+[Part 40](dioxus-client-integration-completion.md) is archived outside the frozen product
+components. Its registry identities are retained for historical compatibility.
+The [implementation plan](../plan.md#implementation-status) tracks the active parts and root
+specifications. [ACID](acid-compliance.md), [interoperability](database-interoperability-completion.md),
+and [enterprise](enterprise-completion.md) record their respective target acceptance criteria.
 
 ## Verification contract
 

@@ -1,5 +1,7 @@
 # Part 02 Causality and Provenance Completion Map
 
+Governing specification is [Part 02](../sys-arch/02-causality-provenance-lineage.md).
+
 This record maps `02-causality-provenance-lineage.md` to executable repository evidence. It does
 not replace the normative architecture document.
 
@@ -8,7 +10,7 @@ not replace the normative architecture document.
 - `aequora-types` owns `CorrelationId`, `EventId`, `JobId`, `LineageRef`, and `LineageContext`.
 - `OperationMetadata` carries retry-stable originating lineage. `OperationAck` and `RemoteChange`
   carry the authoritative event identity and event lineage.
-- Dependencies remain an independent DAG planned by `aequora-executor::plan_dependencies`; they
+- Dependencies remain an independent DAG planned by `aequora_authority::executor::plan_dependencies`; they
   never imply semantic causation.
 - `AuthenticatedOperation::provenance` is the only typed upgrade to `TrustedProvenance`.
   Primary/derived event and job metadata preserve the root correlation while changing only the

@@ -1,11 +1,13 @@
 # Part 47 benchmarking and capacity-planning completion
 
+Governing specification is [Part 47](../sys-arch/47-benchmarking-performance-regression-capacity-planning-workload-modeling-scalability-testing-production-sizing-architecture.md).
+
 The Part 47 architecture is implemented as three neutral layers. `aequora-workload` owns seeded,
 versioned, bounded workload descriptions and the eight recommended v1 scenario artifacts.
-`aequora-benchkit` owns immutable run manifests, correctness profiles, tail-latency and resource
+`aequora_testkit::benchkit` owns immutable run manifests, correctness profiles, tail-latency and resource
 results, compatibility-aware regression decisions, production-target guards, and capacity
 estimates whose evidence is explicitly measured, interpolated, extrapolated, or unknown.
-`aequora-loadgen` owns bounded stateful virtual clients, visible offered/admitted/accepted/rejected
+`aequora_testkit::loadgen` owns bounded stateful virtual clients, visible offered/admitted/accepted/rejected
 accounting, and an incremental correctness oracle. Runtime adapters can drive actual HTTP,
 PostgreSQL, SQLite, Stoolap, device, multi-node, or network-emulation runs without coupling those
 products to the reusable contracts.

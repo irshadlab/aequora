@@ -8,7 +8,7 @@ responsibilities behind these contracts.
 
 ## Delivered architecture
 
-- `aequora-compat` separates protocol, operation, domain, snapshot, projection, payload, adapter,
+- `aequora_protocol::compat` separates protocol, operation, domain, snapshot, projection, payload, adapter,
   audit, governance-policy, and local-store format versions instead of using a global version.
 - Bounded `ClientHello` input is evaluated by a stateless, server-selected negotiator. Ordered
   policy preference can intentionally select a stable version instead of the highest common one.
@@ -52,7 +52,7 @@ protocol marker, invariant IDs, and focused proofs in the repository gate.
 ## Verification commands
 
 ```text
-cargo test -p aequora-compat --locked --offline
+cargo test -p aequora-protocol --locked --offline
 cargo test -p aequora-testkit --test compatibility_contracts --locked --offline
 cargo run -p aequora-cli --locked --offline -- compat registry
 cargo xtask check compatibility

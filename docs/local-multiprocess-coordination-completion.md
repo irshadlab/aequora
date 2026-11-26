@@ -1,5 +1,7 @@
 # Part 05 Local Multi-Process Coordination Completion
 
+Governing specification is [Part 05](../sys-arch/05-local-multiprocess-coordination.md).
+
 This record maps `05-local-multiprocess-coordination.md` to repository-owned implementation and
 verification. It covers the reusable library and built-in Stoolap adapter. It does not claim that
 an application's packaging, filesystem permissions, suspend behavior, or production process
@@ -9,7 +11,7 @@ supervisor has passed a deployment acceptance drill.
 
 | Requirement | Repository evidence |
 |---|---|
-| Database-neutral model | `aequora-coordination` defines persistent `LocalStoreId`, ephemeral `ProcessInstanceId`, monotonic `FencingToken`, `LocalStoreGeneration`, lease kinds, process modes, grants, snapshots, and deterministic lease transitions without importing a database engine. |
+| Database-neutral model | `aequora_types::coordination` defines persistent `LocalStoreId`, ephemeral `ProcessInstanceId`, monotonic `FencingToken`, `LocalStoreGeneration`, lease kinds, process modes, grants, snapshots, and deterministic lease transitions without importing a database engine. |
 | Adapter capability | `LocalCoordinationStore`, `AdapterCapabilities::LOCAL_COORDINATION`, and `TransactionGuarantees::LOCAL_COORDINATION_FENCING` expose atomic election/fencing independently of database brand. Conservative adapter defaults reject fenced leader work they cannot prove. |
 | Durable Stoolap state | Migration 0004 creates singleton store-generation and coordinator-lease rows. Acquire uses a conditional transaction and advances the token; renew, release, validation, and maintenance generation changes compare owner, token, generation, kind, and expiry. |
 | Leader-only commits | Reconciliation, snapshot staging/install, outbox state transitions, retry scheduling, compaction, rebase, and anti-entropy repair accept a fence that is validated inside the same adapter transaction as mutation. |

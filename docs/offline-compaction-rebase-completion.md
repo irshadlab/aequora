@@ -1,5 +1,7 @@
 # Part 04 Offline Compaction and Rebase Completion
 
+Governing specification is [Part 04](../sys-arch/04-offline-compaction-rebase.md).
+
 This record maps `04-offline-compaction-rebase.md` to repository-owned implementation and
 verification. It claims the reusable library and built-in local-adapter boundary, not an
 application's domain-specific merge policy or a production deployment acceptance drill.
@@ -8,7 +10,7 @@ application's domain-specific merge policy or a production deployment acceptance
 
 | Requirement | Repository evidence |
 |---|---|
-| Policies and safe defaults | `aequora-queue` defines `CompactionPolicy`, `RebasePolicy`, `OperationShape`, risk classification, barriers, field access, and a fail-closed registry. Unknown, create/delete, merge/custom, append-only, financial, and audit-sensitive intent is preserved unless explicitly certified. |
+| Policies and safe defaults | `aequora_protocol::queue` defines `CompactionPolicy`, `RebasePolicy`, `OperationShape`, risk classification, barriers, field access, and a fail-closed registry. Unknown, create/delete, merge/custom, append-only, financial, and audit-sensitive intent is preserved unless explicitly certified. |
 | Payload-aware extensions | `OperationCompactor` and `OperationRebaser` expose application-certified `Merge`/`Custom` decisions without placing domain payload knowledge in the database adapter. |
 | Mutable-unsent boundary | `MutationMutability` distinguishes never-sent, possibly-delivered, and finalized rows. Stoolap migration 0003 durably records `ever_sent` and `immutable_hash`; selecting an operation for send or retry atomically seals its semantic envelope. |
 | Deterministic planner | `plan_compaction` uses stable local sequence, lineage, schema, entity, class, field group, policy version, barriers, cancellation evidence, and dependency edges. It rejects duplicate identities, duplicate sequences, removed required dependencies, dependency cycles, changed immutable payloads, and oversized passes. |

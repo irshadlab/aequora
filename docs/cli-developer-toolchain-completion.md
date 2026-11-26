@@ -45,6 +45,20 @@ Repository completion additionally requires formatting, strict Clippy, warning-d
 Rust 1.87 checking, Guppy boundaries, database neutrality, and workspace tests. Run one Cargo
 process at a time with `CARGO_BUILD_JOBS=1` on resource-constrained machines.
 
+## Official adapter inspection
+
+`inspect adapters` includes SQLite, Stoolap, and PostgreSQL from their owners' manifests.
+`sqlite_is_inspectable_and_verifies_only_as_the_local_role` exercises static inspection, valid
+SQLite/PostgreSQL composition, and rejection when SQLite is selected as the authority.
+
+The CLI now links the existing first-party SQLite adapter to consume its canonical capability
+manifest. This brings the already locked crates.io packages `rusqlite` 0.32.1 and
+`libsqlite3-sys` 0.30.1 (both MIT) into the CLI dependency graph. The adapter owns the bundled
+SQLite C build, its `cc`, `pkg-config` and `vcpkg` build dependencies, and the engine boundary.
+The storage team owns updates. A system-SQLite build or a different `LocalStore` adapter remains
+the replacement path. Guppy, database-neutrality, the SQLite contract suite, and the CLI pairing
+test check the dependency boundary and declared adapter roles.
+
 ## Explicit v1 boundary
 
 The command hierarchy and policy metadata cover the complete Part 41 noun space. Commands execute

@@ -1,10 +1,12 @@
 # `enterprise.md` implementation completion
 
+Governing specification is [enterprise.md](../enterprise.md).
+
 This matrix reconciles the 120 architecture sections in `enterprise.md` with the implemented
 Aequora workspace. It distinguishes reusable framework behavior from application integration and
-real-infrastructure acceptance. `plan.md` remains the governing architecture direction: Stoolap,
-PostgreSQL/Neon, Axum/HTTP, and QUIC are optional edge integrations around database-neutral stores,
-transport, and exchange contracts.
+real-infrastructure acceptance. The [implementation plan](../plan.md) tracks remaining work.
+The [v1 product scope](v1-productization-ga-completion.md) selects PostgreSQL, SQLite, and Axum
+with HTTPS from the database-neutral SDK composition options.
 
 ## Section map
 
@@ -27,9 +29,9 @@ transport, and exchange contracts.
 | 108–110 | supportability, support bundle, documentation | Stable request/operation/session/device/tenant/cursor types, operational codes, schema status, lifecycle state, and payload-free metrics form a sanitized support-data API; architecture, ACID, protocol, tutorial, adapter, and completion docs cover the library | Implemented at the framework boundary; bundle packaging is host-owned |
 | 111–120 | production/release checklists, golden paths, architecture and guarantees | CI and reusable contracts prove repository invariants; the golden client/server composition is runnable in examples and live environment-gated suites; production-only checks remain explicitly unclaimed | Repository scope complete; production acceptance remains mandatory |
 
-## Enterprise gaps closed during reconciliation
+## Implemented enterprise controls
 
-The audit found four concrete repository-owned gaps and closed them:
+The framework supplies the following controls.
 
 - `DeploymentProfile` supplies validated `Development`, `SmallProduction`, `Enterprise`, and
   `HighLatencyNetwork` defaults without selecting a database or transport;
@@ -40,23 +42,17 @@ The audit found four concrete repository-owned gaps and closed them:
   `x-aequora-error-code` over HTTP and inside typed QUIC transport errors while retaining transient
   versus permanent retry classification.
 
-## Deliberate ownership boundaries
+## Remaining / Left & Environment Gates
 
-### Process runtime and deployment artifacts
+### Repository and host composition
 
-Aequora is a framework, not an identity provider, secret manager, ingress controller, PostgreSQL
-operator, telemetry backend, or School ERP deployment. A production application should keep its
-`main` small and compose configuration, secrets, telemetry, database adapter, operation registry,
-authentication middleware, router, listener, and graceful shutdown in that order. Shipping an
-opinionated binary from the core workspace would either contain fake authentication or couple the
-framework to one deployment.
-
-### Administration
-
-The core exposes diagnostic facts and a maintenance-policy handle. The host must put device
-revocation, tenant diagnostics, migration status, operation lookup, and maintenance mutation behind
-its own private authenticated authorization boundary. Aequora does not expose an unauthenticated
-admin router or embed an identity system.
+The deploying application composes the operation registry, a concrete database adapter,
+`aequora_config::AequoraConfig`, secret and identity providers, the Axum listener, and telemetry.
+`aequora_server::admin` and `aequora_authority::admin` provide private control-plane contracts.
+Hosts supply authentication/authorization, durable action audit and subsystem executors.
+Concrete job and workflow stores, provider integrations and change-feed consumers still require
+transaction-bearing host implementations. See [Part 23](background-jobs-durable-workflows-side-effects-completion.md),
+[Part 24](operational-control-plane-admin-api-completion.md), and [Part 28](multi-consumer-change-feed-completion.md).
 
 ### Production evidence
 
@@ -67,7 +63,12 @@ are mandatory per-deployment release gates. The absence of credentials or infras
 
 ## Verification contract
 
-The repository completion baseline is sequential and resource-bounded:
+The focused gates are `cargo xtask check axum-server`, `cargo xtask check configuration`,
+`cargo xtask check deployment`, and `cargo xtask check observability`.
+`AEQ-INV-LOAD001`–`LOAD009` cover admission, with Axum conformance IDs 79–88 and
+`AEQ-INV-AXUM001`–`AXUM010` covering integration behavior.
+
+The repository verification baseline is sequential and resource-bounded:
 
 ```bash
 cargo fmt --all -- --check

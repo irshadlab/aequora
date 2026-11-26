@@ -1,10 +1,12 @@
 # Part 30 certification and conformance completion evidence
 
+Governing specification is [Part 30](../sys-arch/30-certification-conformance-ecosystem-architecture.md).
+
 Authority: `sys-arch/30-certification-conformance-ecosystem-architecture.md`.
 
 Implemented surfaces:
 
-- `aequora-conformance`: database-neutral profiles, tiers, domains, stable reference tests,
+- `aequora_adapter_sdk::certification`: database-neutral profiles, tiers, domains, stable reference tests,
   capability evidence, coverage, exact subject/environment binding, content-derived artifact IDs,
   bundle hashes, signature-verifier boundary, Markdown reporting, catalog lifecycle, trust labels,
   deployment enforcement, and differential comparison.

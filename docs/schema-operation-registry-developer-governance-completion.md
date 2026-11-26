@@ -1,5 +1,7 @@
 # Part 29 completion: schema, operation registry, and developer governance
 
+Governing specification is [Part 29](../sys-arch/29-schema-operation-registry-developer-governance.md).
+
 ## Delivered boundary
 
 Part 29 is implemented as a compile-time, database-neutral durable-contract registry. Canonical RON fragments under `registry/` are merged in lexical order, validated, checked against the immutable published-ID lock, and compiled into static Rust constants and lookup tables. Production lookup does not parse RON or query a database.
@@ -34,7 +36,7 @@ Runtime admission rejects unknown IDs and lifecycle-forbidden new operations. Ex
 
 ## Invariants and acceptance evidence
 
-`AEQ-INV-REGISTRY001` through `AEQ-INV-REGISTRY009` are registered in `aequora-invariants` with model, property, adapter, and diagnostic evidence names. Focused tests cover duplicate IDs, removed-ID reuse, missing owner, schema regression, unresolved references, required-safety fallback, unknown ID admission, retry-only lifecycle, generated lookup resolution, startup handler validation, ID parity, and reservation ranges.
+`AEQ-INV-REGISTRY001` through `AEQ-INV-REGISTRY009` are registered in `aequora_types::invariants` with model, property, adapter, and diagnostic evidence names. Focused tests cover duplicate IDs, removed-ID reuse, missing owner, schema regression, unresolved references, required-safety fallback, unknown ID admission, retry-only lifecycle, generated lookup resolution, startup handler validation, ID parity, and reservation ranges.
 
 The repository gate is `cargo xtask check registry`; CI runs it, all four registry crate suites, and the cross-crate registry contracts. The gate also enforces that runtime registry layers remain free of database, transport, and async-runtime dependencies.
 

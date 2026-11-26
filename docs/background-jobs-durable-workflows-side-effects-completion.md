@@ -2,8 +2,8 @@
 
 The governing specification is
 [`sys-arch/23-background-jobs-durable-workflows-side-effects.md`](../sys-arch/23-background-jobs-durable-workflows-side-effects.md).
-The implementation is split into database-neutral `aequora-jobs`, `aequora-workflow`, and
-`aequora-side-effects` crates, with bounded server orchestration in `aequora-server::jobs`.
+The implementation is split into database-neutral `aequora_authority::jobs`, `aequora_authority::workflow`, and
+`aequora_authority::side_effects` modules, with bounded server orchestration in `aequora_server::jobs`.
 
 ## Executable scope
 
@@ -22,25 +22,30 @@ The implementation is split into database-neutral `aequora-jobs`, `aequora-workf
 | Operations | Tenant-authorized status/admin service, supported-kind/capability-aware claiming, bounded polling inputs, graceful stop-claiming state, and stable diagnostic invariant entries |
 | Correctness registry | `AEQ-INV-JOB001` through `AEQ-INV-JOB009` in the workspace invariant registry |
 
-## Responsibility boundary
+## Remaining / Left & Environment Gates
 
-The core crates deliberately do not open a database, run Tokio workers, call a provider SDK, or
-claim exactly-once delivery. Physical adapters must implement the store traits with atomic insert,
+**Repository and adapter integration.** PostgreSQL persists hook-produced intents into
+`aequora_side_effect_jobs` in Tx B. The live adapter test proves one pending intent after a
+successful commit and verifies transactional rollback on failure. A production claimant and
+concrete implementations of the full `JobStore`, `WorkflowStore`, and `SideEffectStore`
+contracts remain open. Physical adapters must implement the store traits with atomic insert,
 claim, lease, compare-and-swap, uniqueness, indexes, and transaction participation appropriate to
 their database. Provider integrations live outside these crates and must honor declared timeout,
 idempotency, lookup, egress, secret-reference, and reconciliation policy.
 
 Application handlers own job kinds, payload schemas, business cancellation semantics, workflow
 versions, authoritative result operations, retention policy values, provider allowlists, and admin
-authorization. Deployment-specific load tests and provider certification remain deployment
-evidence, while the reusable safety contracts and failure models are executable here.
+authorization. The reusable safety contracts and failure models run in the focused suite.
+
+**Environment.** Qualify provider idempotency and ambiguous delivery, and measure worker
+recovery and capacity against the deployed stores and providers.
 
 ## Verification
 
 ```text
-CARGO_BUILD_JOBS=1 cargo test -p aequora-jobs -p aequora-workflow -p aequora-side-effects
+CARGO_BUILD_JOBS=1 cargo test -p aequora-authority
 CARGO_BUILD_JOBS=1 cargo test -p aequora-testkit --test job_workflow_side_effect_contracts
-CARGO_BUILD_JOBS=1 cargo clippy -p aequora-jobs -p aequora-workflow -p aequora-side-effects -p aequora-server --all-targets -- -D warnings
+CARGO_BUILD_JOBS=1 cargo clippy -p aequora-authority -p aequora-server --all-targets -- -D warnings
 cargo xtask check jobs
 cargo run -q -p aequora-dev -- check
 cargo xtask check database-neutrality

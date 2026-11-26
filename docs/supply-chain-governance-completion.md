@@ -1,5 +1,7 @@
 # Part 49 supply-chain governance completion
 
+Governing specification is [Part 49](../sys-arch/49-licensing-dependency-policy-supply-chain-security-crate-governance-sbom-reproducible-builds-third-party-risk-architecture.md).
+
 Part 49 is implemented at the reusable repository boundary. The implementation keeps dependency
 and release policy independent of Cargo scanners, advisory services, CI vendors, signing systems,
 SBOM encoders, storage engines, transports, and operational providers.
@@ -26,7 +28,7 @@ SBOM encoders, storage engines, transports, and operational providers.
 
 ## Registered evidence
 
-AEQ-INV-SUPPLY001 through AEQ-INV-SUPPLY010 are registered in aequora-invariants and the durable
+AEQ-INV-SUPPLY001 through AEQ-INV-SUPPLY010 are registered in aequora_types::invariants and the durable
 certification registry. SupplyChainFull maps stable conformance test IDs 174 through 183 to those
 invariants. The focused testkit suite covers fail-closed policy, exact SBOM/build identity,
 authority-impact update verification, honest reproducibility claims, and non-authoritative

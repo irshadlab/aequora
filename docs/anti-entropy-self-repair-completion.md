@@ -1,11 +1,13 @@
 # Part 03 Anti-Entropy and Self-Repair Completion Map
 
+Governing specification is [Part 03](../sys-arch/03-anti-entropy-self-repair.md).
+
 This record maps `03-anti-entropy-self-repair.md` to executable repository evidence. It does not
 replace the normative architecture document.
 
 ## Canonical verification contracts
 
-- `aequora-integrity` owns the explicit, domain-separated canonical entity writer, BLAKE3 digest,
+- `aequora_protocol::integrity` owns the explicit, domain-separated canonical entity writer, BLAKE3 digest,
   hash-schema version, integrity generation, deterministic partition assignment, partition roots,
   Merkle proofs, and cursor-bound manifests. Database pages, row order, pending overlays, caches,
   and the normal synchronization cursor are not hash inputs.

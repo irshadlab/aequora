@@ -1,12 +1,14 @@
 # Part 19 performance engineering and memory architecture evidence
 
+Governing specification is [Part 19](../sys-arch/19-performance-engineering-memory-architecture.md).
+
 This document maps `sys-arch/19-performance-engineering-memory-architecture.md` to executable
 repository surfaces. It characterizes bounded behavior; it does not claim universal throughput or
 replace deployment-specific load, soak, database-plan, mobile, and capacity acceptance.
 
 | Requirement | Implementation evidence |
 |---|---|
-| Memory profiles and budgets | `aequora-performance::PerformancePolicy` supplies validated mobile, desktop, standard-server, and high-throughput profiles with request, decode, response, snapshot-pipeline, cache, ready-queue, pending-record, CPU, stream, and reactive-view bounds. `AequoraConfig` validates wire/snapshot settings against those budgets. |
+| Memory profiles and budgets | `aequora_authority::performance::PerformancePolicy` supplies validated mobile, desktop, standard-server, and high-throughput profiles with request, decode, response, snapshot-pipeline, cache, ready-queue, pending-record, CPU, stream, and reactive-view bounds. `AequoraConfig` validates wire/snapshot settings against those budgets. |
 | Low-copy framing | `aequora-codec` constructs `BytesMut`, freezes to `Bytes`, exposes a stable borrowed frame view, and supports borrowed uncompressed Postcard decode whose lifetime is tied to the frame. HTTP request/response handoff uses immutable `Bytes`. |
 | Early frame limits | `inspect_header` checks magic, flags, kind, and declared length from the fixed header. Axum reads incrementally after authenticated admission and rejects an excessive declaration or actual body before domain decode/execution. |
 | Bounded CPU work | `ComputePool` owns a dedicated fixed-size Rayon pool, a measured parallel threshold, and a non-waiting hard submission semaphore. Saturation rejects before Rayon entry and RAII releases capacity after completion or abandonment. |

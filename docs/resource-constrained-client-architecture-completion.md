@@ -1,5 +1,7 @@
 # Part 20 resource-constrained client architecture evidence
 
+Governing specification is [Part 20](../sys-arch/20-resource-constrained-client-architecture.md).
+
 This report maps `sys-arch/20-resource-constrained-client-architecture.md` to executable,
 database-neutral repository surfaces. Resource policy changes when and how much optional work is
 performed; it does not change synchronization, authorization, cursor, outbox, or governance

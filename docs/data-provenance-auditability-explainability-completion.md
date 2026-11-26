@@ -1,5 +1,7 @@
 # Part 13 Data Provenance, Auditability, and Explainability Completion
 
+Governing specification is [Part 13](../sys-arch/13-data-provenance-auditability-explainability.md).
+
 Part 13 is implemented at Aequora's database-neutral reusable boundary. The framework defines
 canonical business evidence and verification rules; hosts own domain registries, authorization,
 native persistence, privacy policy, external anchors, presentation, and regulatory acceptance.

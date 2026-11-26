@@ -1,5 +1,7 @@
 # Part 17 Multi-Region Read and Single-Writer Global Completion
 
+Governing specification is [Part 17](../sys-arch/17-multi-region-read-single-writer-global.md).
+
 Part 17 is implemented at Aequora's database-neutral reusable boundary. The framework owns
 epoch-safe regional contracts and deterministic policy; deployments own databases, replication,
 load balancers, object storage, regional networks, and production SLO acceptance.
@@ -23,7 +25,7 @@ load balancers, object storage, regional networks, and production SLO acceptance
 | Governance | `RegionalGovernanceRegistry` tracks every registered replica, projection, snapshot, blob, cache, search index, and backup copy; completion requires every required copy to be verified or explicitly policy-exempt. |
 | Security | Authorization-sensitive requests require a verified authorization sequence and never use an absent/stale security watermark. High-risk operations can declare authority-only reads. |
 | Operations | `aequora region status`, `route`, and `explain` are bounded read-only diagnostics over RON topology evidence. `RegionalEventKind` provides payload-free, low-cardinality operational categories. |
-| Boundaries | `aequora-dev check` forbids `aequora-region` and `aequora-authority` from reaching runtimes, transports, servers, clients, or production database adapters. Database-neutrality remains a complementary gate. |
+| Boundaries | `aequora_protocol::region` owns routing contracts in the neutral protocol layer. Guppy workspace architecture and database-neutrality profiles validate the current crate boundaries. |
 | Invariants/tests | `AEQ-INV-REG001` through `REG009`, unit contracts, client/server testkit scenarios, partition/failover/governance tests, and deterministic large-replica routing run in CI. |
 
 ## Deliberate initial boundaries
