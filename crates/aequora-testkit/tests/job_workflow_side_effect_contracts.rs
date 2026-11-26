@@ -1,7 +1,9 @@
 use aequora_authority::jobs::{
-    DependencyCondition, EpochRecoveryAction, ErrorClass, FencedUpdate, FencingToken, JitterPolicy,
-    JobCheckpoint, JobDependency, JobEpochPolicy, JobExecutionRegionPolicy, JobGovernanceMetadata,
-    JobKind, JobLease, JobPayloadRef, JobPayloadSchemaVersion, JobRecord, JobState, OccurrenceId,
+    AdminAction, ClaimRequest, ClaimedJob, ConcurrencyClass, DependencyCondition,
+    EpochRecoveryAction, ErrorClass, FencedUpdate, FencingToken, JitterPolicy, JobCheckpoint,
+    JobDependency, JobDescriptor, JobEpochPolicy, JobError, JobExecutionRegionPolicy,
+    JobGovernanceMetadata, JobKind, JobLease, JobPayloadRef, JobPayloadSchemaVersion, JobRecord,
+    JobRegistry, JobRunOutcome, JobState, JobStatus, JobStore, JobStoreError, NewJob, OccurrenceId,
     RetryPolicy, ScheduleId, WorkerId, WorkflowId, epoch_recovery_action, validate_fenced_update,
     verify_dependency_dag,
 };
@@ -14,6 +16,7 @@ use aequora_authority::workflow::{
     WorkflowAction, WorkflowCheckpoint, WorkflowKind, WorkflowRecord, WorkflowState,
     WorkflowTransition, WorkflowVersion,
 };
+use aequora_server::jobs::{JobServerError, JobWorkerConfig, JobWorkerPlanner, WorkerShutdown};
 use aequora_types::scheduler::WorkClass;
 use aequora_types::{AuthorityEpoch, CorrelationId, JobId, OperationId, TenantId};
 use async_trait::async_trait;
@@ -59,6 +62,178 @@ fn job(job_id: JobId) -> JobRecord {
             artifact_references: Vec::new(),
         },
     }
+}
+
+fn descriptor() -> JobDescriptor {
+    JobDescriptor {
+        kind: kind(1),
+        payload_versions: [payload_version()].into(),
+        retry_policy: RetryPolicy {
+            max_attempts: Some(3),
+            base_delay_ms: 10,
+            max_delay_ms: 100,
+            jitter: JitterPolicy::Full,
+            retryable_errors: [ErrorClass::InfrastructureTransient].into(),
+        },
+        attempt_timeout_ms: 500,
+        concurrency_class: ConcurrencyClass::DatabaseLight,
+        required_capabilities: BTreeSet::new(),
+        requires_external_idempotency: false,
+    }
+}
+
+#[test]
+fn duplicate_job_registration_preserves_the_original_contract() {
+    let original = descriptor();
+    let mut registry = JobRegistry::new();
+    assert_eq!(registry.register(original.clone()), Ok(()));
+    let changed = JobDescriptor {
+        requires_external_idempotency: true,
+        ..original.clone()
+    };
+    assert_eq!(registry.register(changed), Err(JobError::DuplicateKind));
+    assert_eq!(registry.descriptor(original.kind), Some(&original));
+}
+
+struct ClaimStore {
+    limit: Mutex<Option<usize>>,
+    claims: Vec<ClaimedJob>,
+}
+
+#[async_trait]
+impl JobStore for ClaimStore {
+    async fn claim_ready(&self, request: ClaimRequest) -> Result<Vec<ClaimedJob>, JobStoreError> {
+        *self.limit.lock().map_err(|_| JobStoreError::Unavailable)? = Some(request.limit);
+        Ok(self.claims.clone())
+    }
+
+    async fn insert(&self, _job: NewJob) -> Result<(), JobStoreError> {
+        Err(JobStoreError::Unavailable)
+    }
+
+    async fn renew_lease(
+        &self,
+        _update: FencedUpdate,
+        _expires_at: u64,
+    ) -> Result<JobLease, JobStoreError> {
+        Err(JobStoreError::Unavailable)
+    }
+
+    async fn checkpoint(
+        &self,
+        _update: FencedUpdate,
+        _checkpoint: JobCheckpoint,
+    ) -> Result<(), JobStoreError> {
+        Err(JobStoreError::Unavailable)
+    }
+
+    async fn finish(
+        &self,
+        _update: FencedUpdate,
+        _outcome: JobRunOutcome,
+    ) -> Result<(), JobStoreError> {
+        Err(JobStoreError::Unavailable)
+    }
+
+    async fn request_cancel(
+        &self,
+        _job_id: JobId,
+        _tenant_id: TenantId,
+    ) -> Result<(), JobStoreError> {
+        Err(JobStoreError::Unavailable)
+    }
+
+    async fn admin_transition(
+        &self,
+        _job_id: JobId,
+        _tenant_id: TenantId,
+        _action: AdminAction,
+        _reason: u32,
+    ) -> Result<(), JobStoreError> {
+        Err(JobStoreError::Unavailable)
+    }
+
+    async fn status(
+        &self,
+        _job_id: JobId,
+        _tenant_id: TenantId,
+    ) -> Result<JobStatus, JobStoreError> {
+        Err(JobStoreError::Unavailable)
+    }
+}
+
+#[tokio::test]
+async fn worker_poll_stops_claiming_and_rejects_overclaim_or_invalid_leases()
+-> Result<(), Box<dyn std::error::Error>> {
+    let mut registry = JobRegistry::new();
+    registry.register(descriptor())?;
+    let config = JobWorkerConfig {
+        worker_id: WorkerId::new(),
+        capabilities: BTreeSet::new(),
+        allowed_regions: BTreeSet::new(),
+        lease_duration_ms: 90,
+        maximum_claim_batch: 4,
+        class_concurrency: std::collections::BTreeMap::new(),
+        idle_backoff_ms: 10,
+        failure_backoff_ms: 20,
+    };
+    let planner = JobWorkerPlanner::new(&registry, &config)?;
+    let job = job(JobId::new());
+    let claim = ClaimedJob {
+        lease: JobLease {
+            job_id: job.job_id,
+            worker_id: config.worker_id,
+            fencing_token: FencingToken::new(1)?,
+            expires_at_unix_ms: 100,
+        },
+        job,
+    };
+    let mut store = ClaimStore {
+        limit: Mutex::new(None),
+        claims: vec![claim.clone(), claim.clone()],
+    };
+    assert_eq!(
+        planner
+            .poll(&store, WorkerShutdown::StopClaiming, 10, 1)
+            .await?,
+        Vec::new(),
+    );
+    assert_eq!(
+        planner.poll(&store, WorkerShutdown::Running, 10, 0).await?,
+        Vec::new(),
+    );
+    assert_eq!(
+        *store
+            .limit
+            .get_mut()
+            .map_err(|_| JobStoreError::Unavailable)?,
+        None
+    );
+    assert!(matches!(
+        planner.poll(&store, WorkerShutdown::Running, 10, 1).await,
+        Err(JobServerError::AdapterExceededClaimLimit)
+    ));
+    assert_eq!(
+        *store
+            .limit
+            .get_mut()
+            .map_err(|_| JobStoreError::Unavailable)?,
+        Some(1)
+    );
+    assert!(matches!(
+        planner.poll(&store, WorkerShutdown::Running, 10, 2).await,
+        Err(JobServerError::InvalidClaimedJob)
+    ));
+    store.claims.pop();
+    assert!(matches!(
+        planner.poll(&store, WorkerShutdown::Running, 100, 1).await,
+        Err(JobServerError::InvalidClaimedJob)
+    ));
+    assert_eq!(
+        planner.poll(&store, WorkerShutdown::Running, 10, 1).await?,
+        vec![claim]
+    );
+    Ok(())
 }
 
 #[test]

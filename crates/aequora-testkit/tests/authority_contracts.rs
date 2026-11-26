@@ -2,10 +2,12 @@ use aequora_authority::{
     AuthorityController, AuthorityError, AuthorityPromotionPolicy, AuthorityRole,
     AuthorityRuntimeMode, AuthorityState, CheckpointComparison, ClientAuthorityState,
     CursorDisposition, EpochOperationAction, EpochOperationState, EpochRecoveryPolicy,
-    JournalCheckpoint, PromotionClass, PromotionEvidence, PromotionRequest, RecoveryVerification,
-    TransitionReason, classify_epoch_operation,
+    ExternalEpochRegistry, InMemoryEpochRegistry, JournalCheckpoint, PromotionClass,
+    PromotionEvidence, PromotionRequest, RecoveryVerification, TransitionReason,
+    classify_epoch_operation,
 };
 use aequora_types::{AuthorityEpoch, AuthorityId, AuthorityInstanceId, Sequence, SyncScopeId};
+use std::sync::Arc;
 use uuid::Uuid;
 
 fn authority(value: u128) -> AuthorityId {
@@ -210,6 +212,73 @@ fn recovery_mode_blocks_writes_until_every_check_passes() {
         .complete_recovery(verification(), 12)
         .unwrap_or_else(|error| panic!("{error}"));
     assert!(controller.authorize_write().is_ok());
+}
+
+#[test]
+fn external_witness_fences_stale_instances_and_requires_recorded_promotion() {
+    let authority_id = authority(1);
+    let mut state = AuthorityState::new(authority_id, instance(1), AuthorityRole::Primary, 10);
+    state.runtime_mode = AuthorityRuntimeMode::Serving;
+    let registry = Arc::new(InMemoryEpochRegistry::default());
+    let old = AuthorityController::new(state, AuthorityPromotionPolicy::default())
+        .with_epoch_registry(registry.clone());
+    assert_eq!(
+        old.validate_startup(),
+        Err(AuthorityError::ExternalEpochUnavailable)
+    );
+    registry
+        .record_epoch(authority_id, state.epoch)
+        .unwrap_or_else(|err| panic!("{err}"));
+    let token = old.authorize_write().unwrap_or_else(|err| panic!("{err}"));
+
+    state.role = AuthorityRole::Recovering;
+    state.runtime_mode = AuthorityRuntimeMode::Recovering;
+    let candidate = AuthorityController::new(state, AuthorityPromotionPolicy::default())
+        .with_epoch_registry(registry.clone());
+    let request = PromotionRequest {
+        class: PromotionClass::RestoredTimeline,
+        reason: TransitionReason::PointInTimeRestore,
+        evidence: evidence(Some(3)),
+        allow_data_loss: true,
+        manually_approved: true,
+        new_instance_id: instance(2),
+        created_at_unix_ms: 11,
+    };
+    assert!(matches!(
+        candidate.promote(request, None, Sequence(0)),
+        Err(AuthorityError::ExternalEpochRegression { .. })
+    ));
+    assert_eq!(candidate.state(), Ok(state));
+
+    let new_epoch = state
+        .epoch
+        .checked_next()
+        .unwrap_or_else(|| panic!("missing next epoch"));
+    registry
+        .record_epoch(authority_id, new_epoch)
+        .unwrap_or_else(|err| panic!("{err}"));
+    assert!(matches!(
+        old.validated_state(),
+        Err(AuthorityError::AuthorityRollbackDetected { .. })
+    ));
+    assert!(matches!(
+        old.verify_commit_context(token),
+        Err(AuthorityError::AuthorityRollbackDetected { .. })
+    ));
+    candidate
+        .promote(request, None, Sequence(0))
+        .unwrap_or_else(|err| panic!("{err}"));
+    assert!(matches!(
+        candidate.authorize_write(),
+        Err(AuthorityError::WritesBlocked(_))
+    ));
+    candidate
+        .complete_recovery(verification(), 12)
+        .unwrap_or_else(|err| panic!("{err}"));
+    assert_eq!(
+        candidate.authorize_write().map(|context| context.epoch),
+        Ok(new_epoch)
+    );
 }
 
 #[test]

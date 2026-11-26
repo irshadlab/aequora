@@ -3,8 +3,8 @@ use aequora_authority::executor::{
     ExecutableOperation, ExecutionError, OperationExecutor,
 };
 use aequora_authority::{
-    AuthorityController, AuthorityPromotionPolicy, AuthorityRole, AuthorityRuntimeMode,
-    AuthorityState,
+    AuthorityController, AuthorityError, AuthorityPromotionPolicy, AuthorityRole,
+    AuthorityRuntimeMode, AuthorityState, ExternalEpochRegistry, InMemoryEpochRegistry,
 };
 use aequora_client::{
     ClientConfig, ClientError, ClientSyncEngine, ClientSyncEngineBuilder, RetryConfig,
@@ -23,7 +23,7 @@ use aequora_protocol::{
     SnapshotLimits, SyncDirective, SyncRequest,
 };
 use aequora_server::{
-    ExchangeService, ServerCommandOutcome, ServerConfig, SyncServer, SyncServerBuilder,
+    ExchangeService, ServerCommandOutcome, ServerConfig, ServerError, SyncServer, SyncServerBuilder,
 };
 use aequora_store::{
     AuditLog, AuditOffset, ConflictInbox, ConflictResolution, CursorStore, JournalCompactor,
@@ -319,6 +319,57 @@ async fn server_reports_epoch_transition_before_accepting_old_timeline_writes() 
     assert_eq!(response.next_cursor.authority_id, authority_id);
     assert_eq!(response.next_cursor.authority_epoch, authority_state.epoch);
     assert_eq!(response.next_cursor.sequence, Sequence(0));
+}
+
+#[tokio::test]
+async fn server_rejects_exchange_and_bootstrap_from_a_rolled_back_authority()
+-> Result<(), Box<dyn std::error::Error>> {
+    let fixture = Fixture::new();
+    let authoritative = InMemoryAuthoritativeStore::default();
+    let authority_id = AuthorityId::new();
+    let mut state = AuthorityState::new(
+        authority_id,
+        AuthorityInstanceId::new(),
+        AuthorityRole::Primary,
+        10,
+    );
+    state.runtime_mode = AuthorityRuntimeMode::Serving;
+    let registry = Arc::new(InMemoryEpochRegistry::default());
+    registry.record_epoch(authority_id, AuthorityEpoch::new(2)?)?;
+    let service = SyncServerBuilder::new()
+        .store(Arc::new(authoritative.clone()))
+        .executor(Arc::new(CopyPayloadExecutor))
+        .conflicts(Arc::new(RejectConflicts))
+        .clock(Arc::new(TestClock::new(NodeId::new(), 10_000)))
+        .authority(
+            AuthorityController::new(state, AuthorityPromotionPolicy::default())
+                .with_epoch_registry(registry),
+        )
+        .build();
+    let request = fixture.request(fixture.operation());
+    let bootstrap = BootstrapRequest {
+        protocol: request.protocol,
+        request_id: RequestId::new(),
+        session: request.session.clone(),
+        snapshot_id: None,
+        offset: 0,
+        limits: SnapshotLimits::default(),
+        capabilities: Vec::new(),
+    };
+    assert!(matches!(
+        service.exchange(fixture.auth, request).await,
+        Err(ServerError::Authority(
+            AuthorityError::AuthorityRollbackDetected { .. }
+        ))
+    ));
+    assert!(matches!(
+        service.bootstrap(fixture.auth, bootstrap).await,
+        Err(ServerError::Authority(
+            AuthorityError::AuthorityRollbackDetected { .. }
+        ))
+    ));
+    assert_eq!(authoritative.applied_operation_count(), 0);
+    Ok(())
 }
 
 #[tokio::test]
