@@ -6,7 +6,7 @@
 > jobs, deterministic manifests and chunks, range-resume identity, bounded verification/install,
 > staging generations, retention leases, pending-intent preservation, atomic activation evidence,
 > fault tests, telemetry, CLI inspection, and invariants are mapped in
-> [`docs/large-snapshot-streaming-bootstrap-completion.md`](docs/large-snapshot-streaming-bootstrap-completion.md).
+> [`docs/large-snapshot-streaming-bootstrap-completion.md`](../docs/large-snapshot-streaming-bootstrap-completion.md).
 > Real database read views, object storage/CDN delivery, native generation transactions, and
 > production-scale resource/catch-up acceptance remain adapter and deployment gates.
 

@@ -1,8 +1,12 @@
 # Aequora System Architecture Wiki
 
-Welcome to the **Aequora System Architecture Wiki**. This repository contains the complete 50-part architecture specification for the Aequora distributed synchronization engine across 11 architectural tiers.
+Welcome to the **Aequora System Architecture Wiki**. This repository contains 49 active numbered architecture specifications for the Aequora distributed synchronization engine across 11 architectural tiers.
 
 ---
+
+The [implementation plan](../plan.md#implementation-status) maps every active part to its report
+and remaining work. Specification checklists describe acceptance criteria. The root specifications are [ACID](../ACID.md),
+[database interoperability](../database-interoperability.md), and [enterprise](../enterprise.md).
 
 ## 📑 Table of Contents
 
@@ -129,8 +133,7 @@ Welcome to the **Aequora System Architecture Wiki**. This repository contains th
   Atomic local intent, reconciliation, recovery, fencing, storage pressure, and target certification.
 - **[Part 39: Axum Server Integration and Middleware Architecture](39-axum-server-integration-middleware-architecture.md)**
   Routes, authentication, bounded request processing, admission, errors, health, and graceful shutdown.
-- **[Part 40: Dioxus Client Integration and Reactive State Architecture](40-dioxus-client-integration-reactive-state-architecture.md)**
-  Provider context, durable-derived queries, local-first mutations, bounded invalidation, lifecycle hints, and tenant isolation.
+- **Part 40 (removed).** [Archived Dioxus integration](../docs/dioxus-client-integration-completion.md).
 
 ---
 

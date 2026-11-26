@@ -2820,7 +2820,7 @@ Part 04 is complete when:
 ## 164.1 Repository Implementation Evidence
 
 The reusable implementation is mapped in
-[`docs/offline-compaction-rebase-completion.md`](docs/offline-compaction-rebase-completion.md).
+[`docs/offline-compaction-rebase-completion.md`](../docs/offline-compaction-rebase-completion.md).
 The database-neutral planner lives in `aequora-queue`; transactional adapter hooks live in
 `aequora-store`; Stoolap persists the `ever_sent` boundary, immutable semantic hash,
 supersessions, and rebase history atomically. The reference adapter, client opt-in integration,

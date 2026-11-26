@@ -1,5 +1,7 @@
 # Aequora Sync — Part 01
 
+[Implementation report](../docs/formal-correctness-completion.md). The report records the current invariant and model module owners, verification suites, and target gates.
+
 > The executable registry now also includes Part 08 invariants `AEQ-INV-LIVE001` through
 > `AEQ-INV-LIVE005`: live-hint loss safety, no direct replica/cursor mutation, authorized scope
 > isolation, bounded slow-consumer memory, and leader-handoff catch-up without durable hint replay.
@@ -1106,8 +1108,8 @@ Part 01 is implemented when:
 ### Current implementation evidence
 
 ```text
-[x] invariant registry exists (`aequora-invariants`, AEQ-INV-001 through AEQ-INV-010)
-[x] abstract client/server/network model exists (`aequora-model`)
+[x] invariant registry exists (`aequora_types::invariants`, AEQ-INV-001 through AEQ-INV-010)
+[x] abstract client/server/network model exists (`aequora_testkit::model`)
 [x] idempotency model check exists
 [x] cursor-safety model check exists
 [x] lost-response model check exists

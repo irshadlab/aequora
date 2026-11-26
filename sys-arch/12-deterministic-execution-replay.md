@@ -3,7 +3,7 @@
 # Deterministic Domain Execution, Replay, and Reproducibility Architecture
 
 **Repository status (2026-08-21): Complete at the reusable framework boundary.** See
-[`docs/deterministic-execution-replay-completion.md`](docs/deterministic-execution-replay-completion.md)
+[`docs/deterministic-execution-replay-completion.md`](../docs/deterministic-execution-replay-completion.md)
 for code, verification, security, adapter, and deployment evidence.
 
 ## 1. Purpose

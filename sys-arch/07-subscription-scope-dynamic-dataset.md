@@ -6,7 +6,7 @@
 > scope identity, resolver/filter/projection contracts, filtered watermarks, subscriptions,
 > atomic transitions, reference-counted membership, pending-intent quarantine, Stoolap durability,
 > client integration, diagnostics, and invariants are mapped in
-> [`docs/subscription-scope-dynamic-dataset-completion.md`](docs/subscription-scope-dynamic-dataset-completion.md).
+> [`docs/subscription-scope-dynamic-dataset-completion.md`](../docs/subscription-scope-dynamic-dataset-completion.md).
 > Application membership policy and live authorization/revocation acceptance remain host gates.
 
 ## 1. Purpose

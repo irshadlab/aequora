@@ -1895,9 +1895,10 @@ compatibility
 
 ---
 
-# 142. Dioxus Integration Gate
+# 142. Archived Dioxus Integration Gate
 
-Test:
+This gate verifies the [archived Part 40 boundary](../docs/dioxus-client-integration-completion.md).
+The following scenarios are historical integration coverage:
 
 ```text
 offline mutation

@@ -1,5 +1,7 @@
 # Aequora Sync — Part 34
 
+[Implementation report](../docs/reference-implementation-workspace-boundaries-completion.md). The current workspace map is maintained by the Guppy policy. The designs below include historical crate and integration examples.
+
 # Reference Implementation, Workspace, Crate Boundaries, Dependency Direction, and Build Architecture
 
 ## 1. Status of the Architecture Series
@@ -2459,7 +2461,7 @@ After Part 34, useful remaining parts are:
 37 — PostgreSQL/Neon Authoritative Adapter Detailed Architecture
 38 — Stoolap Local Adapter Detailed Architecture
 39 — Axum Server Integration and Middleware Architecture
-40 — Dioxus Client Integration and Reactive State Architecture
+40 — archived integration, slot retained
 41 — CLI and Developer Toolchain Architecture
 42 — Configuration, Secrets, and Feature-Flag Architecture
 43 — Packaging, Distribution, and Release Engineering

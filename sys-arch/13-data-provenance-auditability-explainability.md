@@ -3,7 +3,7 @@
 # Data Provenance, Auditability, and Explainability Architecture
 
 **Repository status (2026-08-21): Complete at the reusable framework boundary.** See
-[`docs/data-provenance-auditability-explainability-completion.md`](docs/data-provenance-auditability-explainability-completion.md)
+[`docs/data-provenance-auditability-explainability-completion.md`](../docs/data-provenance-auditability-explainability-completion.md)
 for code, verification, security, adapter, and deployment evidence.
 
 ## 1. Purpose

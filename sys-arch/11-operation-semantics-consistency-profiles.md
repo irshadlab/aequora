@@ -3,7 +3,7 @@
 # Operation Semantics, Aggregate Policies, and Consistency Profiles Architecture
 
 **Repository status (2026-08-20): Complete at the reusable framework boundary.** See
-[`docs/operation-semantics-consistency-profiles-completion.md`](docs/operation-semantics-consistency-profiles-completion.md)
+[`docs/operation-semantics-consistency-profiles-completion.md`](../docs/operation-semantics-consistency-profiles-completion.md)
 for code, compliance, operations, and deployment evidence.
 
 ## 1. Purpose

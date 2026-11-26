@@ -1,5 +1,7 @@
 # Aequora Sync — Part 16
 
+[Implementation report](../docs/authority-failover-timeline-epochs-fork-detection-completion.md). The report distinguishes promotion and fencing contracts from cross-cluster orchestration and restore drills.
+
 # Authority Failover, Timeline Epochs, Fork Detection, and Disaster Promotion Architecture
 
 ## 1. Purpose

@@ -138,7 +138,6 @@ Aequora Protocol
 Aequora Storage SDK
 Official Storage Adapters
 Axum Integration
-Dioxus Integration
 CLI / Devtools
 Testkit / Conformance
 Operations / Diagnostics
@@ -565,9 +564,9 @@ Additional bindings can follow.
 
 # 31. v1 UI Scope
 
-Dioxus integration is supported as a reactive application integration layer.
-
-Aequora itself is not a complete UI framework.
+Applications build their UI over the Rust SDK and the platform runtime contracts.
+[Part 40](../docs/dioxus-client-integration-completion.md) is archived. The product components
+are frozen in [release/v1-scope.ron](../release/v1-scope.ron).
 
 ---
 
@@ -924,7 +923,6 @@ version skew
 Implement:
 
 ```text
-Dioxus integration
 desktop runtime
 mobile runtime
 secure stores
@@ -1785,7 +1783,6 @@ Deliver:
 
 ```text
 Rust facade
-Dioxus integration
 CLI
 configuration
 ```

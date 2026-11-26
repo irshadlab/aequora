@@ -5,7 +5,7 @@
 > **Implementation status (2026-08-20):** Complete at the reusable repository boundary. Canonical
 > bundles, deterministic identity, durable jobs, checkpointed batches, quarantine, dependency
 > planning, baseline/cutover policy, CDC contracts, CLI dry runs, tests, metrics, and invariants are
-> mapped in [`docs/bulk-import-export-seed-migration-completion.md`](docs/bulk-import-export-seed-migration-completion.md).
+> mapped in [`docs/bulk-import-export-seed-migration-completion.md`](../docs/bulk-import-export-seed-migration-completion.md).
 > Application mappings, authority adapter transactions, real source CDC, and production cutover
 > remain deployment gates.
 

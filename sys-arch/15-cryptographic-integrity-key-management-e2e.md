@@ -4,7 +4,7 @@
 
 **Repository status:** Complete at the reusable database-neutral boundary. Implementation evidence,
 exact constructions, and deployment-owned acceptance are recorded in
-[the Part 15 completion report](docs/cryptographic-integrity-key-management-e2e-completion.md).
+[the Part 15 completion report](../docs/cryptographic-integrity-key-management-e2e-completion.md).
 
 ## 1. Purpose
 

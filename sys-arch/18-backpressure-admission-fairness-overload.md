@@ -1,5 +1,7 @@
 # Aequora Sync — Part 18
 
+[Implementation report](../docs/backpressure-admission-fairness-overload-completion.md). The completion checklist below defines the target contract. The report records implemented admission paths and remaining worker and deployment integration.
+
 # Backpressure, Admission Control, Fairness, and Overload Architecture
 
 ## 1. Purpose

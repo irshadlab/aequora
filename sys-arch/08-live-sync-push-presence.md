@@ -5,7 +5,7 @@
 > **Implementation status (2026-08-20):** Complete at the reusable repository boundary. The
 > transport-neutral live protocol, authorized fan-out, bounded coalescing, client wake generation,
 > leader fencing, PostgreSQL NOTIFY adapter, fault testkit, presence TTLs, metrics, and invariants
-> are mapped in [`docs/live-sync-push-presence-completion.md`](docs/live-sync-push-presence-completion.md).
+> are mapped in [`docs/live-sync-push-presence-completion.md`](../docs/live-sync-push-presence-completion.md).
 > WebSocket/SSE/mobile-provider wiring, application presence privacy, and deployment load acceptance
 > remain host gates.
 

@@ -5,7 +5,7 @@
 > **Implementation status (2026-08-20):** Complete at the reusable repository boundary. The
 > database- and platform-neutral scheduler, client integration, profiles, diagnostics, invariants,
 > and deterministic contracts are mapped in
-> [`docs/adaptive-sync-scheduler-qos-completion.md`](docs/adaptive-sync-scheduler-qos-completion.md).
+> [`docs/adaptive-sync-scheduler-qos-completion.md`](../docs/adaptive-sync-scheduler-qos-completion.md).
 > Platform signal collection and device-specific deployment acceptance remain host responsibilities.
 
 ## 1. Purpose

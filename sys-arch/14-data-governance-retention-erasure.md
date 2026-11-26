@@ -3,7 +3,7 @@
 # Data Governance, Retention, Legal Hold, Erasure, and Lifecycle Architecture
 
 **Repository status (2026-08-21): Complete at the reusable framework boundary.** See
-[`docs/data-governance-retention-erasure-completion.md`](docs/data-governance-retention-erasure-completion.md)
+[`docs/data-governance-retention-erasure-completion.md`](../docs/data-governance-retention-erasure-completion.md)
 for code, lifecycle verification, adapter, operational, and deployment evidence.
 
 ## 1. Purpose
