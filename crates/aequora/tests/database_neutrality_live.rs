@@ -7,6 +7,10 @@
 ))]
 
 use aequora_authority::executor::AuthContext;
+use aequora_authority::{
+    AuthorityController, AuthorityPromotionPolicy, AuthorityRole, AuthorityRuntimeMode,
+    AuthorityState,
+};
 use aequora_axum::router;
 use aequora_client::{ClientConfig, ClientSyncEngine};
 use aequora_http::{HttpTransport, HttpTransportConfig, NoRequestHeaders};
@@ -19,8 +23,9 @@ use aequora_store_postgres::{PostgresPoolConfig, PostgresStore, SqlxPostgresBack
 use aequora_store_stoolap::{StoolapDatabase, StoolapStore};
 use aequora_testkit::AllowAllExecutor;
 use aequora_types::{
-    ActorId, DeviceId, EntityId, EntityRef, EntityType, HybridTimestamp, NodeId, OperationId,
-    ProtocolVersion, SchemaVersion, SessionId, SyncScopeId, TenantId,
+    ActorId, AuthorityId, AuthorityInstanceId, DeviceId, EntityId, EntityRef, EntityType,
+    HybridTimestamp, NodeId, OperationId, ProtocolVersion, SchemaVersion, SessionId, SyncScopeId,
+    TenantId,
 };
 use axum::Extension;
 use reqwest::Url;
@@ -90,17 +95,38 @@ async fn exercise_database_independent_stack(
 
     let authority = Arc::new(PostgresStore::new(backend));
     authority.backend().health_check().await?;
+    let state = if let Some(state) = authority.backend().load_authority_state().await? {
+        state
+    } else {
+        let mut state = AuthorityState::new(
+            AuthorityId::new(),
+            AuthorityInstanceId::new(),
+            AuthorityRole::Primary,
+            1,
+        );
+        state.runtime_mode = AuthorityRuntimeMode::Serving;
+        authority
+            .backend()
+            .initialize_authority_state(state)
+            .await?
+    };
     let auth = AuthContext {
         actor_id: actor,
         tenant_id: tenant,
         device_id: device,
     };
-    let service: Arc<dyn ExchangeService> = Arc::new(SyncServer::new(
-        authority.clone(),
-        Arc::new(AllowAllExecutor),
-        Arc::new(RejectConflicts),
-        Arc::new(TestClock::new(NodeId::new(), 2_000)),
-    ));
+    let service: Arc<dyn ExchangeService> = Arc::new(
+        SyncServer::new(
+            authority.clone(),
+            Arc::new(AllowAllExecutor),
+            Arc::new(RejectConflicts),
+            Arc::new(TestClock::new(NodeId::new(), 2_000)),
+        )
+        .with_authority(AuthorityController::new(
+            state,
+            AuthorityPromotionPolicy::default(),
+        )),
+    );
     let app = router(service, 1024 * 1024).layer(Extension(auth));
     let listener = TcpListener::bind(("127.0.0.1", 0)).await?;
     let address = listener.local_addr()?;

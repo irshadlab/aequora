@@ -882,7 +882,6 @@ where
                 "the conformance fixture cannot create an invalid version transition",
             ))?;
     let invalid = CommitOperation {
-        authority: None,
         operation_id: OperationId::new(),
         entity: EntityRef {
             entity_type: baseline.entity.entity_type,
@@ -968,7 +967,6 @@ where
         ))?;
     let operation_id = OperationId::new();
     let commit = CommitOperation {
-        authority: None,
         operation_id,
         event_id: EventId::new(),
         expected_version: Some(expected_version),
@@ -1021,7 +1019,6 @@ where
         entity_id: EntityId::new(),
     };
     let mut left_commit = CommitOperation {
-        authority: None,
         operation_id: OperationId::new(),
         event_id: EventId::new(),
         entity,
@@ -1032,7 +1029,6 @@ where
     };
     left_commit.command_digest = *blake3::hash(&left_commit.payload).as_bytes();
     let mut right_commit = CommitOperation {
-        authority: None,
         operation_id: OperationId::new(),
         event_id: EventId::new(),
         payload: [baseline.payload.as_slice(), b"-race-right"].concat(),
