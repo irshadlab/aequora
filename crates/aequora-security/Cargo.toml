@@ -7,6 +7,9 @@ license.workspace = true
 description = "Runtime-neutral security threat-model and abuse-resistance contracts for Aequora"
 repository.workspace = true
 
+[features]
+crypto = ["dep:aequora-protocol", "dep:argon2", "dep:chacha20poly1305", "dep:ed25519-dalek", "dep:getrandom", "dep:smallvec"]
+
 [dependencies]
 aequora-types = { version = "0.1.1", path = "../aequora-types" }
 blake3.workspace = true
@@ -14,9 +17,19 @@ serde.workspace = true
 thiserror.workspace = true
 uuid.workspace = true
 zeroize.workspace = true
+aequora-protocol = { version = "0.1.1", path = "../aequora-protocol", optional = true }
+argon2 = { workspace = true, optional = true }
+async-trait.workspace = true
+chacha20poly1305 = { workspace = true, optional = true }
+ed25519-dalek = { workspace = true, optional = true }
+getrandom = { workspace = true, optional = true }
+postcard.workspace = true
+smallvec = { workspace = true, optional = true }
 
 [dev-dependencies]
 ron.workspace = true
+proptest = "=1.6.0"
+tempfile.workspace = true
 
 [lints]
 workspace = true

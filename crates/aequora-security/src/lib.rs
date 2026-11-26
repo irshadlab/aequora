@@ -9,6 +9,12 @@
 #![forbid(unsafe_code)]
 #![allow(clippy::missing_errors_doc)]
 
+#[cfg(feature = "crypto")]
+pub mod crypto;
+pub mod feature_flags;
+pub mod policy;
+pub mod secrets;
+
 use aequora_types::{ActorId, AuthorityEpoch, DeviceId, OperationId, TenantId};
 use serde::{Deserialize, Serialize};
 use std::{

@@ -1,4 +1,4 @@
-use crate::policy::DigestAlgorithm;
+use crate::crypto::policy::DigestAlgorithm;
 use serde::{Deserialize, Serialize};
 
 macro_rules! digest_type {

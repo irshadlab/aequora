@@ -1,4 +1,4 @@
-use crate::{
+use crate::crypto::{
     CryptoPolicy, KeyProvider, RegistryDigest, RegistryError, SignatureEnvelope, SigningError,
     VerificationError,
     artifact::ArtifactType,
@@ -106,11 +106,11 @@ pub async fn sign_key_registry<P: KeyProvider + ?Sized>(
     root_key_id: SigningKeyId,
 ) -> Result<KeyRegistryManifest, SigningError> {
     let placeholder = SignatureEnvelope {
-        algorithm: crate::SignatureAlgorithm::Ed25519V1,
+        algorithm: crate::crypto::SignatureAlgorithm::Ed25519V1,
         key_id: root_key_id,
         purpose: KeyPurpose::RegistrySigning,
         signed_at: issued_at,
-        signature: crate::SignatureBytes(Vec::new()),
+        signature: crate::crypto::SignatureBytes(Vec::new()),
     };
     let mut manifest = KeyRegistryManifest {
         generation,

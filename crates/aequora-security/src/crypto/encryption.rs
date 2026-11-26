@@ -1,4 +1,4 @@
-use crate::{
+use crate::crypto::{
     CiphertextDigest, CryptoPolicy, EncryptionAlgorithm, EncryptionError, KeyPurpose, KeyStatus,
     PlaintextDigest, TenantKeyId, canonical_bytes,
 };

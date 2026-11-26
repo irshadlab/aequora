@@ -1,4 +1,4 @@
-use crate::PolicyError;
+use crate::crypto::PolicyError;
 use aequora_protocol::Capability;
 use serde::{Deserialize, Serialize};
 

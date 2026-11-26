@@ -1,4 +1,4 @@
-use crate::{CanonicalDigest, KeyLifecycleError, policy::SignatureAlgorithm};
+use crate::crypto::{CanonicalDigest, KeyLifecycleError, policy::SignatureAlgorithm};
 use aequora_types::{DeviceId, TenantId};
 use async_trait::async_trait;
 use serde::{Deserialize, Serialize};

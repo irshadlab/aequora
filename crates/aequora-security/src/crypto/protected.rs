@@ -1,4 +1,4 @@
-use crate::{E2eScheme, PayloadProtectionMode, ProtectedPayloadError};
+use crate::crypto::{E2eScheme, PayloadProtectionMode, ProtectedPayloadError};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
 

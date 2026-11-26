@@ -1,8 +1,8 @@
-use crate::{
+use crate::crypto::{
     CryptoPolicy, KeyProvider, KeyPurpose, KeyStatus, OperationDigest, SignatureEnvelope,
     SigningError, SigningKeyId, VerificationError, canonical_bytes, sign_digest, verify_digest,
 };
-use crate::{CryptoTimestamp, DeviceKeyRecord};
+use crate::crypto::{CryptoTimestamp, DeviceKeyRecord};
 use aequora_protocol::OperationEnvelope;
 use aequora_types::DeviceId;
 use serde::{Deserialize, Serialize};
@@ -96,7 +96,7 @@ impl DeviceKeyRegistry {
     /// Returns [`VerificationError`] for duplicates, unsupported algorithms, or destroyed keys.
     pub fn register(&mut self, record: DeviceKeyRecord) -> Result<(), VerificationError> {
         if self.keys.contains_key(&record.key_id)
-            || record.algorithm != crate::SignatureAlgorithm::Ed25519V1
+            || record.algorithm != crate::crypto::SignatureAlgorithm::Ed25519V1
             || record.status == KeyStatus::Destroyed
         {
             return Err(VerificationError::DeviceKeyUnavailable);
