@@ -1,32 +1,32 @@
 //! Application composition for the `aequora` command-line client.
 
-use aequora_admin::{ADMIN_API_VERSION, AdminAction, AdminListenerPolicy};
+pub mod cli_core;
+
+pub mod devtools;
+
+pub mod inspect;
+
+use crate::cli_core::{
+    CliErrorEnvelope, CliExitCode, CliRequest, ErrorCode, MachineEnvelope, OutputFormat,
+    RetryClass, render_machine,
+};
+use aequora_authority::admin::{ADMIN_API_VERSION, AdminAction, AdminListenerPolicy};
+use aequora_authority::migration::{
+    CanonicalExport, CutoverBlocker, CutoverEvidence, ExportError, ExportLimits, ImportJob,
+    verify_cutover,
+};
 use aequora_authority::{
     AuthorityController, AuthorityError, AuthorityPromotionPlan, AuthorityPromotionPolicy,
     AuthorityState, CheckpointComparison, JournalCheckpoint, PromotionEvidence,
     RecoveryVerification, compare_checkpoints,
 };
-use aequora_benchkit::{
-    BenchmarkError, BenchmarkResult, MetricDirection, RegressionPolicy, compare,
-};
 use aequora_bootstrap::{BootstrapError, BootstrapJob, SnapshotManifest};
-use aequora_cli_core::{
-    CliErrorEnvelope, CliExitCode, CliRequest, ErrorCode, MachineEnvelope, OutputFormat,
-    RetryClass, render_machine,
-};
 use aequora_compat::{
     ClientHello, CompatibilityError, CompatibilityPolicy, CompatibilityRegistry,
     CompatibilityResult, ServerAuthorityContext, SupportStatus, canonical_registry, negotiate,
 };
 use aequora_config::{
     AdapterCapabilities, ConfigSource, RawDeploymentConfig, diff_effective, explain_setting,
-};
-use aequora_conformance::verification::{
-    Qualification, QualityGateManifest, VerificationError, VerificationReport,
-};
-use aequora_conformance::{
-    CertificationArtifact, CertificationRequest, ConformanceDomain, ConformanceError,
-    REFERENCE_TESTS, markdown_report,
 };
 use aequora_deployment::{DeploymentDescriptor, DeploymentError};
 use aequora_diagnostics::{
@@ -42,17 +42,7 @@ use aequora_legacy::{
     BridgeHealth, CutoverReadiness, CutoverVerification, LegacyMigrationManifest,
     LegacyRetirementManifest, LegacySystemManifest, ShadowMatch, ShadowResult,
 };
-use aequora_loadgen::LoadGenerator;
-use aequora_migration::{
-    CanonicalExport, CutoverBlocker, CutoverEvidence, ExportError, ExportLimits, ImportJob,
-    verify_cutover,
-};
-use aequora_model::{
-    ClientId, ExploreError, FailureTrace, Model, ModelAction, ModelCorrelationId, ModelEntityId,
-    ModelError, ModelOperation, ModelOperationId, ReplayError, SearchBounds, explore,
-};
 use aequora_observability::{INITIAL_METRICS, ObservabilityConfig};
-use aequora_policy::ConfigGeneration;
 use aequora_queue::{
     CompactionPlan as QueueCompactionPlan, MutationMutability, OptimizationRegistry, QueueEntry,
     QueueError, plan_compaction,
@@ -65,7 +55,7 @@ use aequora_release::productization::{
     DecisionCheck, GaReadinessManifest, ProductizationError, V1Scope,
 };
 use aequora_release::{CryptoTimestamp, ReleaseError, ReleaseTrustStore, SignedReleaseManifest};
-use aequora_schema::{SchemaError, SchemaRegistry};
+use aequora_security::policy::ConfigGeneration;
 use aequora_security::{
     ATTACKER_CLASSES, SECURITY_ASSETS, SECURITY_INVARIANTS, SecurityError, SecurityPolicy,
     TRUST_BOUNDARIES,
@@ -76,6 +66,22 @@ use aequora_store::{
 use aequora_store_postgres::POSTGRES_ADAPTER_MANIFEST;
 use aequora_store_stoolap::STOOLAP_ADAPTER_MANIFEST;
 use aequora_supply_chain::{DependencyPolicy, ReleaseEvidence, SbomDocument, SupplyChainError};
+use aequora_testkit::benchkit::{
+    BenchmarkError, BenchmarkResult, MetricDirection, RegressionPolicy, compare,
+};
+use aequora_testkit::certification::verification::{
+    Qualification, QualityGateManifest, VerificationError, VerificationReport,
+};
+use aequora_testkit::certification::{
+    CertificationArtifact, CertificationRequest, ConformanceDomain, ConformanceError,
+    REFERENCE_TESTS, markdown_report,
+};
+use aequora_testkit::loadgen::LoadGenerator;
+use aequora_testkit::model::{
+    ClientId, ExploreError, FailureTrace, Model, ModelAction, ModelCorrelationId, ModelEntityId,
+    ModelError, ModelOperation, ModelOperationId, ReplayError, SearchBounds, explore,
+};
+use aequora_types::schema::{SchemaError, SchemaRegistry};
 use aequora_workload::{WorkloadError, WorkloadSpec};
 use std::{
     collections::BTreeMap,
@@ -87,9 +93,6 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 use thiserror::Error;
-
-pub use aequora_devtools as devtools;
-pub use aequora_inspect as inspect;
 
 /// Parses process arguments, executes one typed command, renders its result, and returns a stable
 /// exit category.
@@ -166,8 +169,8 @@ fn output_format_hint(arguments: &[String]) -> OutputFormat {
 
 fn command_name(request: &CliRequest) -> &'static str {
     match &request.command {
-        aequora_cli_core::Command::Help => "help",
-        aequora_cli_core::Command::Invoke { name, .. } => name.as_str(),
+        crate::cli_core::Command::Help => "help",
+        crate::cli_core::Command::Invoke { name, .. } => name.as_str(),
     }
 }
 
@@ -1099,7 +1102,7 @@ fn admin_command(subject: Option<&str>, path: Option<&str>) -> Result<String, Cl
                 action.command.risk(),
                 action.command.permission(),
                 hex::encode(digest),
-                aequora_admin::requires_plan(&action.command),
+                aequora_authority::admin::requires_plan(&action.command),
             ))
         }
         Some("explain") if path.is_none() => Ok(
@@ -1772,7 +1775,7 @@ fn verify_model() -> Result<String, CliError> {
     let report = explore(model, SearchBounds::default())?;
     Ok(format!(
         "model: ok version={} states={} transitions={} depth={}",
-        aequora_model::MODEL_VERSION,
+        aequora_testkit::model::MODEL_VERSION,
         report.visited_states,
         report.explored_transitions,
         report.maximum_depth
@@ -1974,7 +1977,7 @@ enum CliError {
     #[error("unknown built-in adapter {0:?}")]
     UnknownAdapter(String),
     #[error(transparent)]
-    Admin(#[from] aequora_admin::AdminError),
+    Admin(#[from] aequora_authority::admin::AdminError),
     #[error(transparent)]
     Diagnostic(#[from] DiagnosticError),
     #[error(transparent)]
@@ -2036,7 +2039,7 @@ enum CliError {
     #[error(transparent)]
     Workload(#[from] WorkloadError),
     #[error(transparent)]
-    Loadgen(#[from] aequora_loadgen::LoadgenError),
+    Loadgen(#[from] aequora_testkit::loadgen::LoadgenError),
     #[error(transparent)]
     SupplyChain(#[from] SupplyChainError),
     #[error(transparent)]
@@ -2074,7 +2077,7 @@ enum CliError {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use aequora_schema::{
+    use aequora_types::schema::{
         CanonicalEntityId, CanonicalFieldId, CanonicalRecord, CanonicalType, CanonicalValue,
         EntitySchema, FieldSchema,
     };
