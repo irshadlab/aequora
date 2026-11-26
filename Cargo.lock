@@ -17,19 +17,17 @@ name = "aequora"
 version = "0.1.1"
 dependencies = [
  "aequora-adapter-sdk",
+ "aequora-authority",
  "aequora-axum",
  "aequora-client",
- "aequora-clock",
  "aequora-conflict",
- "aequora-executor",
  "aequora-http",
  "aequora-macros",
  "aequora-observability",
  "aequora-operation",
  "aequora-profile",
  "aequora-protocol",
- "aequora-registry-generated",
- "aequora-scheduler",
+ "aequora-registry",
  "aequora-server",
  "aequora-store",
  "aequora-store-postgres",
@@ -53,69 +51,31 @@ dependencies = [
 name = "aequora-adapter-sdk"
 version = "0.1.1"
 dependencies = [
- "aequora-conformance",
  "aequora-operation",
- "aequora-registry-types",
+ "aequora-registry",
  "aequora-types",
  "async-trait",
- "serde",
- "thiserror",
-]
-
-[[package]]
-name = "aequora-admin"
-version = "0.1.1"
-dependencies = [
- "aequora-types",
  "blake3",
+ "hex",
  "postcard",
+ "ron",
  "serde",
  "thiserror",
- "uuid",
-]
-
-[[package]]
-name = "aequora-admission"
-version = "0.1.1"
-dependencies = [
- "aequora-scheduler",
- "aequora-types",
- "async-trait",
- "serde",
- "thiserror",
-]
-
-[[package]]
-name = "aequora-agent"
-version = "0.1.1"
-dependencies = [
- "aequora-coordination",
- "aequora-desktop-runtime",
- "aequora-ipc-protocol",
- "serde",
- "thiserror",
- "uuid",
-]
-
-[[package]]
-name = "aequora-audit"
-version = "0.1.1"
-dependencies = [
- "aequora-types",
- "blake3",
- "postcard",
- "proptest",
- "serde",
- "thiserror",
- "uuid",
 ]
 
 [[package]]
 name = "aequora-authority"
 version = "0.1.1"
 dependencies = [
+ "aequora-protocol",
+ "aequora-security",
  "aequora-types",
+ "async-trait",
  "blake3",
+ "futures-executor",
+ "postcard",
+ "proptest",
+ "ron",
  "serde",
  "thiserror",
  "uuid",
@@ -125,9 +85,8 @@ dependencies = [
 name = "aequora-axum"
 version = "0.1.1"
 dependencies = [
- "aequora-admission",
+ "aequora-authority",
  "aequora-codec",
- "aequora-executor",
  "aequora-observability",
  "aequora-protocol",
  "aequora-server",
@@ -141,17 +100,6 @@ dependencies = [
  "http-body-util",
  "tokio",
  "tower",
-]
-
-[[package]]
-name = "aequora-benchkit"
-version = "0.1.1"
-dependencies = [
- "aequora-invariants",
- "aequora-workload",
- "ron",
- "serde",
- "thiserror",
 ]
 
 [[package]]
@@ -188,51 +136,34 @@ name = "aequora-cli"
 version = "0.1.1"
 dependencies = [
  "aequora",
- "aequora-admin",
  "aequora-authority",
- "aequora-benchkit",
  "aequora-bootstrap",
- "aequora-cli-core",
  "aequora-compat",
  "aequora-config",
- "aequora-conformance",
  "aequora-deployment",
- "aequora-devtools",
  "aequora-diagnostics",
  "aequora-feed",
- "aequora-inspect",
  "aequora-integrity",
  "aequora-legacy",
- "aequora-loadgen",
- "aequora-migration",
- "aequora-model",
  "aequora-observability",
- "aequora-policy",
+ "aequora-protocol",
  "aequora-queue",
  "aequora-region",
+ "aequora-registry",
  "aequora-release",
- "aequora-schema",
  "aequora-security",
  "aequora-store",
  "aequora-store-postgres",
  "aequora-store-stoolap",
  "aequora-supply-chain",
+ "aequora-testkit",
  "aequora-types",
  "aequora-workload",
  "hex",
  "ron",
  "serde",
- "tempfile",
- "thiserror",
-]
-
-[[package]]
-name = "aequora-cli-core"
-version = "0.1.1"
-dependencies = [
- "ron",
- "serde",
  "serde_json",
+ "tempfile",
  "thiserror",
 ]
 
@@ -242,7 +173,6 @@ version = "0.1.1"
 dependencies = [
  "aequora-adapter-sdk",
  "aequora-codec",
- "aequora-coordination",
  "aequora-diagnostics",
  "aequora-live",
  "aequora-observability",
@@ -250,7 +180,6 @@ dependencies = [
  "aequora-protocol",
  "aequora-queue",
  "aequora-region",
- "aequora-scheduler",
  "aequora-scope",
  "aequora-store",
  "aequora-transport",
@@ -260,13 +189,6 @@ dependencies = [
  "serde",
  "thiserror",
  "tokio",
-]
-
-[[package]]
-name = "aequora-clock"
-version = "0.1.1"
-dependencies = [
- "aequora-types",
 ]
 
 [[package]]
@@ -309,25 +231,18 @@ dependencies = [
 name = "aequora-config"
 version = "0.1.1"
 dependencies = [
- "aequora-admission",
+ "aequora-adapter-sdk",
+ "aequora-authority",
  "aequora-axum",
  "aequora-client",
  "aequora-compute",
- "aequora-conformance",
- "aequora-coordination",
- "aequora-crypto",
- "aequora-feature-flags",
  "aequora-http",
  "aequora-observability",
- "aequora-performance",
- "aequora-policy",
  "aequora-protocol",
  "aequora-quic",
- "aequora-scheduler",
- "aequora-secrets",
+ "aequora-security",
  "aequora-server",
  "aequora-types",
- "aequora-validator",
  "blake3",
  "postcard",
  "ron",
@@ -347,31 +262,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "aequora-conformance"
-version = "0.1.1"
-dependencies = [
- "aequora-invariants",
- "aequora-registry-types",
- "blake3",
- "hex",
- "postcard",
- "ron",
- "serde",
- "thiserror",
-]
-
-[[package]]
-name = "aequora-coordination"
-version = "0.1.1"
-dependencies = [
- "loom",
- "proptest",
- "serde",
- "thiserror",
- "uuid",
-]
-
-[[package]]
 name = "aequora-crdt"
 version = "0.1.1"
 dependencies = [
@@ -383,32 +273,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "aequora-crypto"
-version = "0.1.1"
-dependencies = [
- "aequora-protocol",
- "aequora-types",
- "argon2",
- "async-trait",
- "blake3",
- "chacha20poly1305",
- "ed25519-dalek",
- "getrandom 0.3.4",
- "postcard",
- "proptest",
- "serde",
- "smallvec",
- "thiserror",
- "uuid",
- "zeroize",
-]
-
-[[package]]
 name = "aequora-deployment"
 version = "0.1.1"
 dependencies = [
  "aequora-config",
- "aequora-policy",
+ "aequora-security",
  "aequora-types",
  "ron",
  "semver",
@@ -418,11 +287,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "aequora-desktop-runtime"
+name = "aequora-desktop"
 version = "0.1.1"
 dependencies = [
- "aequora-coordination",
+ "aequora-release",
+ "aequora-types",
  "async-trait",
+ "blake3",
+ "postcard",
  "serde",
  "thiserror",
  "uuid",
@@ -433,64 +305,28 @@ dependencies = [
 name = "aequora-dev"
 version = "0.1.1"
 dependencies = [
- "aequora-audit",
- "aequora-coordination",
- "aequora-crypto",
+ "aequora-authority",
  "aequora-feed",
- "aequora-governance",
- "aequora-performance",
  "aequora-profile",
- "aequora-replay",
- "aequora-scheduler",
  "aequora-scope",
  "aequora-security",
+ "aequora-types",
  "guppy",
  "ron",
  "serde",
 ]
 
 [[package]]
-name = "aequora-devtools"
-version = "0.1.1"
-dependencies = [
- "serde",
- "thiserror",
-]
-
-[[package]]
 name = "aequora-diagnostics"
 version = "0.1.1"
 dependencies = [
- "aequora-registry-generated",
+ "aequora-registry",
  "aequora-types",
  "async-trait",
  "blake3",
  "serde",
  "thiserror",
  "uuid",
-]
-
-[[package]]
-name = "aequora-executor"
-version = "0.1.1"
-dependencies = [
- "aequora-protocol",
- "aequora-security",
- "aequora-types",
- "async-trait",
- "postcard",
- "serde",
- "thiserror",
- "tokio",
-]
-
-[[package]]
-name = "aequora-feature-flags"
-version = "0.1.1"
-dependencies = [
- "blake3",
- "serde",
- "thiserror",
 ]
 
 [[package]]
@@ -510,25 +346,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "aequora-governance"
-version = "0.1.1"
-dependencies = [
- "aequora-types",
- "blake3",
- "postcard",
- "proptest",
- "serde",
- "thiserror",
- "uuid",
-]
-
-[[package]]
 name = "aequora-http"
 version = "0.1.1"
 dependencies = [
+ "aequora-authority",
  "aequora-axum",
  "aequora-codec",
- "aequora-executor",
  "aequora-observability",
  "aequora-protocol",
  "aequora-server",
@@ -544,50 +367,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "aequora-inspect"
-version = "0.1.1"
-dependencies = [
- "serde",
- "thiserror",
-]
-
-[[package]]
 name = "aequora-integrity"
 version = "0.1.1"
 dependencies = [
  "aequora-types",
  "blake3",
  "hex",
- "serde",
- "thiserror",
- "uuid",
-]
-
-[[package]]
-name = "aequora-invariants"
-version = "0.1.1"
-dependencies = [
- "serde",
-]
-
-[[package]]
-name = "aequora-ipc-protocol"
-version = "0.1.1"
-dependencies = [
- "postcard",
- "serde",
- "thiserror",
- "zeroize",
-]
-
-[[package]]
-name = "aequora-jobs"
-version = "0.1.1"
-dependencies = [
- "aequora-scheduler",
- "aequora-types",
- "async-trait",
- "blake3",
  "serde",
  "thiserror",
  "uuid",
@@ -631,7 +416,6 @@ dependencies = [
 name = "aequora-live"
 version = "0.1.1"
 dependencies = [
- "aequora-coordination",
  "aequora-types",
  "async-trait",
  "postcard",
@@ -642,31 +426,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "aequora-loadgen"
-version = "0.1.1"
-dependencies = [
- "aequora-benchkit",
- "aequora-workload",
- "serde",
- "thiserror",
-]
-
-[[package]]
 name = "aequora-macros"
 version = "0.1.1"
 dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.119",
-]
-
-[[package]]
-name = "aequora-mapping"
-version = "0.1.1"
-dependencies = [
- "aequora-schema",
- "serde",
- "thiserror",
 ]
 
 [[package]]
@@ -684,52 +449,14 @@ dependencies = [
 ]
 
 [[package]]
-name = "aequora-migration"
+name = "aequora-mobile"
 version = "0.1.1"
 dependencies = [
- "aequora-schema",
- "aequora-types",
- "async-trait",
- "blake3",
- "postcard",
- "proptest",
- "serde",
- "thiserror",
- "tokio",
- "uuid",
-]
-
-[[package]]
-name = "aequora-mobile-bindings"
-version = "0.1.1"
-dependencies = [
- "aequora-mobile-runtime",
  "async-trait",
  "futures-util",
  "serde",
  "thiserror",
-]
-
-[[package]]
-name = "aequora-mobile-runtime"
-version = "0.1.1"
-dependencies = [
- "async-trait",
- "serde",
- "thiserror",
  "zeroize",
-]
-
-[[package]]
-name = "aequora-model"
-version = "0.1.1"
-dependencies = [
- "aequora-invariants",
- "blake3",
- "proptest",
- "ron",
- "serde",
- "thiserror",
 ]
 
 [[package]]
@@ -757,73 +484,6 @@ name = "aequora-partition"
 version = "0.1.1"
 dependencies = [
  "aequora-protocol",
- "thiserror",
-]
-
-[[package]]
-name = "aequora-performance"
-version = "0.1.1"
-dependencies = [
- "aequora-invariants",
- "blake3",
- "postcard",
- "ron",
- "serde",
- "thiserror",
-]
-
-[[package]]
-name = "aequora-platform-android"
-version = "0.1.1"
-dependencies = [
- "aequora-mobile-runtime",
- "serde",
- "thiserror",
-]
-
-[[package]]
-name = "aequora-platform-ios"
-version = "0.1.1"
-dependencies = [
- "aequora-mobile-runtime",
- "serde",
- "thiserror",
-]
-
-[[package]]
-name = "aequora-platform-linux"
-version = "0.1.1"
-dependencies = [
- "aequora-desktop-runtime",
- "serde",
- "thiserror",
-]
-
-[[package]]
-name = "aequora-platform-macos"
-version = "0.1.1"
-dependencies = [
- "aequora-desktop-runtime",
- "serde",
- "thiserror",
-]
-
-[[package]]
-name = "aequora-platform-windows"
-version = "0.1.1"
-dependencies = [
- "aequora-desktop-runtime",
- "serde",
- "thiserror",
-]
-
-[[package]]
-name = "aequora-policy"
-version = "0.1.1"
-dependencies = [
- "blake3",
- "postcard",
- "serde",
  "thiserror",
 ]
 
@@ -869,8 +529,8 @@ dependencies = [
 name = "aequora-quic"
 version = "0.1.1"
 dependencies = [
+ "aequora-authority",
  "aequora-codec",
- "aequora-executor",
  "aequora-protocol",
  "aequora-server",
  "aequora-store",
@@ -894,37 +554,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "aequora-registry-cli"
+name = "aequora-registry"
 version = "0.1.1"
 dependencies = [
- "aequora-registry-codegen",
- "aequora-registry-types",
- "ron",
-]
-
-[[package]]
-name = "aequora-registry-codegen"
-version = "0.1.1"
-dependencies = [
- "aequora-registry-types",
  "blake3",
  "ron",
- "serde",
- "thiserror",
-]
-
-[[package]]
-name = "aequora-registry-generated"
-version = "0.1.1"
-dependencies = [
- "aequora-registry-codegen",
- "aequora-registry-types",
-]
-
-[[package]]
-name = "aequora-registry-types"
-version = "0.1.1"
-dependencies = [
  "serde",
  "thiserror",
 ]
@@ -933,7 +567,7 @@ dependencies = [
 name = "aequora-release"
 version = "0.1.1"
 dependencies = [
- "aequora-crypto",
+ "aequora-security",
  "blake3",
  "postcard",
  "ron",
@@ -944,44 +578,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "aequora-replay"
-version = "0.1.1"
-dependencies = [
- "aequora-audit",
- "aequora-protocol",
- "aequora-types",
- "blake3",
- "postcard",
- "proptest",
- "serde",
- "thiserror",
- "uuid",
-]
-
-[[package]]
 name = "aequora-routing"
 version = "0.1.1"
 dependencies = [
  "aequora-types",
  "thiserror",
-]
-
-[[package]]
-name = "aequora-scheduler"
-version = "0.1.1"
-dependencies = [
- "proptest",
- "serde",
- "thiserror",
-]
-
-[[package]]
-name = "aequora-schema"
-version = "0.1.1"
-dependencies = [
- "serde",
- "thiserror",
- "uuid",
 ]
 
 [[package]]
@@ -999,24 +600,23 @@ dependencies = [
 ]
 
 [[package]]
-name = "aequora-secrets"
-version = "0.1.1"
-dependencies = [
- "async-trait",
- "serde",
- "tempfile",
- "thiserror",
- "zeroize",
-]
-
-[[package]]
 name = "aequora-security"
 version = "0.1.1"
 dependencies = [
+ "aequora-protocol",
  "aequora-types",
+ "argon2",
+ "async-trait",
  "blake3",
+ "chacha20poly1305",
+ "ed25519-dalek",
+ "getrandom 0.3.4",
+ "postcard",
+ "proptest",
  "ron",
  "serde",
+ "smallvec",
+ "tempfile",
  "thiserror",
  "uuid",
  "zeroize",
@@ -1027,27 +627,17 @@ name = "aequora-server"
 version = "0.1.1"
 dependencies = [
  "aequora-adapter-sdk",
- "aequora-admin",
- "aequora-admission",
  "aequora-authority",
- "aequora-clock",
  "aequora-codec",
  "aequora-compute",
  "aequora-conflict",
  "aequora-diagnostics",
- "aequora-executor",
- "aequora-jobs",
  "aequora-observability",
  "aequora-operation",
- "aequora-performance",
  "aequora-protocol",
  "aequora-region",
- "aequora-scheduler",
- "aequora-side-effects",
  "aequora-store",
  "aequora-types",
- "aequora-validator",
- "aequora-workflow",
  "async-trait",
  "blake3",
  "rayon",
@@ -1056,25 +646,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "aequora-side-effects"
-version = "0.1.1"
-dependencies = [
- "aequora-jobs",
- "aequora-types",
- "async-trait",
- "blake3",
- "serde",
- "thiserror",
- "uuid",
-]
-
-[[package]]
 name = "aequora-store"
 version = "0.1.1"
 dependencies = [
  "aequora-authority",
- "aequora-coordination",
- "aequora-executor",
  "aequora-integrity",
  "aequora-protocol",
  "aequora-queue",
@@ -1092,7 +667,6 @@ version = "0.1.1"
 dependencies = [
  "aequora-adapter-sdk",
  "aequora-authority",
- "aequora-executor",
  "aequora-integrity",
  "aequora-live",
  "aequora-protocol",
@@ -1132,7 +706,6 @@ name = "aequora-store-stoolap"
 version = "0.1.1"
 dependencies = [
  "aequora-adapter-sdk",
- "aequora-coordination",
  "aequora-integrity",
  "aequora-protocol",
  "aequora-queue",
@@ -1164,69 +737,38 @@ name = "aequora-testkit"
 version = "0.1.1"
 dependencies = [
  "aequora-adapter-sdk",
- "aequora-admin",
- "aequora-agent",
- "aequora-audit",
  "aequora-authority",
- "aequora-benchkit",
  "aequora-bootstrap",
  "aequora-client",
- "aequora-clock",
  "aequora-codec",
  "aequora-compat",
  "aequora-compute",
  "aequora-config",
  "aequora-conflict",
- "aequora-conformance",
- "aequora-coordination",
- "aequora-crypto",
  "aequora-deployment",
- "aequora-desktop-runtime",
+ "aequora-desktop",
  "aequora-diagnostics",
- "aequora-executor",
- "aequora-feature-flags",
  "aequora-feed",
- "aequora-governance",
  "aequora-integrity",
- "aequora-invariants",
- "aequora-ipc-protocol",
- "aequora-jobs",
  "aequora-journal",
  "aequora-legacy",
  "aequora-legacy-api",
  "aequora-live",
- "aequora-loadgen",
- "aequora-migration",
- "aequora-mobile-bindings",
- "aequora-mobile-runtime",
+ "aequora-mobile",
  "aequora-observability",
- "aequora-platform-android",
- "aequora-platform-ios",
- "aequora-platform-linux",
- "aequora-platform-macos",
- "aequora-platform-windows",
- "aequora-policy",
  "aequora-profile",
  "aequora-protocol",
  "aequora-queue",
  "aequora-region",
- "aequora-registry-generated",
+ "aequora-registry",
  "aequora-release",
- "aequora-replay",
- "aequora-scheduler",
- "aequora-schema",
  "aequora-scope",
- "aequora-secrets",
  "aequora-security",
  "aequora-server",
- "aequora-side-effects",
  "aequora-store",
  "aequora-supply-chain",
  "aequora-transport",
  "aequora-types",
- "aequora-update",
- "aequora-validator",
- "aequora-workflow",
  "aequora-workload",
  "async-trait",
  "blake3",
@@ -1255,37 +797,8 @@ dependencies = [
 name = "aequora-types"
 version = "0.1.1"
 dependencies = [
- "serde",
- "thiserror",
- "uuid",
-]
-
-[[package]]
-name = "aequora-update"
-version = "0.1.1"
-dependencies = [
- "aequora-release",
- "blake3",
- "serde",
- "thiserror",
-]
-
-[[package]]
-name = "aequora-validator"
-version = "0.1.1"
-dependencies = [
- "aequora-protocol",
- "aequora-types",
- "thiserror",
-]
-
-[[package]]
-name = "aequora-workflow"
-version = "0.1.1"
-dependencies = [
- "aequora-jobs",
- "aequora-types",
- "async-trait",
+ "loom",
+ "proptest",
  "serde",
  "thiserror",
  "uuid",

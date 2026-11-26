@@ -9,9 +9,9 @@ description = "Server-authoritative, database-agnostic local-first synchronizati
 repository = "https://github.com/irshadali5/aequora"
 
 [dependencies]
+aequora-operation = { version = "0.1.1", path = "../../crates/aequora-operation" }
 aequora-adapter-sdk = { version = "0.1.1", path = "../../crates/aequora-adapter-sdk" }
 aequora-client = { version = "0.1.1", path = "../../crates/aequora-client" }
-aequora-operation = { version = "0.1.1", path = "../../crates/aequora-operation" }
 aequora-types = { version = "0.1.1", path = "../../crates/aequora-types" }
 dioxus = { version = "=0.7.10", default-features = false, features = ["hooks", "signals"] }
 tokio = { version = "1.45.1", features = ["macros", "net", "rt-multi-thread", "signal", "sync", "time"] }

@@ -66,19 +66,19 @@ jobs:
           cargo +stable test -p aequora-testkit --test profile_contracts --locked
       - name: Enforce deterministic decision and replay contracts
         run: |
-          cargo +stable test -p aequora-replay --locked
+          cargo +stable test -p aequora-authority --locked
           cargo +stable test -p aequora-testkit --test replay_contracts --locked
       - name: Enforce canonical audit, tamper, and authorization contracts
         run: |
-          cargo +stable test -p aequora-audit --locked
+          cargo +stable test -p aequora-authority --locked
           cargo +stable test -p aequora-testkit --test audit_contracts --locked
       - name: Enforce governance lifecycle and distributed purge contracts
         run: |
-          cargo +stable test -p aequora-governance --locked
+          cargo +stable test -p aequora-authority --locked
           cargo +stable test -p aequora-testkit --test governance_contracts --locked
       - name: Enforce cryptographic integrity, key lifecycle, and protected-payload contracts
         run: |
-          cargo +stable test -p aequora-crypto --locked
+          cargo +stable test -p aequora-security --features crypto --locked
           cargo +stable test -p aequora-testkit --test crypto_contracts --locked
       - name: Enforce epoch-safe regional reads and authority-only writes
         run: |
@@ -87,12 +87,12 @@ jobs:
       - name: Enforce durable jobs, workflows, and side-effect recovery
         run: |
           bash scripts/check-jobs-architecture.sh
-          cargo +stable test -p aequora-jobs -p aequora-workflow -p aequora-side-effects --locked
+          cargo +stable test -p aequora-authority --locked
           cargo +stable test -p aequora-testkit --test job_workflow_side_effect_contracts --locked
       - name: Enforce operational control-plane authorization and safety contracts
         run: |
           bash scripts/check-admin-architecture.sh
-          cargo +stable test -p aequora-admin --locked
+          cargo +stable test -p aequora-authority --locked
           cargo +stable test -p aequora-testkit --test admin_control_plane_contracts --locked
           cargo +stable run -p aequora-cli --locked -- admin capabilities
       - name: Enforce bounded diagnostics, bundle safety, and replay isolation
@@ -122,13 +122,13 @@ jobs:
       - name: Enforce durable registry and developer governance
         run: |
           bash scripts/check-registry-architecture.sh
-          cargo +stable test -p aequora-registry-types -p aequora-registry-codegen -p aequora-registry-generated -p aequora-registry-cli --locked
+          cargo +stable test -p aequora-registry -p aequora-cli --features aequora-registry/codegen --locked
           cargo +stable test -p aequora-testkit --test registry_contracts --locked
-          cargo +stable run -p aequora-registry-cli --locked --bin aequora-registry -- verify .
+          cargo +stable run -p aequora-cli --locked --bin aequora-registry -- verify .
       - name: Enforce certification, conformance, and ecosystem trust contracts
         run: |
           bash scripts/check-certification-architecture.sh
-          cargo +stable test -p aequora-conformance --locked
+          cargo +stable test -p aequora-adapter-sdk --locked
           cargo +stable test -p aequora-testkit --test adapter_contracts --locked
           cargo +stable test -p aequora-testkit --test conformance_certification_contracts --locked
           cargo +stable test -p aequora-store-stoolap built_in_stoolap_passes_the_public_local_adapter_contract --locked
@@ -178,7 +178,7 @@ jobs:
       - name: Enforce bounded Part 19 performance and memory contracts
         run: |
           bash scripts/check-performance-architecture.sh
-          cargo +stable test -p aequora-performance --locked
+          cargo +stable test -p aequora-authority --locked
           cargo +stable test -p aequora-codec --all-features --locked
           cargo +stable test -p aequora-bootstrap --locked
           cargo +stable test -p aequora-blob --locked
@@ -292,4 +292,4 @@ jobs:
           PROPTEST_CASES: "1024"
         run: |
           cargo +stable run -p aequora-cli --locked -- verify model
-          cargo +stable test -p aequora-authority -p aequora-region -p aequora-model -p aequora-replay -p aequora-audit -p aequora-governance -p aequora-crypto -p aequora-client -p aequora-testkit --locked
+          cargo +stable test -p aequora-authority -p aequora-region -p aequora-security -p aequora-client -p aequora-testkit --features aequora-security/crypto --locked
