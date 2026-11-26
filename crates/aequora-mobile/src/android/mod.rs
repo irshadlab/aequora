@@ -3,7 +3,7 @@
 //! JNI, `Context`, `WorkManager`, `ConnectivityManager`, and Keystore objects remain in the Android
 //! host. This crate validates their inputs and translates them to platform-neutral Rust values.
 
-use aequora_mobile_runtime::{
+use crate::runtime::{
     AppLifecycle, BatteryClass, MobileSyncBudget, NetworkAvailability, NetworkConstraint,
     NetworkContext, NetworkCost, PowerContext, RoamingState, StoragePressure, ThermalState,
 };

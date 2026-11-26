@@ -3,7 +3,7 @@
 //! Swift/Objective-C owns `BGTaskScheduler`, `NWPathMonitor`, Keychain, file-protection, and share
 //! sheet calls. This crate keeps those framework types outside synchronization semantics.
 
-use aequora_mobile_runtime::{
+use crate::runtime::{
     AppLifecycle, BatteryClass, MobileSyncBudget, NetworkAvailability, NetworkConstraint,
     NetworkContext, NetworkCost, PowerContext, RoamingState, StoragePressure, ThermalState,
 };

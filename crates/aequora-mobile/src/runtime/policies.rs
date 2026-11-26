@@ -1,4 +1,4 @@
-use crate::{AppLifecycle, MobileResourceContext, MobileSyncBudget, StoragePressure, ThermalState};
+use super::{AppLifecycle, MobileResourceContext, MobileSyncBudget, StoragePressure, ThermalState};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]

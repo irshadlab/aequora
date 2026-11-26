@@ -1,18 +1,22 @@
 [package]
-name = "aequora-mobile-bindings"
+name = "aequora-mobile"
 version.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 license.workspace = true
-description = "Stable panic-contained Kotlin and Swift binding contract for Aequora mobile"
 repository.workspace = true
+description = "Aequora mobile runtime and platform contracts"
+
+[features]
+# Enables platform contract models on a host that executes cross-platform tests.
+platform-test-support = []
 
 [dependencies]
-aequora-mobile-runtime = { version = "0.1.1", path = "../aequora-mobile-runtime" }
 async-trait.workspace = true
 futures-util.workspace = true
 serde.workspace = true
 thiserror.workspace = true
+zeroize.workspace = true
 
 [lints]
 workspace = true

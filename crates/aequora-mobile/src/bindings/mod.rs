@@ -4,7 +4,7 @@
 //! async functions/AsyncStreams. Raw journal events, cursor mutation, and operation-ledger access
 //! are intentionally absent. A concrete C/JNI generator lives in the application release pipeline.
 
-use aequora_mobile_runtime::{AEQUORA_MOBILE_ABI_VERSION, MobileEvent, MobileStatus};
+use crate::runtime::{AEQUORA_MOBILE_ABI_VERSION, MobileEvent, MobileStatus};
 use async_trait::async_trait;
 use futures_util::FutureExt as _;
 use serde::{Deserialize, Serialize};
