@@ -3,7 +3,7 @@
 //! Hosts translate operating-system signals into these values. Durable adapters remain
 //! responsible for atomically persisting coordinator leases, outbox entries, and cursors.
 
-use aequora_coordination::{
+use aequora_types::coordination::{
     CoordinationSnapshot, FencingToken, LeaseGrant, LocalStoreGeneration, LocalStoreId,
 };
 use async_trait::async_trait;
@@ -385,7 +385,7 @@ pub trait DesktopFileIntegration: Send + Sync {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use aequora_coordination::{LeaseKind, ProcessInstanceId};
+    use aequora_types::coordination::{LeaseKind, ProcessInstanceId};
 
     fn grant(token: u64) -> LeaseGrant {
         LeaseGrant {

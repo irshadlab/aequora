@@ -2,11 +2,11 @@
 //!
 //! Socket/named-pipe servers and database adapters are supplied by application crates.
 
-use aequora_coordination::{CoordinationSnapshot, LeaseGrant, LocalStoreId};
-use aequora_desktop_runtime::{CoordinatorAction, DesktopCoordinator, DesktopError};
-use aequora_ipc_protocol::{
+use crate::ipc::{
     Command, Handshake, IpcProtocolVersion, SessionToken, VersionNegotiation, negotiate,
 };
+use crate::runtime::{CoordinatorAction, DesktopCoordinator, DesktopError};
+use aequora_types::coordination::{CoordinationSnapshot, LeaseGrant, LocalStoreId};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use thiserror::Error;
@@ -220,7 +220,7 @@ fn valid_text(value: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use aequora_ipc_protocol::CURRENT_IPC_PROTOCOL_VERSION;
+    use crate::ipc::CURRENT_IPC_PROTOCOL_VERSION;
 
     #[test]
     fn wrong_user_or_token_cannot_connect() {

@@ -1,6 +1,6 @@
 //! Linux XDG, Secret Service, local socket, and user-autostart policy contracts.
 
-use aequora_desktop_runtime::{NetworkAvailability, NetworkContext, NetworkCost, NetworkPath};
+use crate::runtime::{NetworkAvailability, NetworkContext, NetworkCost, NetworkPath};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use thiserror::Error;

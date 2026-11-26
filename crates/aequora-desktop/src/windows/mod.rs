@@ -1,6 +1,6 @@
 //! Windows `LocalAppData`, Credential Manager/DPAPI, named-pipe, and startup policy contracts.
 
-use aequora_desktop_runtime::{NetworkAvailability, NetworkContext, NetworkCost, NetworkPath};
+use crate::runtime::{NetworkAvailability, NetworkContext, NetworkCost, NetworkPath};
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
