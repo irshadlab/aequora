@@ -1,0 +1,8 @@
+[
+    (name: "custom client + custom authority", features: [], require: [], forbid: ["stoolap", "rusqlite", "sqlx", "aequora-store-stoolap", "aequora-store-sqlite", "aequora-store-postgres"]),
+    (name: "Stoolap client + custom authority", features: ["stoolap", "http-client"], require: ["stoolap", "aequora-store-stoolap"], forbid: ["sqlx", "aequora-store-postgres", "rusqlite", "aequora-store-sqlite"]),
+    (name: "SQLite client + custom authority", features: ["sqlite", "http-client"], require: ["rusqlite", "aequora-store-sqlite"], forbid: ["stoolap", "sqlx", "aequora-store-stoolap", "aequora-store-postgres"]),
+    (name: "custom client + PostgreSQL authority", features: ["postgres", "axum"], require: ["sqlx", "aequora-store-postgres"], forbid: ["stoolap", "aequora-store-stoolap", "rusqlite", "aequora-store-sqlite"]),
+    (name: "Stoolap client + PostgreSQL authority", features: ["stoolap", "http-client", "postgres", "axum"], require: ["stoolap", "sqlx", "aequora-store-stoolap", "aequora-store-postgres"], forbid: []),
+    (name: "SQLite client + PostgreSQL authority", features: ["sqlite", "http-client", "postgres", "axum"], require: ["rusqlite", "sqlx", "aequora-store-sqlite", "aequora-store-postgres"], forbid: ["stoolap", "aequora-store-stoolap"]),
+]

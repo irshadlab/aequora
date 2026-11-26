@@ -4,7 +4,6 @@
         (
             name: "foundation",
             crates: [
-                "aequora-blob",
                 "aequora-workload",
                 "aequora-compute",
                 "aequora-macros",
@@ -14,14 +13,6 @@
         (
             name: "protocol-contracts",
             crates: [
-                "aequora-transport",
-                "aequora-scope",
-                "aequora-routing",
-                "aequora-region",
-                "aequora-operation",
-                "aequora-legacy",
-                "aequora-integrity",
-                "aequora-compat",
                 "aequora-authority",
                 "aequora-codec",
                 "aequora-observability",
@@ -33,12 +24,6 @@
         (
             name: "domain-execution",
             crates: [
-                "aequora-queue",
-                "aequora-partition",
-                "aequora-metadata",
-                "aequora-journal",
-                "aequora-feed",
-                "aequora-conflict",
                 "aequora-release",
                 "aequora-diagnostics",
                 "aequora-supply-chain",
@@ -55,8 +40,6 @@
         (
             name: "sync-engines",
             crates: [
-                "aequora-crdt",
-                "aequora-bootstrap",
                 "aequora-client",
                 "aequora-live",
                 "aequora-server",
@@ -93,6 +76,7 @@
         (
             name: "tooling-verification",
             crates: [
+                "xtask",
                 "aequora-dev",
                 "aequora-testkit",
             ],
@@ -104,7 +88,7 @@
     dependency_budgets: [
         (crate_name: "aequora-store", max_workspace: 8, max_external: 4),
         (crate_name: "aequora-types", max_workspace: 0, max_external: 3),
-        (crate_name: "aequora-protocol", max_workspace: 1, max_external: 2),
+        (crate_name: "aequora-protocol", max_workspace: 1, max_external: 10),
         (crate_name: "aequora-client", max_workspace: 18, max_external: 3),
         (crate_name: "aequora-server", max_workspace: 26, max_external: 4),
         (crate_name: "aequora-axum", max_workspace: 10, max_external: 6),

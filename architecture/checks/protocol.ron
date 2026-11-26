@@ -1,0 +1,4 @@
+[
+    Cargo(args: ["tree", "-p", "aequora-protocol", "--edges", "normal", "--prefix", "none", "--locked", "--offline"],
+        forbid: [r#"^(tokio|sqlx|stoolap|axum|reqwest|quinn|rusqlite|rayon) v"#]),
+]
