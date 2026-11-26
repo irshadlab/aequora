@@ -3438,7 +3438,7 @@ Those are the mechanisms that turn Aequora from "data syncing code" into a relia
 
 The synchronization-core ACID requirements in sections 1–177 are implemented and mapped to
 concrete transaction contracts, adapter behavior, failure/concurrency tests, diagnostics, and
-release gates in `docs/acid-compliance.md`.
+release gates in the [ACID compliance report](docs/acid-compliance.md).
 
 The implementation now includes explicit adapter durability/compliance declarations, invalid
 version-transition rejection, concurrent operation-ID and entity-creation race tests, fixed-order

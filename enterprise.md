@@ -2694,11 +2694,9 @@ The enterprise version should first be **boring, correct, observable, recoverabl
 
 # 121. Implementation Status
 
-Sections 1–120 are implemented at the reusable framework boundary or resolved by an explicit
-host/deployment responsibility in [`docs/enterprise-completion.md`](docs/enterprise-completion.md).
-The completion record is normative when an illustrative shape in this document would otherwise be
-mistaken for an application binary, a mandatory infrastructure dependency, or evidence that a real
-production environment passed acceptance.
+The [enterprise completion report](docs/enterprise-completion.md) maps sections 1–120 to reused
+framework contracts, open host integrations, and production acceptance gates. The checked-in
+[release scope](release/v1-scope.ron) defines the v1 components.
 
 Repository-owned enterprise guarantees include:
 

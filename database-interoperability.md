@@ -3619,26 +3619,26 @@ That is the foundation required for Aequora to become a truly universal Rust syn
 # 201. Implementation Status
 
 The database-neutral domain-operation path is implemented: local, authoritative, and transport
-selection are independent; built-in Stoolap and PostgreSQL adapters own native transaction and
+selection are independent; SQLite, Stoolap, and PostgreSQL own their native transaction and
 migration boundaries; shared conformance contracts verify both roles; and no adapter communicates
 directly with another adapter.
 
 The adapter SDK now publishes a serializable `AdapterManifest` with stable roles, certification
 tier, tested Aequora/database versions, semantic capabilities, and limitations. Startup can use
 `AdapterRequirements` or `ProductionAdapterPair::verify` to fail closed before composing a local
-and authoritative adapter. Built-in `STOOLAP_ADAPTER_MANIFEST` and
-`POSTGRES_ADAPTER_MANIFEST` pass those production requirements independently.
+and authoritative adapter. Built-in `SQLITE_ADAPTER_MANIFEST`,
+`STOOLAP_ADAPTER_MANIFEST`, and `POSTGRES_ADAPTER_MANIFEST` declare their separate roles.
 
-Generic record interoperability is feature-gated behind `record-sync`. `aequora-schema` supplies
+Generic record interoperability is separate from domain exchange. `aequora_types::schema` supplies
 stable entity/field IDs, exact decimals, UTC timestamps, a non-floating canonical value model,
-validated schemas, and fail-closed record validation. `aequora-mapping` supplies explicit physical
+validated schemas, and fail-closed record validation. `aequora_types::mapping` supplies explicit physical
 entity/field/type maps, required-field coverage, and mandatory acknowledgement for lossy
 conversions. It validates declarations without introducing SQL or database-pair logic into core.
 
-`aequora-migration` defines bounded `CanonicalRecordSource` and `CanonicalRecordSink` contracts,
+`aequora_authority::migration` uses bounded `CanonicalRecordSource` and `CanonicalRecordSink` contracts,
 consistent source paging, resumable idempotent staging, atomic publication, and a Postcard export
 artifact with canonical-schema identity, independently hashed chunks, a root digest, record
-validation, and tamper detection. `aequora-mapping` exposes concrete conversion hooks plus golden
+validation, and tamper detection. `aequora_types::mapping` exposes concrete conversion hooks plus golden
 physical/canonical fixtures so adapter conversions can be certified without coupling core to SQL.
 
 The installable `aequora` binary supplied by `aequora-cli` exposes payload-free `doctor adapters`,
@@ -3648,5 +3648,5 @@ mutation remain explicit host/environment actions around concrete application ma
 
 The exact section mapping, ownership boundaries, and optional legacy CDC work are tracked in
 [`docs/database-interoperability-completion.md`](docs/database-interoperability-completion.md).
-The reusable repository prerequisite is complete. This does not claim arbitrary database engines,
-application mappings, or a live PostgreSQL/Neon run without their adapter and environment evidence.
+Optional concrete CDC bridges, cross-engine local cutover orchestration, and a runtime multi-store
+registry remain deferred. Target engine and mapping evidence is recorded per deployment.

@@ -57,7 +57,7 @@ outside the reusable core.
 | 37 | [PostgreSQL/Neon authoritative adapter](sys-arch/37-postgresql-neon-authoritative-adapter-detailed-architecture.md) |
 | 38 | [Stoolap embedded local persistence](sys-arch/38-stoolap-embedded-local-replica-client-persistence-architecture.md) |
 | 39 | [Axum server integration and middleware](sys-arch/39-axum-server-integration-middleware-architecture.md) |
-| 40 | [Dioxus client integration](sys-arch/40-dioxus-client-integration-reactive-state-architecture.md) |
+| 40 | Removed from the active architecture. [Archive record](docs/dioxus-client-integration-completion.md). |
 | 41 | [CLI and developer toolchain](sys-arch/41-cli-developer-toolchain-architecture.md) |
 | 42 | [SQLite embedded local adapter](sys-arch/42-sqlite-embedded-local-adapter-architecture.md) |
 | 43 | [Configuration, secrets, runtime policy, and feature flags](sys-arch/43-configuration-secrets-environment-profiles-runtime-policy-feature-flags-architecture.md) |
@@ -71,58 +71,112 @@ outside the reusable core.
 
 ## Implementation status
 
-The table below records implementation independently by part; an implemented later part does not
-implicitly claim completion of an earlier part.
+The index covers 49 active numbered specifications plus the three root specifications.
+Part 40 remains reserved for the archived integration. The evidence column identifies local
+contracts. Test names refer to `aequora-testkit` unless a package is named. Gate names refer
+to `cargo xtask check <name>`. The linked reports describe target acceptance and record the
+difference between framework behavior and completed integrations.
 
-| Scope | Status | Evidence |
+| Tier | Part | Report | Focused evidence | Status and remaining work |
+|---:|---:|---|---|---|
+| 1 | 01 | [Part 01](docs/formal-correctness-completion.md) | `model_based, property_invariants` | Bounded model coverage. Live adapter and extended fault campaigns remain. |
+| 1 | 02 | [Part 02](docs/causality-provenance-completion.md) | `audit_contracts, sync_invariants` | Application lineage declarations and live authority persistence evidence. |
+| 1 | 03 | [Part 03](docs/anti-entropy-self-repair-completion.md) | `integrity_contracts` | Host repair authorization and live differential capture. |
+| 1 | 04 | [Part 04](docs/offline-compaction-rebase-completion.md) | `property_invariants, sync_invariants` | Domain-specific merge equivalence and crash recovery on shipped stores. |
+| 2 | 05 | [Part 05](docs/local-multiprocess-coordination-completion.md) | `coordination_contracts` | Process takeover on supported filesystems and OS targets. |
+| 2 | 06 | [Part 06](docs/adaptive-sync-scheduler-qos-completion.md) | `scheduler_contracts` | Platform signal and wake-up integration. Device power and carrier tests. |
+| 2 | 07 | [Part 07](docs/subscription-scope-dynamic-dataset-completion.md) | `scope_contracts` | Application scope rules and revocation cleanup. Test on real datasets. |
+| 2 | 08 | [Part 08](docs/live-sync-push-presence-completion.md) | `live_contracts` | Host WebSocket, SSE and push bindings. Live broker and reconnect acceptance. |
+| 3 | 09 | [Part 09](docs/bulk-import-export-seed-migration-completion.md) | `migration_contracts` | Concrete source/sink mappings and CDC catch-up. Cutover rehearsal and throughput. |
+| 3 | 10 | [Part 10](docs/large-snapshot-streaming-bootstrap-completion.md) | `large_bootstrap_contracts` | Host object storage and scoped read views. Large live bootstrap and resumability. |
+| 3 | 11 | [Part 11](docs/operation-semantics-consistency-profiles-completion.md) | `profile_contracts` | Application profile registration and transaction certification by adapter. |
+| 3 | 12 | [Part 12](docs/deterministic-execution-replay-completion.md) | `replay_contracts` | Host retained state, handlers and committer. Native restart and incident evidence. |
+| 4 | 13 | [Part 13](docs/data-provenance-auditability-explainability-completion.md) | `audit_contracts` | Deployment-specific indexes, archives, anchors and key rotation. Verify restore chains. |
+| 4 | 14 | [Part 14](docs/data-governance-retention-erasure-completion.md) | `governance_contracts` | Host retention, erasure, archive and key-destruction integrations. Verify registered surfaces. |
+| 4 | 15 | [Part 15](docs/cryptographic-integrity-key-management-e2e-completion.md) | `crypto_contracts` | KMS, HSM and OS keystore adapters and deployment custody, rotation and revocation evidence. |
+| 4 | 16 | [Part 16](docs/authority-failover-timeline-epochs-fork-detection-completion.md) | `authority_contracts`, local adapter suites | SQLite store-wide epoch trust and host promotion/epoch witness. Failover and PITR drills. |
+| 5 | 17 | [Part 17](docs/multi-region-read-single-writer-global-completion.md) | `regional_contracts` | Split sync pull is deferred. Regional topology and lag/partition acceptance remain. |
+| 5 | 18 | [Part 18](docs/backpressure-admission-fairness-overload-completion.md) | `aequora-authority admission, axum-server` | Worker queue and resource feedback composition. Production mixed-load and soak evidence. |
+| 5 | 19 | [Part 19](docs/performance-engineering-memory-architecture-completion.md) | `performance` | Target-specific memory, query plans and throughput baselines. |
+| 5 | 20 | [Part 20](docs/resource-constrained-client-architecture-completion.md) | `client-resource` | Native service bridges. Device background, power and storage pressure evidence. |
+| 6 | 21 | [Part 21](docs/protocol-negotiation-compatibility-governance-completion.md) | `compatibility` | Release-policy signing and mixed-version fleet rollout. |
+| 6 | 22 | [Part 22](docs/sync-metadata-schema-internal-persistence-completion.md) | `metadata` | Physical mappings and conformance for each declared adapter profile. |
+| 6 | 23 | [Part 23](docs/background-jobs-durable-workflows-side-effects-completion.md) | `jobs` | Durable production job, workflow and side-effect stores/workers and provider adapters remain to be integrated. |
+| 6 | 24 | [Part 24](docs/operational-control-plane-admin-api-completion.md) | `admin` | Durable admin store/executors, private listener and authorization integration. Verify against real identity policy. |
+| 7 | 25 | [Part 25](docs/diagnostics-forensics-reproducible-incident-bundles-completion.md) | `diagnostics` | Host durable registry, protected archive and audit integration. Custody/retention exercises. |
+| 7 | 26 | [Part 26](docs/legacy-application-compatibility-incremental-adoption-completion.md) | `legacy` | Host CDC, route translation and write-ownership wiring. Shadow and cutover runs. |
+| 7 | 27 | [Part 27](docs/security-threat-model-abuse-resistance-completion.md) | `security` | Host identity, edge policy, security review and deployment acceptance. |
+| 7 | 28 | [Part 28](docs/multi-consumer-change-feed-completion.md) | `change-feed` | Physical consumer offset/effect transactions, broker and archive adapters. Live consumer load evidence. |
+| 7 | 29 | [Part 29](docs/schema-operation-registry-developer-governance-completion.md) | `registry` | Signed registry packages, hosted namespace allocation, macros and schema UI are deferred. |
+| 7 | 30 | [Part 30](docs/certification-conformance-ecosystem-completion.md) | `certification` | Target-bound certificates, reviewer keys and publishing/revocation custody. |
+| 8 | 31 | [Part 31](docs/android-ios-mobile-runtime-platform-completion.md) | `mobile` | Application OS bindings and physical Android/iOS target campaigns. |
+| 8 | 32 | [Part 32](docs/linux-windows-macos-desktop-runtime-completion.md) | `desktop` | Application agent, IPC/OS adapters and signed install/update on supported targets. |
+| 8 | 33 | [Part 33](docs/cross-platform-local-storage-completion.md) | `local-storage` | Target filesystem, process-kill, backup and keystore certification. |
+| 8 | 34 | [Part 34](docs/reference-implementation-workspace-boundaries-completion.md) | `reference-implementation` | Current 35-crate graph governs local boundaries. Target acceptance is tracked by integration. |
+| 8 | 35 | [Part 35](docs/public-rust-sdk-completion.md) | `public-sdk` | Released consumers and supported upgrade windows require artifact-specific evidence. |
+| 8 | 36 | [Part 36](docs/storage-adapter-sdk-completion.md) | `storage-adapter-sdk` | Independent object store and other adapter integrations. Certify the real engine and capability profile. |
+| 8 | 37 | [Part 37](docs/postgresql-neon-authority-completion.md) | `postgres-authority, postgres_live` | Isolated PostgreSQL 18.7 passed. Hosted Neon, PITR and topology-specific connection behavior remain. |
+| 8 | 38 | [Part 38](docs/stoolap-local-persistence-completion.md) | `stoolap-local-persistence` | Device/filesystem fault and production suitability evidence. v1 support is conditional. |
+| 8 | 39 | [Part 39](docs/axum-server-integration-completion.md) | `axum-server` | Host live routes, proxy/TLS and CORS/CSRF policy. Mixed-version and slow-client qualification. |
+| 9 | 41 | [Part 41](docs/cli-developer-toolchain-completion.md) | `cli-toolchain, aequora-cli lib` | Shell completions, man pages and optional advanced tooling are deferred. Package and credential integration remain. |
+| 9 | 42 | [Part 42](docs/sqlite-local-adapter-completion.md) | `sqlite-local-adapter, aequora-store-sqlite lib` | Windows, macOS, Android and iOS full-profile filesystem/device evidence. |
+| 9 | 43 | [Part 43](docs/configuration-secrets-runtime-policy-feature-flags-completion.md) | `configuration` | Host secret providers and signed remote policy delivery. |
+| 10 | 44 | [Part 44](docs/packaging-distribution-release-engineering-completion.md) | `release` | Release signing custody, protected promotion, platform notarization and installation campaigns. |
+| 10 | 45 | [Part 45](docs/deployment-topologies-completion.md) | `deployment` | Host provisioning and topology acceptance, including HA, edge and air-gapped hardware. |
+| 10 | 46 | [Part 46](docs/observability-production-telemetry-completion.md) | `observability` | Telemetry exporters, dashboards and real alert routing/SLO validation. |
+| 10 | 47 | [Part 47](docs/benchmarking-capacity-planning-completion.md) | `benchmarking` | Representative workloads, platform baselines, production capacity and soak. |
+| 11 | 48 | [Part 48](docs/testkit-verification-quality-gates-completion.md) | `verification` | Long fuzz/fault campaigns, target runners and candidate artifact evidence. |
+| 11 | 49 | [Part 49](docs/supply-chain-governance-completion.md) | `supply-chain` | Protected signing/provenance and independent reproducibility evidence. |
+| 11 | 50 | [Part 50](docs/v1-productization-ga-completion.md) | `productization` | RC milestones, upgrade and subsystem evidence, pilots, release risks and digest-bound GA decision remain open. |
+
+| Root specification | Report | Repository boundary and remaining work |
 |---|---|---|
-| Parts 01–04: core synchronization foundations | Implemented | [Completion audit](docs/plan-completion.md) |
-| Parts 05–10: scheduling, scopes, live delivery, import/export, and bootstrap | Implemented | [Completion audit](docs/plan-completion.md) |
-| Parts 11–14: semantics, replay, audit, and governance | Implemented | [Completion audit](docs/plan-completion.md) |
-| Part 15: cryptographic integrity and key lifecycle | Implemented | [Cryptography report](docs/cryptographic-integrity-key-management-e2e-completion.md) |
-| Parts 16–17: authority epochs and regional reads | Implemented | [Multi-region report](docs/multi-region-read-single-writer-global-completion.md) |
-| Part 18: backpressure and fair admission | Implemented | [Completion audit](docs/plan-completion.md) |
-| Part 19: performance and memory architecture | Implemented | [Part 19 report](docs/performance-engineering-memory-architecture-completion.md) |
-| Part 20: resource-constrained client architecture | Implemented | [Part 20 report](docs/resource-constrained-client-architecture-completion.md) |
-| Part 21: protocol negotiation and compatibility governance | Implemented | [Part 21 report](docs/protocol-negotiation-compatibility-governance-completion.md) |
-| Part 22: sync metadata schema and internal persistence | Implemented | [Part 22 report](docs/sync-metadata-schema-internal-persistence-completion.md) |
-| Part 23: background jobs, durable workflows, and side effects | Implemented | [Part 23 report](docs/background-jobs-durable-workflows-side-effects-completion.md) |
-| Part 24: operational control plane and admin API | Implemented | [Part 24 report](docs/operational-control-plane-admin-api-completion.md) |
-| Part 25: diagnostics, forensics, and reproducible incident bundles | Implemented | [Part 25 report](docs/diagnostics-forensics-reproducible-incident-bundles-completion.md) |
-| Part 26: legacy application compatibility and incremental adoption | Implemented | [Part 26 report](docs/legacy-application-compatibility-incremental-adoption-completion.md) |
-| Part 29: schema, operation registry, and developer governance | Implemented | [Part 29 report](docs/schema-operation-registry-developer-governance-completion.md) |
-| Part 30: certification, conformance, and ecosystem architecture | Implemented | [Part 30 report](docs/certification-conformance-ecosystem-completion.md) |
-| Part 31: Android and iOS mobile runtime platform architecture | Implemented | [Part 31 report](docs/android-ios-mobile-runtime-platform-completion.md) |
-| Part 32: Linux, Windows, and macOS desktop runtime architecture | Implemented | [Part 32 report](docs/linux-windows-macos-desktop-runtime-completion.md) |
-| Part 33: Cross-platform local storage architecture | Implemented | [Part 33 report](docs/cross-platform-local-storage-completion.md) |
-| Part 34: Reference implementation and workspace crate boundaries | Implemented | [Part 34 report](docs/reference-implementation-workspace-boundaries-completion.md) |
-| Part 35: Public Rust API and SDK stability | Implemented | [Part 35 report](docs/public-rust-sdk-completion.md) |
-| Part 36: Storage adapter SDK and official adapter architecture | Implemented | [Part 36 report](docs/storage-adapter-sdk-completion.md) |
-| Part 37: PostgreSQL/Neon authoritative adapter | Implemented | [Part 37 report](docs/postgresql-neon-authority-completion.md) |
-| Part 38: Stoolap embedded local replica and client persistence | Implemented | [Part 38 report](docs/stoolap-local-persistence-completion.md) |
-| Part 39: Axum server integration, authentication, and middleware | Implemented | [Part 39 report](docs/axum-server-integration-completion.md) |
-| Part 40: Dioxus client integration and reactive state | Implemented | [Part 40 report](docs/dioxus-client-integration-completion.md) |
-| Part 41: CLI and developer toolchain | Implemented | [Part 41 report](docs/cli-developer-toolchain-completion.md) |
-| Part 42: SQLite embedded local adapter | Implemented | [Part 42 report](docs/sqlite-local-adapter-completion.md) |
-| Part 43: Configuration, secrets, runtime policy, and feature flags | Implemented | [Part 43 report](docs/configuration-secrets-runtime-policy-feature-flags-completion.md) |
-| Part 44: Packaging, distribution, release engineering, signing, and update channels | Implemented | [Part 44 report](docs/packaging-distribution-release-engineering-completion.md) |
-| Part 45: Deployment topologies and operational environments | Implemented | [Part 45 report](docs/deployment-topologies-completion.md) |
-| Part 46: Observability, metrics, tracing, logging, SLOs, and alerts | Implemented | [Part 46 report](docs/observability-production-telemetry-completion.md) |
-| Part 47: Benchmarking, regression, capacity planning, and production sizing | Implemented | [Part 47 report](docs/benchmarking-capacity-planning-completion.md) |
-| Part 48: Testkit, verification, fault injection, and release quality gates | Implemented | [Part 48 report](docs/testkit-verification-quality-gates-completion.md) |
-| Part 49: Licensing, dependency policy, supply-chain security, SBOM, and reproducible builds | Implemented | [Part 49 report](docs/supply-chain-governance-completion.md) |
-| Part 50: v1 scope, productization milestones, readiness, RC, GA, and evolution | Implemented | [Part 50 report](docs/v1-productization-ga-completion.md) |
+| [ACID](ACID.md) | [Compliance](docs/acid-compliance.md) | Tx A/B/C and adapter atomicity are implemented. Distributed group atomicity is outside scope. Live certification and workload-specific recovery remain. |
+| [Database interoperability](database-interoperability.md) | [Completion](docs/database-interoperability-completion.md) | Native domain sync and bounded record conversion are implemented. Generic CDC, cross-engine local-store cutover and a runtime multi-store registry are deferred. |
+| [Enterprise](enterprise.md) | [Completion](docs/enterprise-completion.md) | Reusable enterprise controls are implemented. Concrete jobs, admin, feed and provider integrations depend on the host. Production approval requires target evidence. |
+
+### Open repository and host integration
+
+- Part 16 still needs SQLite store-wide epoch trust and a host-backed promotion and epoch-witness
+  integration. Part 18 still needs resource-signal and worker-queue integration for a deployed host.
+- Parts 23, 24, and 28 still need concrete durable job/workflow/effect, admin, and feed adapters.
+  Their transaction participation, fencing, and recovery need real-adapter tests.
+- Generic CDC adapters, cross-engine local-store cutover, and the runtime multi-store registry
+  remain deferred under the database interoperability spec. The per-part reports give the
+  remaining host and optional feature boundaries.
+
+### Open environment and release gates
+
+- Qualify hosted PostgreSQL/Neon and deployment-specific HA, failover, PITR, upgrades, and restore.
+- Exercise physical desktop/mobile devices and filesystems, air-gapped deployments, mixed load,
+  capacity and soak on supported configurations.
+- Supply independently verifiable signing, promotion, pilot and supported-upgrade evidence for the
+  specific candidate. The [GA report](docs/v1-productization-ga-completion.md) tracks eligibility.
+
+### November 27, 2026 reconciliation
+
+- Added dedicated reports for Parts 01, 16, and 18 and repaired stale specification links and
+  package references. All 52 active specification/report pairs resolve.
+- Part 18 load shedding now allocates reservations only to eligible classes, within the reduced
+  in-flight ceiling. Part 42's SQLite manifest now participates in CLI adapter discovery and pairing.
+- SQLite and Stoolap now reject regressing snapshot cursors and mismatched resume boundaries.
+  Snapshot activation clears stale applied markers above the installed cursor within Tx C.
+- PostgreSQL 18.7 passed the live authority contract on an isolated cluster after the TestKit
+  fixture assigned distinct event IDs to distinct operations and isolated the race journal from
+  the single-commit checks. See the [ACID compliance report](docs/acid-compliance.md).
+- Part 40 remains archived. Its verification gate reads the historical design and archive record.
+  The v1 readiness snapshot still records an ineligible release candidate.
 
 ## Implementation workflow
 
 For each future part:
 
-1. Read the complete governing specification in `sys-arch/`.
+1. Retrieve the relevant specification sections and verify the corresponding workspace contracts.
 2. Add or update the implementation and its focused tests.
 3. Add a concise evidence row or completion report; do not copy the specification into this plan.
 4. Run the repository architecture, dependency-direction, database-neutrality, formatting, and
    relevant workspace gates.
-5. Refresh the retrieval index after material refactors.
+5. Refresh the retrieval index after each audit batch and before claiming repository-wide coverage.
 
 ## Required repository gates
 
@@ -134,20 +188,26 @@ cargo run -q -p aequora-dev -- check
 cargo xtask check database-neutrality
 cargo xtask check performance
 cargo xtask check client-resource
+cargo xtask check protocol
 cargo xtask check compatibility
 cargo xtask check metadata
 cargo xtask check jobs
 cargo xtask check admin
 cargo xtask check diagnostics
 cargo xtask check legacy
+cargo xtask check security
+cargo xtask check change-feed
+cargo xtask check registry
+cargo xtask check certification
 cargo xtask check mobile
 cargo xtask check desktop
 cargo xtask check local-storage
 cargo xtask check reference-implementation
+cargo xtask check public-sdk
+cargo xtask check storage-adapter-sdk
 cargo xtask check postgres-authority
 cargo xtask check stoolap-local-persistence
 cargo xtask check axum-server
-cargo xtask check dioxus-client
 cargo xtask check cli-toolchain
 cargo xtask check sqlite-local-adapter
 cargo xtask check configuration
