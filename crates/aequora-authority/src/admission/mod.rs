@@ -13,7 +13,7 @@ mod load_state;
 mod permit;
 mod work;
 
-pub use brownout::BrownoutPolicy;
+pub use brownout::{BrownoutPolicy, OptionalWork};
 pub use controller::{
     AdmissionController, AdmissionMetricsSnapshot, AdmissionPolicy, ClassBudget,
     HierarchicalAdmission, TenantAdmissionPolicy,

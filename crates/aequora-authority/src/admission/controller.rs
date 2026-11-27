@@ -9,9 +9,9 @@ use async_trait::async_trait;
 use serde::{Deserialize, Serialize};
 
 use crate::admission::{
-    AdmissionPermit, AdmissionRejection, FairQueueConfig, LoadPolicy, LoadSignals, LoadState,
-    LoadStateTracker, PolicyError, RateLimit, RequestLimits, ResourceBudget, ResourceDomain,
-    WorkDescriptor,
+    AdmissionPermit, AdmissionRejection, BrownoutPolicy, FairQueueConfig, LoadPolicy, LoadSignals,
+    LoadState, LoadStateTracker, OptionalWork, PolicyError, RateLimit, RequestLimits,
+    ResourceBudget, ResourceDomain, WorkDescriptor,
 };
 
 const CLASSES: [WorkClass; 6] = [
@@ -356,10 +356,30 @@ impl HierarchicalAdmission {
     ///
     /// Returns a typed [`AdmissionRejection`] before any counter changes when capacity, request
     /// shape, load state, or resource policy refuses the work.
-    #[allow(clippy::too_many_lines)]
     pub fn try_admit(
         &self,
         request: &WorkDescriptor,
+    ) -> Result<AdmissionPermit, AdmissionRejection> {
+        self.try_admit_work(request, None)
+    }
+
+    /// Admits explicitly optional work using the same load state and resource limits as exchange.
+    ///
+    /// # Errors
+    /// Returns a typed rejection when brownout, capacity, shape, or resource policy refuses work.
+    pub fn try_admit_optional(
+        &self,
+        request: &WorkDescriptor,
+        work: OptionalWork,
+    ) -> Result<AdmissionPermit, AdmissionRejection> {
+        self.try_admit_work(request, Some(work))
+    }
+
+    #[allow(clippy::too_many_lines)]
+    fn try_admit_work(
+        &self,
+        request: &WorkDescriptor,
+        optional: Option<OptionalWork>,
     ) -> Result<AdmissionPermit, AdmissionRejection> {
         if let Err(rejection) = self.inner.policy.request_limits.check(request.shape) {
             self.record_rejection(rejection, request.class);
@@ -377,6 +397,11 @@ impl HierarchicalAdmission {
         let mut state = self.inner.state();
         let load_state = state.load.state();
         let retry_after_ms = self.inner.policy.retry_after_ms;
+        if optional.is_some_and(|work| !BrownoutPolicy::for_load(load_state).allows(work)) {
+            let rejection = AdmissionRejection::Brownout { retry_after_ms };
+            record_rejection_locked(&mut state, rejection, request.class);
+            return Err(rejection);
+        }
         if !self.inner.policy.load.allows(load_state, request.class) {
             let rejection = AdmissionRejection::LoadShed { retry_after_ms };
             record_rejection_locked(&mut state, rejection, request.class);
@@ -563,8 +588,14 @@ const fn scaled_limit(limit: usize, percent: u8) -> usize {
 
 fn fits(current: Usage, budget: ResourceBudget, bytes: u64, cost: u64) -> bool {
     current.in_flight < budget.max_in_flight
-        && current.bytes.saturating_add(bytes) <= budget.max_bytes_in_flight
-        && current.cost.saturating_add(cost) <= budget.max_cost_units_in_flight
+        && current
+            .bytes
+            .checked_add(bytes)
+            .is_some_and(|total| total <= budget.max_bytes_in_flight)
+        && current
+            .cost
+            .checked_add(cost)
+            .is_some_and(|total| total <= budget.max_cost_units_in_flight)
 }
 
 fn record_rejection_locked(

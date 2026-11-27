@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, VecDeque};
+use std::collections::{BTreeMap, BTreeSet, VecDeque};
 
 use aequora_types::TenantId;
 use aequora_types::scheduler::WorkClass;
@@ -206,7 +206,10 @@ impl<T> FairQueue<T> {
     ) -> Result<(), QueueRejection> {
         let bytes = descriptor.estimated_bytes();
         if self.len >= self.config.max_queued
-            || self.bytes.saturating_add(bytes) > self.config.max_queued_bytes
+            || self
+                .bytes
+                .checked_add(bytes)
+                .is_none_or(|total| total > self.config.max_queued_bytes)
         {
             return Err(QueueRejection::GlobalFull);
         }
@@ -239,17 +242,53 @@ impl<T> FairQueue<T> {
 
     /// Selects one item with weighted class rotation; sufficiently old heads bypass the schedule.
     pub fn dequeue(&mut self, now_ms: u64) -> Option<QueuedWork<T>> {
-        let class = self.aged_class(now_ms).or_else(|| self.scheduled_class())?;
-        let index = self.tenant_fair_index(class);
-        let item = self.queues.get_mut(&class)?.remove(index)?;
-        self.record_dequeue(class, &item);
-        Some(item)
+        self.dispatch(now_ms, |_| Some(())).map(|(item, ())| item)
     }
 
-    fn aged_class(&self, now_ms: u64) -> Option<WorkClass> {
+    /// Removes work only after the caller reserves its execution capacity.
+    ///
+    /// A failed reservation keeps the item and its queue accounting intact. Each class is
+    /// visited once per call, with at most one candidate per tenant in that class. The host
+    /// retains responsibility for discovering durable work.
+    pub fn dispatch<P>(
+        &mut self,
+        now_ms: u64,
+        mut reserve: impl FnMut(&QueuedWork<T>) -> Option<P>,
+    ) -> Option<(QueuedWork<T>, P)> {
+        let mut skipped = [false; CLASSES.len()];
+        loop {
+            let class = self
+                .aged_class(now_ms, skipped)
+                .or_else(|| self.scheduled_class(skipped))?;
+            let preferred_index = self.tenant_fair_index(class);
+            let queue = self.queues.get_mut(&class)?;
+            let preferred = queue.get(preferred_index)?;
+            let reservation = reserve(preferred)
+                .map(|permit| (preferred_index, permit))
+                .or_else(|| {
+                    let mut tried = BTreeSet::from([preferred.descriptor.tenant_id]);
+                    queue.iter().enumerate().find_map(|(index, item)| {
+                        if tried.insert(item.descriptor.tenant_id) {
+                            reserve(item).map(|permit| (index, permit))
+                        } else {
+                            None
+                        }
+                    })
+                });
+            if let Some((index, permit)) = reservation {
+                let item = queue.remove(index)?;
+                self.record_dequeue(class, &item);
+                return Some((item, permit));
+            }
+            skipped[usize::from(class.rank())] = true;
+        }
+    }
+
+    fn aged_class(&self, now_ms: u64, skipped: [bool; CLASSES.len()]) -> Option<WorkClass> {
         let starvation_age = self.config.aging_quantum_ms.saturating_mul(6);
         CLASSES
             .into_iter()
+            .filter(|class| !skipped[usize::from(class.rank())])
             .filter_map(|class| {
                 self.queues
                     .get(&class)
@@ -261,14 +300,15 @@ impl<T> FairQueue<T> {
             .map(|(class, _)| class)
     }
 
-    fn scheduled_class(&mut self) -> Option<WorkClass> {
+    fn scheduled_class(&mut self, skipped: [bool; CLASSES.len()]) -> Option<WorkClass> {
         for _ in 0..self.schedule.len() {
             let class = self.schedule[self.schedule_cursor];
             self.schedule_cursor = (self.schedule_cursor + 1) % self.schedule.len();
-            if self
-                .queues
-                .get(&class)
-                .is_some_and(|queue| !queue.is_empty())
+            if !skipped[usize::from(class.rank())]
+                && self
+                    .queues
+                    .get(&class)
+                    .is_some_and(|queue| !queue.is_empty())
             {
                 return Some(class);
             }
@@ -318,7 +358,10 @@ mod tests {
     use aequora_types::scheduler::WorkKind;
 
     use super::*;
-    use crate::admission::{CostUnits, RequestShape, ResourceDomain};
+    use crate::admission::{
+        AdmissionPolicy, AdmissionRejection, CostUnits, HierarchicalAdmission, LoadState,
+        OptionalWork, RequestShape, ResourceDomain,
+    };
 
     fn work(tenant_id: TenantId, class: WorkClass) -> WorkDescriptor {
         WorkDescriptor {
@@ -335,6 +378,114 @@ mod tests {
             estimated_response_bytes: 1,
             resources: vec![ResourceDomain::SyncExchange],
         }
+    }
+
+    #[test]
+    fn dispatch_preserves_browned_out_work_and_admits_required_work() {
+        let mut queue =
+            FairQueue::new(FairQueueConfig::default()).unwrap_or_else(|error| panic!("{error}"));
+        let controller = HierarchicalAdmission::new(AdmissionPolicy::default())
+            .unwrap_or_else(|error| panic!("{error}"));
+        let mut snapshot = work(TenantId::new(), WorkClass::Critical);
+        snapshot.kind = WorkKind::LargeBootstrapTransfer;
+        snapshot.resources = vec![ResourceDomain::SnapshotBuild];
+        queue
+            .enqueue(snapshot, Some(OptionalWork::BulkBuild), 0, 1)
+            .unwrap_or_else(|error| panic!("{error:?}"));
+        queue
+            .enqueue(work(TenantId::new(), WorkClass::Interactive), None, 1, 1)
+            .unwrap_or_else(|error| panic!("{error:?}"));
+
+        controller.set_load_state(LoadState::Overloaded);
+        let reserve = |item: &QueuedWork<Option<OptionalWork>>| match item.value {
+            Some(optional) => controller.try_admit_optional(&item.descriptor, optional),
+            None => controller.try_admit(&item.descriptor),
+        };
+        let initial_bytes = queue.queued_bytes();
+        let (required, permit) = queue
+            .dispatch(u64::MAX, |item| {
+                let result = reserve(item);
+                if item.value.is_some() {
+                    assert!(matches!(result, Err(AdmissionRejection::Brownout { .. })));
+                }
+                result.ok()
+            })
+            .unwrap_or_else(|| panic!("required work should still dispatch"));
+        assert_eq!(required.value, None);
+        assert_eq!(queue.len(), 1);
+        assert_eq!(queue.tenant_count(), 1);
+        assert_eq!(
+            queue.queued_bytes(),
+            initial_bytes - required.descriptor.estimated_bytes()
+        );
+        assert_eq!(controller.snapshot().global_in_flight, 1);
+        drop(permit);
+        assert!(
+            queue
+                .dispatch(u64::MAX, |item| reserve(item).ok())
+                .is_none()
+        );
+        assert_eq!(queue.len(), 1);
+
+        controller.set_load_state(LoadState::Healthy);
+        let (resumed, _permit) = queue
+            .dispatch(u64::MAX, |item| reserve(item).ok())
+            .unwrap_or_else(|| panic!("optional work should resume"));
+        assert_eq!(resumed.value, Some(OptionalWork::BulkBuild));
+        assert_eq!(resumed.enqueued_at_ms, 0);
+        assert_eq!(queue.queued_bytes(), 0);
+        assert_eq!(queue.tenant_count(), 0);
+    }
+
+    #[test]
+    fn dispatch_tries_another_tenant_when_one_tenant_is_at_capacity() {
+        let mut policy = AdmissionPolicy::default();
+        policy.tenant.budget.max_in_flight = 1;
+        let controller =
+            HierarchicalAdmission::new(policy).unwrap_or_else(|error| panic!("{error}"));
+        let mut queue =
+            FairQueue::new(FairQueueConfig::default()).unwrap_or_else(|error| panic!("{error}"));
+        let busy = TenantId::new();
+        let quiet = TenantId::new();
+        let existing = controller
+            .try_admit(&work(busy, WorkClass::Normal))
+            .unwrap_or_else(|error| panic!("{error}"));
+        for (tenant, value) in [(busy, 1), (busy, 2), (quiet, 3)] {
+            queue
+                .enqueue(work(tenant, WorkClass::Normal), value, 0, 1)
+                .unwrap_or_else(|error| panic!("{error:?}"));
+        }
+        let (next, _permit) = queue
+            .dispatch(1, |item| controller.try_admit(&item.descriptor).ok())
+            .unwrap_or_else(|| panic!("quiet tenant should dispatch"));
+        assert_eq!(next.value, 3);
+        assert_eq!(queue.len(), 2);
+        drop(existing);
+        let (next, _permit) = queue
+            .dispatch(2, |item| controller.try_admit(&item.descriptor).ok())
+            .unwrap_or_else(|| panic!("oldest work for the busy tenant should dispatch"));
+        assert_eq!(next.value, 1);
+    }
+
+    #[test]
+    fn queue_rejects_bytes_beyond_the_largest_representable_budget() {
+        let mut queue = FairQueue::new(FairQueueConfig {
+            max_queued_bytes: u64::MAX,
+            ..FairQueueConfig::default()
+        })
+        .unwrap_or_else(|error| panic!("{error}"));
+        let mut large = work(TenantId::new(), WorkClass::Bulk);
+        large.estimated_response_bytes = u64::MAX - large.shape.decompressed_bytes;
+        queue
+            .enqueue(large, (), 0, 1)
+            .unwrap_or_else(|error| panic!("{error:?}"));
+        assert_eq!(
+            queue.enqueue(work(TenantId::new(), WorkClass::Bulk), (), 1, 1),
+            Err(QueueRejection::GlobalFull)
+        );
+        assert_eq!(queue.queued_bytes(), u64::MAX);
+        assert!(queue.dequeue(2).is_some());
+        assert_eq!(queue.queued_bytes(), 0);
     }
 
     #[test]
