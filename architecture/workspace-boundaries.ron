@@ -90,7 +90,8 @@
         (crate_name: "aequora-types", max_workspace: 0, max_external: 3),
         (crate_name: "aequora-protocol", max_workspace: 1, max_external: 10),
         (crate_name: "aequora-client", max_workspace: 18, max_external: 3),
-        (crate_name: "aequora-server", max_workspace: 26, max_external: 4),
+        // The fifth dependency is the feature-gated OpenMetrics exporter.
+        (crate_name: "aequora-server", max_workspace: 26, max_external: 5),
         (crate_name: "aequora-axum", max_workspace: 10, max_external: 6),
     ],
     exclusive_dependencies: [
@@ -102,6 +103,11 @@
         (dependency: "reqwest", owners: ["aequora", "aequora-http"]),
         (dependency: "axum", owners: ["aequora", "aequora-axum", "aequora-http"]),
         (dependency: "tower", owners: ["aequora-axum"]),
+        (dependency: "governor", owners: ["aequora-axum"]),
+        (dependency: "prometheus-client", owners: ["aequora-server"]),
+        (dependency: "secrecy", owners: ["aequora-config"]),
+        (dependency: "spdx-rs", owners: ["xtask"]),
+        (dependency: "spdx-expression", owners: ["xtask"]),
         (dependency: "jni", owners: ["aequora-mobile"]),
         (dependency: "windows-sys", owners: ["aequora-desktop"]),
         (dependency: "objc2", owners: ["aequora-desktop", "aequora-mobile"]),
