@@ -4,8 +4,13 @@
 //! control-plane semantics. It validates CLI intent and renders stable envelopes around results
 //! returned by the public SDK and control-plane clients.
 
+use clap::{
+    Arg, ArgAction, ArgMatches, Command as ClapCommand, ValueEnum,
+    builder::EnumValueParser,
+    error::{ContextKind, ContextValue, ErrorKind},
+};
 use serde::{Deserialize, Serialize};
-use std::{collections::BTreeMap, fmt, str::FromStr};
+use std::{collections::BTreeMap, ffi::OsString, fmt, str::FromStr};
 use thiserror::Error;
 
 /// Version of the stable machine-readable CLI envelope.
@@ -139,7 +144,7 @@ impl CliErrorEnvelope {
 }
 
 /// Output representation selected independently from command execution.
-#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize, ValueEnum)]
 pub enum OutputFormat {
     #[default]
     Human,
@@ -163,7 +168,7 @@ impl FromStr for OutputFormat {
     }
 }
 
-#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize, ValueEnum)]
 pub enum ColorChoice {
     #[default]
     Auto,
@@ -171,7 +176,7 @@ pub enum ColorChoice {
     Never,
 }
 
-#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize, ValueEnum)]
 pub enum LogFormat {
     #[default]
     Human,
@@ -231,10 +236,13 @@ pub enum CommandName {
     Capacity,
     Deps,
     SupplyChain,
+    Release,
+    Completions,
+    Man,
 }
 
 impl CommandName {
-    pub const ALL: [Self; 40] = [
+    pub const ALL: [Self; 43] = [
         Self::Init,
         Self::Doctor,
         Self::Config,
@@ -275,6 +283,9 @@ impl CommandName {
         Self::Capacity,
         Self::Deps,
         Self::SupplyChain,
+        Self::Release,
+        Self::Completions,
+        Self::Man,
     ];
 
     #[must_use]
@@ -320,6 +331,66 @@ impl CommandName {
             Self::Capacity => "capacity",
             Self::Deps => "deps",
             Self::SupplyChain => "supply-chain",
+            Self::Release => "release",
+            Self::Completions => "completions",
+            Self::Man => "man",
+        }
+    }
+
+    const fn actions(self) -> &'static [&'static str] {
+        match self {
+            Self::Admin => &[
+                "capabilities",
+                "validate-listener",
+                "inspect-action",
+                "explain",
+            ],
+            Self::Authority => &[
+                "status",
+                "readiness",
+                "promote",
+                "demote",
+                "restore-plan",
+                "recover",
+                "verify",
+                "fork-check",
+                "explain",
+            ],
+            Self::Bench => &["list", "compare", "report"],
+            Self::Bootstrap => &["inspect", "status", "explain"],
+            Self::Capacity => &["estimate"],
+            Self::Compat => &["show", "matrix", "deprecated", "check-client", "registry"],
+            Self::Compatibility => &["check"],
+            Self::Config => &["check", "effective", "explain", "diff"],
+            Self::Conform => &[
+                "run", "storage", "protocol", "client", "server", "report", "verify",
+            ],
+            Self::Deps => &["verify", "explain"],
+            Self::Diagnostics => &["summary", "metrics", "trace"],
+            Self::Doctor => &["adapters", "deployment"],
+            Self::Feed | Self::Security => &["show", "validate", "explain"],
+            Self::Import => &["plan", "validate", "status", "cutover", "explain"],
+            Self::Incident => &["inspect", "explain-operation", "explain"],
+            Self::Inspect => &["adapters", "adapter"],
+            Self::Integrity => &["status", "verify", "explain"],
+            Self::Legacy => &[
+                "discover",
+                "map-verify",
+                "bridge-status",
+                "shadow-report",
+                "cutover-plan",
+                "verify",
+                "retire",
+            ],
+            Self::Load => &["run"],
+            Self::Queue => &["status", "verify", "compact", "explain"],
+            Self::Region => &["status", "route", "explain"],
+            Self::Release => &["verify", "readiness", "v1-scope"],
+            Self::SupplyChain => &["summary", "sbom", "verify"],
+            Self::Verify => &[
+                "pair", "export", "model", "trace", "replay", "release", "report",
+            ],
+            _ => &[],
         }
     }
 }
@@ -365,74 +436,43 @@ impl CliRequest {
     ///
     /// Returns a typed parse error for unknown commands, options, or missing option values.
     pub fn parse(arguments: impl IntoIterator<Item = String>) -> Result<Self, ParseError> {
-        let mut values = arguments.into_iter().peekable();
-        let mut global = GlobalOptions::default();
-        loop {
-            let Some(option) = values.peek().map(String::as_str) else {
-                return Ok(Self {
-                    global,
-                    command: Command::Help,
-                });
-            };
-            if !option.starts_with('-') || matches!(option, "-h" | "--help") {
-                break;
-            }
-            let option = values.next().ok_or(ParseError::MissingCommand)?;
-            let value = values
-                .next()
-                .ok_or_else(|| ParseError::MissingOptionValue(option.clone()))?;
-            match option.as_str() {
-                "--output" => global.output = value.parse()?,
-                "--color" => {
-                    global.color = match value.as_str() {
-                        "auto" => ColorChoice::Auto,
-                        "always" => ColorChoice::Always,
-                        "never" => ColorChoice::Never,
-                        _ => {
-                            return Err(ParseError::InvalidOptionValue {
-                                option: "--color",
-                                value,
-                            });
-                        }
-                    };
-                }
-                "--log-format" => {
-                    global.log_format = match value.as_str() {
-                        "human" => LogFormat::Human,
-                        "json" => LogFormat::Json,
-                        _ => {
-                            return Err(ParseError::InvalidOptionValue {
-                                option: "--log-format",
-                                value,
-                            });
-                        }
-                    };
-                }
-                "--log-level" => global.log_level = Some(value),
-                "--trace-id" => global.trace_id = Some(value),
-                _ => return Err(ParseError::UnknownOption(option)),
-            }
-        }
+        Self::parse_os(
+            std::iter::once(OsString::from("aequora"))
+                .chain(arguments.into_iter().map(OsString::from)),
+        )
+    }
 
-        let Some(name) = values.next() else {
-            return Ok(Self {
-                global,
-                command: Command::Help,
-            });
+    pub(crate) fn parse_os(
+        arguments: impl IntoIterator<Item = OsString>,
+    ) -> Result<Self, ParseError> {
+        let mut matches = argument_schema()
+            .try_get_matches_from(arguments)
+            .map_err(|error| ParseError::from_clap(&error))?;
+        let global = GlobalOptions {
+            output: matches.remove_one("output").unwrap_or_default(),
+            color: matches.remove_one("color").unwrap_or_default(),
+            log_format: matches.remove_one("log-format").unwrap_or_default(),
+            log_level: matches.remove_one("log-level"),
+            trace_id: matches.remove_one("trace-id"),
         };
-        if matches!(name.as_str(), "help" | "-h" | "--help") {
-            return Ok(Self {
-                global,
-                command: Command::Help,
-            });
-        }
-        Ok(Self {
-            global,
-            command: Command::Invoke {
-                name: name.parse()?,
-                arguments: values.collect(),
-            },
-        })
+        let command = match matches.remove_subcommand() {
+            None => Command::Help,
+            Some((name, _)) if name == "help" => Command::Help,
+            Some((name, mut matches)) => {
+                let name = name.parse()?;
+                let arguments = match name {
+                    CommandName::Man => Vec::new(),
+                    CommandName::Version => matches
+                        .get_flag("verbose")
+                        .then(|| "--verbose".to_owned())
+                        .into_iter()
+                        .collect(),
+                    _ => subcommand_arguments(name, &mut matches),
+                };
+                Command::Invoke { name, arguments }
+            }
+        };
+        Ok(Self { global, command })
     }
 
     #[must_use]
@@ -449,6 +489,106 @@ impl CliRequest {
     }
 }
 
+pub(crate) fn argument_schema() -> ClapCommand {
+    ClapCommand::new("aequora")
+        .about("Aequora diagnostics, configuration, and verification")
+        .disable_help_flag(true)
+        .disable_help_subcommand(true)
+        .args_override_self(true)
+        .arg(
+            Arg::new("output")
+                .long("output")
+                .value_parser(EnumValueParser::<OutputFormat>::new()),
+        )
+        .arg(
+            Arg::new("color")
+                .long("color")
+                .value_parser(EnumValueParser::<ColorChoice>::new()),
+        )
+        .arg(
+            Arg::new("log-format")
+                .long("log-format")
+                .value_parser(EnumValueParser::<LogFormat>::new()),
+        )
+        .arg(Arg::new("log-level").long("log-level"))
+        .arg(Arg::new("trace-id").long("trace-id"))
+        .subcommand(
+            ClapCommand::new("help")
+                .about("Print command usage")
+                .short_flag('h')
+                .long_flag("help")
+                .arg(pass_through_arguments()),
+        )
+        .subcommands(CommandName::ALL.map(|name| {
+            let command = ClapCommand::new(name.as_str());
+            match name {
+                CommandName::Completions => {
+                    command.about("Generate shell completions on stdout").arg(
+                        Arg::new("arguments")
+                            .value_name("SHELL")
+                            .required(true)
+                            .value_parser(["bash", "elvish", "fish", "powershell", "zsh"]),
+                    )
+                }
+                CommandName::Man => command.about("Generate the manual page on stdout"),
+                CommandName::Version => command.about("Print the Aequora CLI version").arg(
+                    Arg::new("verbose")
+                        .long("verbose")
+                        .action(ArgAction::SetTrue),
+                ),
+                _ if name.actions().is_empty() => command.arg(pass_through_arguments()),
+                _ => command.subcommands(name.actions().iter().copied().map(|action| {
+                    let subcommand = ClapCommand::new(action);
+                    if name == CommandName::Authority && action == "recover" {
+                        subcommand
+                            .arg(Arg::new("state").value_name("STATE.RON").required(true))
+                            .arg(
+                                Arg::new("new-epoch")
+                                    .long("new-epoch")
+                                    .action(ArgAction::SetTrue)
+                                    .required(true),
+                            )
+                    } else {
+                        subcommand.arg(pass_through_arguments())
+                    }
+                })),
+            }
+        }))
+}
+
+fn subcommand_arguments(name: CommandName, matches: &mut ArgMatches) -> Vec<String> {
+    if name.actions().is_empty() {
+        return matches
+            .remove_many("arguments")
+            .into_iter()
+            .flatten()
+            .collect();
+    }
+    let Some((action, mut matches)) = matches.remove_subcommand() else {
+        return Vec::new();
+    };
+    if name == CommandName::Authority && action == "recover" {
+        return std::iter::once(action)
+            .chain(matches.remove_one("state"))
+            .chain(
+                matches
+                    .get_flag("new-epoch")
+                    .then(|| "--new-epoch".to_owned()),
+            )
+            .collect();
+    }
+    std::iter::once(action)
+        .chain(matches.remove_many("arguments").into_iter().flatten())
+        .collect()
+}
+
+fn pass_through_arguments() -> Arg {
+    Arg::new("arguments")
+        .num_args(0..)
+        .trailing_var_arg(true)
+        .allow_hyphen_values(true)
+}
+
 #[derive(Clone, Debug, Error, Eq, PartialEq)]
 pub enum ParseError {
     #[error("missing command")]
@@ -461,6 +601,46 @@ pub enum ParseError {
     MissingOptionValue(String),
     #[error("invalid value {value:?} for {option}")]
     InvalidOptionValue { option: &'static str, value: String },
+    #[error("{0}")]
+    ArgumentSyntax(String),
+}
+
+impl ParseError {
+    fn from_clap(error: &clap::Error) -> Self {
+        let context = |kind| match error.get(kind) {
+            Some(ContextValue::String(value)) => Some(value.as_str()),
+            _ => None,
+        };
+        let argument = context(ContextKind::InvalidArg)
+            .and_then(|argument| argument.split_whitespace().next());
+        match (error.kind(), argument) {
+            (ErrorKind::InvalidSubcommand, _) => {
+                if let Some(name) = context(ContextKind::InvalidSubcommand) {
+                    return Self::UnknownCommand(name.to_owned());
+                }
+            }
+            (ErrorKind::UnknownArgument, Some(option)) => {
+                return Self::UnknownOption(option.to_owned());
+            }
+            (ErrorKind::InvalidValue, Some(option)) => {
+                let value = context(ContextKind::InvalidValue).unwrap_or_default();
+                if value.is_empty() {
+                    return Self::MissingOptionValue(option.to_owned());
+                }
+                if let Some(option) = ["--output", "--color", "--log-format"]
+                    .into_iter()
+                    .find(|candidate| *candidate == option)
+                {
+                    return Self::InvalidOptionValue {
+                        option,
+                        value: value.to_owned(),
+                    };
+                }
+            }
+            _ => {}
+        }
+        Self::ArgumentSyntax(error.to_string().trim_end().to_owned())
+    }
 }
 
 /// Operational risk of one semantic command.
@@ -799,6 +979,36 @@ mod tests {
         let request = request.unwrap_or_else(|error| panic!("parse failed: {error}"));
         assert_eq!(request.global.output, OutputFormat::Json);
         assert_eq!(request.execution_arguments(), ["sync", "now", "--wait"]);
+    }
+
+    #[test]
+    fn parser_accepts_help_release_and_artifact_generation() {
+        for spelling in ["help", "-h", "--help"] {
+            let request = CliRequest::parse([spelling.to_owned()]);
+            assert!(matches!(
+                request,
+                Ok(CliRequest {
+                    command: Command::Help,
+                    ..
+                })
+            ));
+        }
+        for (name, arguments) in [
+            (
+                CommandName::Release,
+                vec!["release", "readiness", "evidence.ron"],
+            ),
+            (CommandName::Version, vec!["version", "--verbose"]),
+            (CommandName::Completions, vec!["completions", "zsh"]),
+            (CommandName::Man, vec!["man"]),
+        ] {
+            let request = CliRequest::parse(arguments.iter().copied().map(str::to_owned))
+                .unwrap_or_else(|error| panic!("parse failed: {error}"));
+            assert!(
+                matches!(&request.command, Command::Invoke { name: actual, .. } if *actual == name)
+            );
+            assert_eq!(request.execution_arguments(), arguments);
+        }
     }
 
     #[test]

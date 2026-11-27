@@ -22,6 +22,9 @@ name = "generated_server_starter"
 path = "templates/server.rs"
 
 [dependencies]
+clap.workspace = true
+clap_complete.workspace = true
+clap_mangen.workspace = true
 aequora-protocol = { version = "0.1.1", path = "../aequora-protocol" }
 aequora-registry = { version = "0.1.1", path = "../aequora-registry", features = ["codegen"] }
 aequora-testkit = { version = "0.1.1", path = "../aequora-testkit" }

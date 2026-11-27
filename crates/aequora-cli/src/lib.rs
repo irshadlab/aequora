@@ -87,6 +87,7 @@ use aequora_workload::{WorkloadError, WorkloadSpec};
 use std::{
     collections::BTreeMap,
     env,
+    ffi::OsString,
     fs::{self, File},
     io::{self, Read},
     path::Path,
@@ -99,11 +100,11 @@ use thiserror::Error;
 /// exit category.
 #[must_use]
 pub fn run_main() -> ExitCode {
-    let raw_arguments = env::args().skip(1).collect::<Vec<_>>();
-    let output_hint = output_format_hint(&raw_arguments);
-    let parsed = match CliRequest::parse(raw_arguments) {
+    let raw_arguments = env::args_os().collect::<Vec<_>>();
+    let parsed = match CliRequest::parse_os(raw_arguments.iter().cloned()) {
         Ok(parsed) => parsed,
         Err(error) => {
+            let output_hint = output_format_hint(raw_arguments.get(1..).unwrap_or_default());
             if output_hint == OutputFormat::Human {
                 eprintln!("aequora: {error}");
             } else {
@@ -120,13 +121,17 @@ pub fn run_main() -> ExitCode {
             return ExitCode::from(CliExitCode::UsageOrConfiguration as u8);
         }
     };
-    let arguments = parsed.execution_arguments();
-    if parsed.global.output == OutputFormat::Human
-        && arguments.first().map(String::as_str) == Some("conform")
+    if let (
+        OutputFormat::Human,
+        cli_core::Command::Invoke {
+            name: cli_core::CommandName::Conform,
+            arguments,
+        },
+    ) = (parsed.global.output, &parsed.command)
     {
-        return conform_main(&arguments[1..]);
+        return conform_main(arguments);
     }
-    match command(arguments) {
+    match execute(&parsed.command) {
         Ok(output) => {
             if parsed.global.output == OutputFormat::Human {
                 println!("{output}");
@@ -157,13 +162,16 @@ pub fn run_main() -> ExitCode {
     }
 }
 
-fn output_format_hint(arguments: &[String]) -> OutputFormat {
+fn output_format_hint(arguments: &[OsString]) -> OutputFormat {
     arguments
-        .windows(2)
-        .find_map(|values| {
-            (values[0] == "--output")
-                .then(|| values[1].parse().ok())
-                .flatten()
+        .iter()
+        .enumerate()
+        .find_map(|(index, argument)| {
+            let argument = argument.to_str()?;
+            if argument == "--output" {
+                return arguments.get(index + 1)?.to_str()?.parse().ok();
+            }
+            argument.strip_prefix("--output=")?.parse().ok()
         })
         .unwrap_or(OutputFormat::Human)
 }
@@ -216,100 +224,88 @@ fn machine_error(error: &CliError) -> CliErrorEnvelope {
     }
 }
 
+#[cfg(test)]
 fn command(arguments: impl IntoIterator<Item = String>) -> Result<String, CliError> {
-    let mut arguments = arguments.into_iter();
-    match arguments.next().as_deref() {
-        None | Some("help" | "--help" | "-h") => Ok(help()),
-        Some("version") => version(arguments.next().as_deref()),
-        Some("doctor") => doctor(arguments.next().as_deref(), arguments.next().as_deref()),
-        Some("diagnostics") => {
-            diagnostics_command(arguments.next().as_deref(), arguments.next().as_deref())
+    let request =
+        CliRequest::parse(arguments).map_err(|error| CliError::Usage(error.to_string()))?;
+    execute(&request.command)
+}
+
+fn execute(command: &cli_core::Command) -> Result<String, CliError> {
+    use cli_core::CommandName;
+
+    let cli_core::Command::Invoke { name, arguments } = command else {
+        return Ok(help());
+    };
+    let mut arguments = arguments.iter().map(String::as_str);
+    match name {
+        CommandName::Version => version(arguments.next().is_some()),
+        CommandName::Completions => {
+            let shell = arguments
+                .next()
+                .and_then(|value| value.parse::<clap_complete::Shell>().ok())
+                .ok_or_else(|| {
+                    CliError::Usage(
+                        "aequora completions <bash|elvish|fish|powershell|zsh>".to_owned(),
+                    )
+                })?;
+            let mut output = Vec::new();
+            clap_complete::generate(
+                shell,
+                &mut cli_core::argument_schema(),
+                "aequora",
+                &mut output,
+            );
+            String::from_utf8(output).map_err(|error| CliError::Usage(error.to_string()))
         }
-        Some("inspect") => inspect(arguments.next().as_deref(), arguments.next().as_deref()),
-        Some("verify") => verify(
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
-        ),
-        Some("init") => initialize(arguments.next().as_deref(), arguments.next().as_deref()),
-        Some("integrity") => integrity(arguments.next().as_deref(), arguments.next().as_deref()),
-        Some("queue") => queue(
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
-        ),
-        Some("import") => migration_command(
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
-        ),
-        Some("bootstrap") => {
-            bootstrap_command(arguments.next().as_deref(), arguments.next().as_deref())
+        CommandName::Man => {
+            let mut output = Vec::new();
+            clap_mangen::Man::new(cli_core::argument_schema()).render(&mut output)?;
+            String::from_utf8(output).map_err(|error| CliError::Usage(error.to_string()))
         }
-        Some("authority") => authority_command(
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
-        ),
-        Some("region") => region_command(
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
-        ),
-        Some("compat") => compat_command(
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
-        ),
-        Some("compatibility") => {
-            compatibility_command(arguments.next().as_deref(), arguments.next().as_deref())
+        CommandName::Doctor => doctor(arguments.next(), arguments.next()),
+        CommandName::Diagnostics => diagnostics_command(arguments.next(), arguments.next()),
+        CommandName::Inspect => inspect(arguments.next(), arguments.next()),
+        CommandName::Verify => verify(arguments.next(), arguments.next(), arguments.next()),
+        CommandName::Init => initialize(arguments.next(), arguments.next()),
+        CommandName::Integrity => integrity(arguments.next(), arguments.next()),
+        CommandName::Queue => queue(arguments.next(), arguments.next(), arguments.next()),
+        CommandName::Import => {
+            migration_command(arguments.next(), arguments.next(), arguments.next())
         }
-        Some("conform") => {
-            conform_command(arguments.next().as_deref(), arguments.next().as_deref())
+        CommandName::Bootstrap => bootstrap_command(arguments.next(), arguments.next()),
+        CommandName::Authority => {
+            authority_command(arguments.next(), arguments.next(), arguments.next())
         }
-        Some("admin") => admin_command(arguments.next().as_deref(), arguments.next().as_deref()),
-        Some("incident") => incident_command(
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
-        ),
-        Some("security") => {
-            security_command(arguments.next().as_deref(), arguments.next().as_deref())
+        CommandName::Region => region_command(arguments.next(), arguments.next(), arguments.next()),
+        CommandName::Compat => compat_command(arguments.next(), arguments.next(), arguments.next()),
+        CommandName::Compatibility => compatibility_command(arguments.next(), arguments.next()),
+        CommandName::Conform => conform_command(arguments.next(), arguments.next()),
+        CommandName::Admin => admin_command(arguments.next(), arguments.next()),
+        CommandName::Incident => {
+            incident_command(arguments.next(), arguments.next(), arguments.next())
         }
-        Some("feed") => feed_command(arguments.next().as_deref(), arguments.next().as_deref()),
-        Some("legacy") => legacy_command(arguments.next().as_deref(), arguments.next().as_deref()),
-        Some("config") => config_command(
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
+        CommandName::Security => security_command(arguments.next(), arguments.next()),
+        CommandName::Feed => feed_command(arguments.next(), arguments.next()),
+        CommandName::Legacy => legacy_command(arguments.next(), arguments.next()),
+        CommandName::Config => config_command(arguments.next(), arguments.next(), arguments.next()),
+        CommandName::Release => release_command(
+            arguments.next(),
+            arguments.next(),
+            arguments.next(),
+            arguments.next(),
         ),
-        Some("release") => release_command(
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
+        CommandName::Bench => bench_command(arguments.next(), arguments.next(), arguments.next()),
+        CommandName::Load => load_command(arguments.next(), arguments.next()),
+        CommandName::Capacity => capacity_command(arguments.next(), arguments.next()),
+        CommandName::Deps => deps_command(arguments.next(), arguments.next(), arguments.next()),
+        CommandName::SupplyChain => supply_chain_command(
+            arguments.next(),
+            arguments.next(),
+            arguments.next(),
+            arguments.next(),
         ),
-        Some("bench") => bench_command(
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
-        ),
-        Some("load") => load_command(arguments.next().as_deref(), arguments.next().as_deref()),
-        Some("capacity") => {
-            capacity_command(arguments.next().as_deref(), arguments.next().as_deref())
-        }
-        Some("deps") => deps_command(
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
-        ),
-        Some("supply-chain") => supply_chain_command(
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
-            arguments.next().as_deref(),
-        ),
-        Some(other) => Err(CliError::Usage(format!(
+        other => Err(CliError::Usage(format!(
             "unknown command {other:?}; run `aequora help`"
         ))),
     }
@@ -317,7 +313,7 @@ fn command(arguments: impl IntoIterator<Item = String>) -> Result<String, CliErr
 
 fn help() -> String {
     format!(
-        "{}\naequora doctor deployment <descriptor.ron>\naequora diagnostics summary\naequora diagnostics metrics\naequora diagnostics trace <trace-id>\naequora release verify <manifest.ron> <trust.ron> <artifact-directory>\naequora release readiness <readiness.ron>\naequora release v1-scope <scope.ron>\naequora compatibility check [registry.ron]\naequora verify release <quality-gates.ron>\naequora verify report <verification-report.ron>\naequora verify replay <model-failure.ron>\naequora bench list\naequora bench compare <baseline.ron> <candidate.ron>\naequora bench report <result.ron>\naequora load run <workload.ron>\naequora capacity estimate <workload.ron>\naequora deps verify <policy.ron>\naequora deps explain <crate> <policy.ron>\naequora supply-chain summary <policy.ron>\naequora supply-chain sbom <policy.ron> <sbom.ron>\naequora supply-chain verify <policy.ron> <sbom.ron> <release-evidence.ron>",
+        "{}\naequora doctor deployment <descriptor.ron>\naequora diagnostics summary\naequora diagnostics metrics\naequora diagnostics trace <trace-id>\naequora release verify <manifest.ron> <trust.ron> <artifact-directory>\naequora release readiness <readiness.ron>\naequora release v1-scope <scope.ron>\naequora compatibility check [registry.ron]\naequora verify release <quality-gates.ron>\naequora verify report <verification-report.ron>\naequora verify replay <model-failure.ron>\naequora bench list\naequora bench compare <baseline.ron> <candidate.ron>\naequora bench report <result.ron>\naequora load run <workload.ron>\naequora capacity estimate <workload.ron>\naequora completions <shell>\naequora man\naequora deps verify <policy.ron>\naequora deps explain <crate> <policy.ron>\naequora supply-chain summary <policy.ron>\naequora supply-chain sbom <policy.ron> <sbom.ron>\naequora supply-chain verify <policy.ron> <sbom.ron> <release-evidence.ron>",
         base_help()
     )
 }
@@ -744,8 +740,8 @@ fn config_command(
     }
 }
 
-fn version(extra: Option<&str>) -> Result<String, CliError> {
-    if extra == Some("--verbose") {
+fn version(verbose: bool) -> Result<String, CliError> {
+    if verbose {
         let registry = canonical_registry()?;
         return Ok(format!(
             "aequora-cli={}\ncommit={}\ntarget={}-{}\nrust-msrv=1.87\nprotocol-generation={}\nregistry-generation={}\nstore-format=adapter-versioned\nconfiguration-schema=1\nprofile-version=registry-governed",
@@ -760,11 +756,6 @@ fn version(extra: Option<&str>) -> Result<String, CliError> {
                 .max()
                 .unwrap_or(0),
             registry.registry_generation,
-        ));
-    }
-    if extra.is_some() {
-        return Err(CliError::Usage(
-            "usage: aequora version [--verbose]".to_owned(),
         ));
     }
     Ok(format!(
@@ -1325,7 +1316,7 @@ fn authority_command(
             ))
         }
         Some("restore-plan") => authority_restore_plan(path),
-        Some("recover") => authority_recover(path, peer),
+        Some("recover") => authority_recover(path, peer == Some("--new-epoch")),
         Some("verify") => {
             let verification: RecoveryVerification =
                 read_authority(path, "verify <verification.ron>")?;
@@ -1378,13 +1369,13 @@ fn authority_restore_plan(path: Option<&str>) -> Result<String, CliError> {
     ))
 }
 
-fn authority_recover(path: Option<&str>, flag: Option<&str>) -> Result<String, CliError> {
-    let state: AuthorityState = read_authority(path, "recover <state.ron> --new-epoch")?;
-    if flag != Some("--new-epoch") {
+fn authority_recover(path: Option<&str>, new_epoch_confirmed: bool) -> Result<String, CliError> {
+    if !new_epoch_confirmed {
         return Err(CliError::Usage(
             "usage: aequora authority recover <state.ron> --new-epoch".to_owned(),
         ));
     }
+    let state: AuthorityState = read_authority(path, "recover <state.ron> --new-epoch")?;
     let next = state
         .epoch
         .checked_next()

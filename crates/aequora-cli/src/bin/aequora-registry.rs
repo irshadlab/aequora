@@ -3,22 +3,119 @@ use aequora_registry::codegen::{
     verify_lock,
 };
 use aequora_registry::types::{AllocationClass, RegistryDomain};
+use clap::{CommandFactory, Parser, Subcommand, ValueEnum};
 use std::{
-    env,
     error::Error,
-    fs,
+    fs, io,
     path::{Path, PathBuf},
 };
 
+#[derive(Parser)]
+#[command(
+    name = "aequora-registry",
+    about = "Aequora protocol registry maintenance"
+)]
+struct RegistryCli {
+    #[command(subcommand)]
+    command: Option<RegistryCommand>,
+}
+
+#[derive(Subcommand)]
+enum RegistryCommand {
+    /// Verify the registry and generated artifacts.
+    #[command(visible_alias = "lint")]
+    Verify {
+        #[arg(default_value = ".")]
+        root: PathBuf,
+    },
+    /// Generate or verify registry documentation.
+    Docs {
+        #[arg(default_value = ".")]
+        root: PathBuf,
+        #[arg(long)]
+        check: bool,
+    },
+    /// Generate or verify the registry Rust snapshot.
+    Rust {
+        #[arg(default_value = ".")]
+        root: PathBuf,
+        #[arg(long)]
+        check: bool,
+    },
+    /// Generate the registry lockfile.
+    Lock {
+        #[arg(default_value = ".")]
+        root: PathBuf,
+    },
+    /// Explain one registry entry.
+    Explain {
+        root: PathBuf,
+        #[arg(value_parser = parse_domain)]
+        domain: RegistryDomain,
+        id: u32,
+    },
+    /// Find the next available ID in an allocation range.
+    Reserve {
+        root: PathBuf,
+        #[arg(value_parser = parse_domain)]
+        domain: RegistryDomain,
+        #[arg(value_enum, default_value = "core")]
+        allocation: Allocation,
+    },
+    /// Compare two registries.
+    Diff { old: PathBuf, new: PathBuf },
+    /// Compare two registries and enforce compatibility.
+    Compatibility { old: PathBuf, new: PathBuf },
+    /// Write shell completions to stdout.
+    Completions {
+        #[arg(value_enum)]
+        shell: clap_complete::Shell,
+    },
+    /// Write the manual page to stdout.
+    Man,
+}
+
+#[derive(Clone, Copy, ValueEnum)]
+enum Allocation {
+    Core,
+    Extension,
+    Private,
+    Experimental,
+}
+
+impl From<Allocation> for AllocationClass {
+    fn from(value: Allocation) -> Self {
+        match value {
+            Allocation::Core => Self::Core,
+            Allocation::Extension => Self::RegisteredExtension,
+            Allocation::Private => Self::VendorPrivate,
+            Allocation::Experimental => Self::Experimental,
+        }
+    }
+}
+
 #[allow(clippy::too_many_lines)]
 fn main() -> Result<(), Box<dyn Error>> {
-    let mut args = env::args().skip(1);
-    let command = args.next().unwrap_or_else(|| "help".into());
-    match command.as_str() {
-        "verify" | "lint" => verify(Path::new(args.next().as_deref().unwrap_or(".")))?,
-        "docs" => {
-            let root = PathBuf::from(args.next().unwrap_or_else(|| ".".into()));
-            let check = args.next().as_deref() == Some("--check");
+    let Some(command) = RegistryCli::parse().command else {
+        RegistryCli::command().print_help()?;
+        println!();
+        return Ok(());
+    };
+    let compatibility = matches!(command, RegistryCommand::Compatibility { .. });
+    match command {
+        RegistryCommand::Completions { shell } => {
+            clap_complete::generate(
+                shell,
+                &mut RegistryCli::command(),
+                "aequora-registry",
+                &mut io::stdout().lock(),
+            );
+        }
+        RegistryCommand::Man => {
+            clap_mangen::Man::new(RegistryCli::command()).render(&mut io::stdout().lock())?;
+        }
+        RegistryCommand::Verify { root } => verify(&root)?,
+        RegistryCommand::Docs { root, check } => {
             let set = load_registry(&root)?;
             artifact(
                 &root.join("docs/registry/generated-registry.md"),
@@ -30,9 +127,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                 if check { "verified" } else { "generated" }
             );
         }
-        "rust" => {
-            let root = PathBuf::from(args.next().unwrap_or_else(|| ".".into()));
-            let check = args.next().as_deref() == Some("--check");
+        RegistryCommand::Rust { root, check } => {
             let set = load_registry(&root)?;
             artifact(
                 &root.join("crates/aequora-registry/src/registry.rs"),
@@ -44,18 +139,14 @@ fn main() -> Result<(), Box<dyn Error>> {
                 if check { "verified" } else { "generated" }
             );
         }
-        "lock" => {
-            let root = PathBuf::from(args.next().unwrap_or_else(|| ".".into()));
+        RegistryCommand::Lock { root } => {
             let set = load_registry(&root)?;
             let content =
                 ron::ser::to_string_pretty(&make_lock(&set), ron::ser::PrettyConfig::default())?;
             fs::write(root.join("registry/registry.lock"), format!("{content}\n"))?;
             println!("registry lock generated");
         }
-        "explain" => {
-            let root = PathBuf::from(args.next().unwrap_or_else(|| ".".into()));
-            let domain = parse_domain(&args.next().ok_or("missing domain")?)?;
-            let id = args.next().ok_or("missing ID")?.parse::<u32>()?;
+        RegistryCommand::Explain { root, domain, id } => {
             let set = load_registry(&root)?;
             let entry = set
                 .entries
@@ -77,20 +168,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                 println!("{key}={value}");
             }
         }
-        "reserve" => {
-            let root = PathBuf::from(args.next().unwrap_or_else(|| ".".into()));
-            let domain = parse_domain(&args.next().ok_or("missing domain")?)?;
-            let allocation = match args.next().as_deref() {
-                Some("extension") => AllocationClass::RegisteredExtension,
-                Some("private") => AllocationClass::VendorPrivate,
-                Some("experimental") => AllocationClass::Experimental,
-                Some("core") | None => AllocationClass::Core,
-                Some(_) => {
-                    return Err(
-                        "allocation must be core, extension, private, or experimental".into(),
-                    );
-                }
-            };
+        RegistryCommand::Reserve {
+            root,
+            domain,
+            allocation,
+        } => {
             let set = load_registry(&root)?;
             println!(
                 "{}",
@@ -100,14 +182,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                         .filter(|entry| entry.domain == domain)
                         .map(|entry| entry.id)
                         .collect::<Vec<_>>(),
-                    allocation
+                    allocation.into()
                 )
                 .ok_or("ID range exhausted")?
             );
         }
-        "diff" | "compatibility" => {
-            let old = PathBuf::from(args.next().ok_or("missing old registry root")?);
-            let new = PathBuf::from(args.next().ok_or("missing new registry root")?);
+        RegistryCommand::Diff { old, new } | RegistryCommand::Compatibility { old, new } => {
             let changes = diff(&load_registry(&old)?, &load_registry(&new)?);
             for change in &changes {
                 println!(
@@ -115,7 +195,7 @@ fn main() -> Result<(), Box<dyn Error>> {
                     change.classification, change.domain, change.id, change.summary
                 );
             }
-            if command == "compatibility"
+            if compatibility
                 && changes.iter().any(|change| {
                     matches!(
                         change.classification,
@@ -127,7 +207,6 @@ fn main() -> Result<(), Box<dyn Error>> {
                 return Err("registry contains changes requiring explicit approval and migration/security review".into());
             }
         }
-        _ => usage(),
     }
     Ok(())
 }
@@ -149,7 +228,7 @@ fn verify(root: &Path) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn parse_domain(value: &str) -> Result<RegistryDomain, Box<dyn Error>> {
+fn parse_domain(value: &str) -> Result<RegistryDomain, String> {
     match value {
         "entity" => Ok(RegistryDomain::Entity),
         "operation" => Ok(RegistryDomain::Operation),
@@ -172,7 +251,7 @@ fn parse_domain(value: &str) -> Result<RegistryDomain, Box<dyn Error>> {
         "conformance-profile" => Ok(RegistryDomain::ConformanceProfile),
         "conformance-test" => Ok(RegistryDomain::ConformanceTest),
         "certification-tier" => Ok(RegistryDomain::CertificationTier),
-        _ => Err(format!("unknown registry domain `{value}`").into()),
+        _ => Err(format!("unknown registry domain `{value}`")),
     }
 }
 
@@ -184,12 +263,6 @@ fn next_id(used: &[u32], allocation: AllocationClass) -> Option<u32> {
         AllocationClass::Experimental => (0xf000_0000, u32::MAX),
     };
     (start..=end).find(|candidate| !used.contains(candidate))
-}
-
-fn usage() {
-    println!(
-        "aequora-registry verify|lint [root]\n  docs [root] [--check]\n  rust [root] [--check]\n  lock [root]\n  diff|compatibility <old-root> <new-root>\n  explain [root] <domain> <id>\n  reserve [root] <domain> [core|extension|private|experimental]"
-    );
 }
 
 #[cfg(test)]
