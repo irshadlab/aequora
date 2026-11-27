@@ -55,6 +55,8 @@ components. Its registry identities are retained for historical compatibility.
 The [implementation plan](../plan.md#implementation-status) tracks the active parts and root
 specifications. [ACID](acid-compliance.md), [interoperability](database-interoperability-completion.md),
 and [enterprise](enterprise-completion.md) record their respective target acceptance criteria.
+[Part 23](background-jobs-durable-workflows-side-effects-completion.md) records local live
+PostgreSQL store evidence and the outstanding host and provider integrations.
 
 ## Verification contract
 

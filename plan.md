@@ -101,7 +101,7 @@ difference between framework behavior and completed integrations.
 | 5 | 20 | [Part 20](docs/resource-constrained-client-architecture-completion.md) | `client-resource` | Native service bridges. Device background, power and storage pressure evidence. |
 | 6 | 21 | [Part 21](docs/protocol-negotiation-compatibility-governance-completion.md) | `compatibility` | Release-policy signing and mixed-version fleet rollout. |
 | 6 | 22 | [Part 22](docs/sync-metadata-schema-internal-persistence-completion.md) | `metadata` | Physical mappings and conformance for each declared adapter profile. |
-| 6 | 23 | [Part 23](docs/background-jobs-durable-workflows-side-effects-completion.md) | `jobs` | Bounded worker polling implemented. Durable production stores, worker execution and provider adapters remain. |
+| 6 | 23 | [Part 23](docs/background-jobs-durable-workflows-side-effects-completion.md) | `jobs`, `postgres_jobs` | PostgreSQL job, workflow, and typed side-effect stores and bounded polling implemented. Host execution, recurring scheduling, and provider integration remain. |
 | 6 | 24 | [Part 24](docs/operational-control-plane-admin-api-completion.md) | `admin` | Durable admin store/executors, private listener and authorization integration. Verify against real identity policy. |
 | 7 | 25 | [Part 25](docs/diagnostics-forensics-reproducible-incident-bundles-completion.md) | `diagnostics` | Host durable registry, protected archive and audit integration. Custody/retention exercises. |
 | 7 | 26 | [Part 26](docs/legacy-application-compatibility-incremental-adoption-completion.md) | `legacy` | Host CDC, route translation and write-ownership wiring. Shadow and cutover runs. |
@@ -133,15 +133,17 @@ difference between framework behavior and completed integrations.
 |---|---|---|
 | [ACID](ACID.md) | [Compliance](docs/acid-compliance.md) | Tx A/B/C and adapter atomicity are implemented. Distributed group atomicity is outside scope. Live certification and workload-specific recovery remain. |
 | [Database interoperability](database-interoperability.md) | [Completion](docs/database-interoperability-completion.md) | Native domain sync and bounded record conversion are implemented. Generic CDC, cross-engine local-store cutover and a runtime multi-store registry are deferred. |
-| [Enterprise](enterprise.md) | [Completion](docs/enterprise-completion.md) | Reusable enterprise controls are implemented. Concrete jobs, admin, feed and provider integrations depend on the host. Production approval requires target evidence. |
+| [Enterprise](enterprise.md) | [Completion](docs/enterprise-completion.md) | Reusable controls and PostgreSQL durable job, workflow, and typed side-effect storage are implemented. Host execution, provider, admin, and feed integration remain. Production approval requires target evidence. |
 
 ### Open repository and host integration
 
 - SQLite changes are on hold pending explicit authorization.
 - Part 16 still needs deployment-specific promotion orchestration and witness provisioning. Part 18
   still needs host-driven sampling and worker execution over the shared pressure and dispatch APIs.
-- Parts 23, 24, and 28 still need concrete durable job/workflow/effect, admin, and feed adapters.
-  Their transaction participation, fencing, and recovery need real-adapter tests.
+- Part 23 still needs host-driven workflow events and timers, recurring scheduling, outbox dispatch
+  and reconciliation, provider execution, and authoritative result publication.
+- Parts 24 and 28 still need durable admin and feed adapters with real-adapter transaction,
+  fencing, and recovery tests.
 - Generic CDC adapters, cross-engine local-store cutover, and the runtime multi-store registry
   remain deferred under the database interoperability spec. The per-part reports give the
   remaining host and optional feature boundaries.
@@ -165,6 +167,8 @@ difference between framework behavior and completed integrations.
 - PostgreSQL 18.7 passed the live authority contract on an isolated cluster after the TestKit
   fixture assigned distinct event IDs to distinct operations and isolated the race journal from
   the single-commit checks. See the [ACID compliance report](docs/acid-compliance.md).
+- PostgreSQL 18 also passed the live Part 23 store tests for rollback, dependency-scoped claims,
+  worker fencing, workflow child publication, and typed side-effect intent publication in Tx B.
 - Part 40 remains archived. Its verification gate reads the historical design and archive record.
   The v1 readiness snapshot still records an ineligible release candidate.
 

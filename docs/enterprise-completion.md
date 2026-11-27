@@ -50,8 +50,9 @@ The deploying application composes the operation registry, a concrete database a
 `aequora_config::AequoraConfig`, secret and identity providers, the Axum listener, and telemetry.
 `aequora_server::admin` and `aequora_authority::admin` provide private control-plane contracts.
 Hosts supply authentication/authorization, durable action audit and subsystem executors.
-Concrete job and workflow stores, provider integrations and change-feed consumers still require
-transaction-bearing host implementations. See [Part 23](background-jobs-durable-workflows-side-effects-completion.md),
+PostgreSQL provides durable job, workflow, and typed side-effect stores. Host worker execution,
+provider delivery and reconciliation, and transactional change-feed consumers still require
+integration. See [Part 23](background-jobs-durable-workflows-side-effects-completion.md),
 [Part 24](operational-control-plane-admin-api-completion.md), and [Part 28](multi-consumer-change-feed-completion.md).
 
 ### Production evidence

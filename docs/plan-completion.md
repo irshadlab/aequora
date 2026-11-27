@@ -17,6 +17,10 @@ the archived Part 40 gate, the official adapter library suites, and the loopback
 authority case. Deployment evidence remains tracked in the individual reports and
 [plan.md](../plan.md#open-environment-and-release-gates).
 
+[Part 23](background-jobs-durable-workflows-side-effects-completion.md) records the live
+PostgreSQL 18 verification for durable job, workflow, and typed side-effect stores. Host runtime
+and provider integrations remain tracked in [plan.md](../plan.md#open-repository-and-host-integration).
+
 | Sections | Requirement area | Current evidence | Status / remaining proof |
 |---|---|---|---|
 | 1–9 | Architecture, authority, objects, layout, dependency direction | Split core/client/server/transport/adapter crates plus four-profile database-neutrality policy | Implemented |

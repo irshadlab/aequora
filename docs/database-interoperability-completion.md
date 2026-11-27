@@ -35,6 +35,9 @@ mode from optional generic-record, legacy CDC, and database-migration tooling.
 [Part 42](sqlite-local-adapter-completion.md) records SQLite target-specific certification.
 The declared capabilities and tested engine version come from the adapter manifest. A production
 certification claim requires real-engine evidence for the target and capability profile.
+PostgreSQL job, workflow, and typed side-effect persistence sits behind database-neutral
+authority traits. [Part 23](background-jobs-durable-workflows-side-effects-completion.md) records
+the adapter contracts and PostgreSQL test evidence.
 
 The same support data is generated directly from the built-in manifests with:
 

@@ -92,6 +92,9 @@ The reusable/reference suite and built-in adapter tests cover:
   survive together;
 - PostgreSQL mid-transaction failure after entity/sequence work is staged, with live-gate checks
   that entity, operation result, journal, and audit remain absent;
+- PostgreSQL typed side-effect intents must be published with their ledger entry in Tx B. The
+  live `postgres_jobs` suite verifies rollback and rejects late intent attachment to an existing
+  operation. [Part 23 evidence](background-jobs-durable-workflows-side-effects-completion.md).
 - consistent snapshot capture and staged, resumable local snapshot installation;
 - version races, concurrent duplicate delivery, cursor regression, invalid cursor completeness,
   dependency cycles, tombstone replay, and safe compaction.

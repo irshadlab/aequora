@@ -88,7 +88,7 @@ and remaining work. Specification checklists describe acceptance criteria. The r
 - **[Part 22: Sync Metadata Schema and Internal Persistence Specification](22-sync-metadata-schema-internal-persistence.md)**  
   Database storage schemas, indexes, change-log tables, state vector representations, and database neutrality.
 - **[Part 23: Background Jobs, Durable Workflows, and Side-Effect Engine Architecture](23-background-jobs-durable-workflows-side-effects.md)**  
-  Transactional outbox patterns, idempotent task execution, external webhook triggers, and durable saga workflows.
+  Transactional outbox patterns, idempotent task execution, external webhook triggers, and durable saga workflows. [PostgreSQL store verification and open host integrations](../docs/background-jobs-durable-workflows-side-effects-completion.md).
 - **[Part 24: Operational Control Plane and Admin API Architecture](24-operational-control-plane-admin-api.md)**  
   Cluster topology management, client session inspection, live configuration toggles, and metrics endpoints.
 
