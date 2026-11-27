@@ -26,6 +26,13 @@ durable ledger, journal, audit, jobs, and authority metadata.
 
 ## Executable evidence
 
+The optional `aequora-server/prometheus` feature provides
+`aequora_server::prometheus::PrometheusMetrics`. Register a shared instance through the existing
+observer hooks and serve its `render()` result with `PrometheusMetrics::CONTENT_TYPE` from a
+host-controlled scrape endpoint. The observer records server exchange and bootstrap outcomes and
+durations. It also accepts catalog observations through `MetricsSink`, checks the series budget,
+and aggregates latency in fixed-memory buckets.
+
 `aequora_observability::BoundedTelemetryQueue` and `SloCatalog` own the bounded queue and SLO
 definitions. `observability_production_contracts` and `cargo xtask check observability` exercise
 the production telemetry contracts. `ObservabilityFull` (83) binds tests 144–153 to
@@ -33,7 +40,7 @@ the production telemetry contracts. `ObservabilityFull` (83) binds tests 144–1
 
 ## Remaining / Left & Environment Gates
 
-**Repository and host integration.** The host selects and configures its collector and exporter,
+**Repository and host integration.** The host chooses the scrape endpoint, trace and log exporters,
 metric retention, SLO values, and alert delivery. Checked-in catalog and dashboard assets provide
 the integration contract.
 

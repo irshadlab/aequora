@@ -39,6 +39,11 @@ claim, lease, compare-and-swap, uniqueness, indexes, and transaction participati
 their database. Provider integrations live outside these crates and must honor declared timeout,
 idempotency, lookup, egress, secret-reference, and reconciliation policy.
 
+An off-the-shelf worker such as Apalis would sit behind the store boundary. Before adopting one,
+its adapter must demonstrate that Tx B can publish job intent atomically, that every stale lease
+is rejected after reclaim, and that schedule occurrence IDs and tenant-scoped transitions survive
+retries. The existing job contracts remain the source for those checks.
+
 Application handlers own job kinds, payload schemas, business cancellation semantics, workflow
 versions, authoritative result operations, retention policy values, provider allowlists, and admin
 authorization. The reusable safety contracts and failure models run in the focused suite.

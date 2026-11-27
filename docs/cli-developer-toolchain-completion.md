@@ -64,9 +64,10 @@ test check the dependency boundary and declared adapter roles.
 The command hierarchy and policy metadata cover the complete Part 41 noun space. Commands execute
 only where a canonical reusable SDK, control-plane, registry, conformance, or adapter service
 already exists; the toolchain does not invent direct-table implementations for future command
-surfaces. Shell completion, generated man pages, an optional TUI/language server, package-manager
-delivery, and deployment-specific authentication/credential-store integrations remain downstream
-application or release work as assigned by the governing architecture.
+surfaces. Both CLI binaries use Clap and provide `completions <bash|elvish|fish|powershell|zsh>`
+and `man` to write completion scripts or their top-level manual page to stdout. Packaging
+the generated files, an optional TUI/language server, package-manager delivery, and
+deployment-specific authentication and credential-store integrations remain release or host work.
 
 ## Completed verification
 

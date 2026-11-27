@@ -118,12 +118,12 @@ difference between framework behavior and completed integrations.
 | 8 | 37 | [Part 37](docs/postgresql-neon-authority-completion.md) | `postgres-authority`, `postgres_live`, `postgres_epoch_witness` | Isolated PostgreSQL 18.7 including witnessed restore and concurrent fencing passed. Hosted Neon and production PITR remain. |
 | 8 | 38 | [Part 38](docs/stoolap-local-persistence-completion.md) | `stoolap-local-persistence` | Device/filesystem fault and production suitability evidence. v1 support is conditional. |
 | 8 | 39 | [Part 39](docs/axum-server-integration-completion.md) | `axum-server` | Host live routes, proxy/TLS and CORS/CSRF policy. Mixed-version and slow-client qualification. |
-| 9 | 41 | [Part 41](docs/cli-developer-toolchain-completion.md) | `cli-toolchain, aequora-cli lib` | Shell completions, man pages and optional advanced tooling are deferred. Package and credential integration remain. |
+| 9 | 41 | [Part 41](docs/cli-developer-toolchain-completion.md) | `cli-toolchain, aequora-cli lib` | Clap generates shell completions and the top-level manual page. Advanced tooling, package delivery, and credential integration remain. |
 | 9 | 42 | [Part 42](docs/sqlite-local-adapter-completion.md) | `sqlite-local-adapter, aequora-store-sqlite lib` | Windows, macOS, Android and iOS full-profile filesystem/device evidence. |
 | 9 | 43 | [Part 43](docs/configuration-secrets-runtime-policy-feature-flags-completion.md) | `configuration` | Host secret providers and signed remote policy delivery. |
 | 10 | 44 | [Part 44](docs/packaging-distribution-release-engineering-completion.md) | `release` | Release signing custody, protected promotion, platform notarization and installation campaigns. |
 | 10 | 45 | [Part 45](docs/deployment-topologies-completion.md) | `deployment` | Host provisioning and topology acceptance, including HA, edge and air-gapped hardware. |
-| 10 | 46 | [Part 46](docs/observability-production-telemetry-completion.md) | `observability` | Telemetry exporters, dashboards and real alert routing/SLO validation. |
+| 10 | 46 | [Part 46](docs/observability-production-telemetry-completion.md) | `observability` | Optional server OpenMetrics recorder available. Hosted collection, trace and log export, dashboard deployment, and alert routing/SLO validation remain. |
 | 10 | 47 | [Part 47](docs/benchmarking-capacity-planning-completion.md) | `benchmarking` | Representative workloads, platform baselines, production capacity and soak. |
 | 11 | 48 | [Part 48](docs/testkit-verification-quality-gates-completion.md) | `verification` | Long fuzz/fault campaigns, target runners and candidate artifact evidence. |
 | 11 | 49 | [Part 49](docs/supply-chain-governance-completion.md) | `supply-chain` | Protected signing/provenance and independent reproducibility evidence. |
