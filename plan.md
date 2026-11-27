@@ -96,7 +96,7 @@ difference between framework behavior and completed integrations.
 | 4 | 15 | [Part 15](docs/cryptographic-integrity-key-management-e2e-completion.md) | `crypto_contracts` | KMS, HSM and OS keystore adapters and deployment custody, rotation and revocation evidence. |
 | 4 | 16 | [Part 16](docs/authority-failover-timeline-epochs-fork-detection-completion.md) | `authority_contracts`, `postgres_epoch_witness` | PostgreSQL witness and durable witnessed recovery implemented. Host promotion automation and failover/PITR drills remain. SQLite is on hold. |
 | 5 | 17 | [Part 17](docs/multi-region-read-single-writer-global-completion.md) | `regional_contracts` | Split sync pull is deferred. Regional topology and lag/partition acceptance remain. |
-| 5 | 18 | [Part 18](docs/backpressure-admission-fairness-overload-completion.md) | `aequora-authority admission`, `configuration`, `axum-server` | Shared load feedback implemented. Host pressure sampling and worker queue/brownout composition remain. |
+| 5 | 18 | [Part 18](docs/backpressure-admission-fairness-overload-completion.md) | `aequora-authority admission`, `postgres_live`, `axum-server` | PostgreSQL pool pressure, permit-backed dispatch, and explicit optional-work brownout implemented. Host sampler scheduling and worker execution remain. |
 | 5 | 19 | [Part 19](docs/performance-engineering-memory-architecture-completion.md) | `performance` | Target-specific memory, query plans and throughput baselines. |
 | 5 | 20 | [Part 20](docs/resource-constrained-client-architecture-completion.md) | `client-resource` | Native service bridges. Device background, power and storage pressure evidence. |
 | 6 | 21 | [Part 21](docs/protocol-negotiation-compatibility-governance-completion.md) | `compatibility` | Release-policy signing and mixed-version fleet rollout. |
@@ -139,7 +139,7 @@ difference between framework behavior and completed integrations.
 
 - SQLite changes are on hold pending explicit authorization.
 - Part 16 still needs deployment-specific promotion orchestration and witness provisioning. Part 18
-  still needs host pressure sampling and worker queue/brownout composition.
+  still needs host-driven sampling and worker execution over the shared pressure and dispatch APIs.
 - Parts 23, 24, and 28 still need concrete durable job/workflow/effect, admin, and feed adapters.
   Their transaction participation, fencing, and recovery need real-adapter tests.
 - Generic CDC adapters, cross-engine local-store cutover, and the runtime multi-store registry
