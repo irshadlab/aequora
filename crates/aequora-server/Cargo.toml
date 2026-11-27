@@ -7,6 +7,9 @@ license.workspace = true
 description.workspace = true
 repository.workspace = true
 
+[features]
+prometheus = ["dep:prometheus-client"]
+
 [dependencies]
 aequora-protocol = { version = "0.1.1", path = "../aequora-protocol" }
 aequora-adapter-sdk = { version = "0.1.1", path = "../aequora-adapter-sdk" }
@@ -19,6 +22,7 @@ aequora-types = { version = "0.1.1", path = "../aequora-types" }
 aequora-store = { version = "0.1.1", path = "../aequora-store" }
 async-trait.workspace = true
 blake3.workspace = true
+prometheus-client = { workspace = true, optional = true }
 rayon.workspace = true
 thiserror.workspace = true
 

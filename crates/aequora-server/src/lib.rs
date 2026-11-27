@@ -8,6 +8,10 @@ pub mod diagnostics;
 
 /// Database-neutral server orchestration for durable background work.
 pub mod jobs;
+
+/// Optional `OpenMetrics` export for server instrumentation.
+#[cfg(feature = "prometheus")]
+pub mod prometheus;
 mod sdk;
 
 pub use sdk::{
