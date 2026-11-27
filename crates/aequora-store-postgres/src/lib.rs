@@ -11,6 +11,7 @@ pub mod epoch_witness;
 pub mod errors;
 pub mod governance;
 pub mod health;
+pub mod job_store;
 pub mod jobs;
 pub mod journal;
 pub mod ledger;
@@ -20,9 +21,11 @@ pub mod observability;
 pub mod pool;
 pub mod retention;
 pub mod scope;
+pub mod side_effect_store;
 pub mod snapshot;
 pub mod tx;
 pub mod version;
+pub mod workflow_store;
 
 pub use capabilities::{
     NEON_OPERATIONAL_PROFILE, POSTGRES_ADAPTER_IDENTITY, POSTGRES_AUTHORITY_FULL_PROFILE,
@@ -473,7 +476,7 @@ CREATE TABLE IF NOT EXISTS aequora_schema_migrations (
 ";
 
 /// Latest `PostgreSQL` schema revision understood by this Aequora release.
-pub const POSTGRES_SCHEMA_VERSION: u32 = 4;
+pub const POSTGRES_SCHEMA_VERSION: u32 = 5;
 
 /// Versioned role and capability declaration for the built-in `PostgreSQL` authority adapter.
 pub const POSTGRES_ADAPTER_MANIFEST: AdapterManifest = AdapterManifest {
@@ -574,6 +577,11 @@ const POSTGRES_MIGRATIONS: &[PostgresMigration] = &[
         version: 4,
         name: "postgres_authority_full_profile",
         sql: MIGRATION_0004,
+    },
+    PostgresMigration {
+        version: 5,
+        name: "durable_job_store",
+        sql: job_store::MIGRATION_0005,
     },
 ];
 
@@ -2007,35 +2015,43 @@ pub async fn materialize_snapshot_entity(
     Ok(())
 }
 
+async fn lock_authority_for_write(
+    transaction: &mut Transaction<'_, Postgres>,
+    authority: aequora_authority::AuthorityCommitContext,
+) -> Result<(), StoreError> {
+    // Keep the validated fence stable until Tx B commits. Multiple writers can hold a
+    // shared row lock; an authority transition must wait for all admitted transactions.
+    let current: Option<i32> = sqlx::query_scalar(
+        "SELECT 1 FROM aequora_authority_state
+         WHERE singleton=TRUE AND authority_id=$1 AND authority_epoch=$2
+           AND authority_instance_id=$3 AND fence_token=$4
+           AND role='primary' AND runtime_mode='serving' FOR SHARE",
+    )
+    .bind(authority.authority_id.as_uuid())
+    .bind(to_i64(authority.epoch.get(), "commit authority epoch")?)
+    .bind(authority.instance_id.as_uuid())
+    .bind(to_i64(
+        authority.fence_token.get(),
+        "commit authority fence token",
+    )?)
+    .fetch_optional(&mut **transaction)
+    .await
+    .map_err(postgres_error)?;
+    if current.is_none() {
+        return Err(StoreError::leadership_lost(
+            "authoritative commit presented a stale database authority fence",
+        ));
+    }
+    Ok(())
+}
+
 #[allow(clippy::too_many_lines)]
 async fn prepare_commit_in_transaction(
     transaction: &mut Transaction<'_, Postgres>,
     commit: &CommitOperation,
 ) -> Result<Option<CommitOutcome>, StoreError> {
     if let Some(authority) = commit.authority {
-        // Keep the validated fence stable until Tx B commits. Multiple writers can hold a
-        // shared row lock; an authority transition must wait for all admitted transactions.
-        let current: Option<i32> = sqlx::query_scalar(
-            "SELECT 1 FROM aequora_authority_state
-             WHERE singleton=TRUE AND authority_id=$1 AND authority_epoch=$2
-               AND authority_instance_id=$3 AND fence_token=$4
-               AND role='primary' AND runtime_mode='serving' FOR SHARE",
-        )
-        .bind(authority.authority_id.as_uuid())
-        .bind(to_i64(authority.epoch.get(), "commit authority epoch")?)
-        .bind(authority.instance_id.as_uuid())
-        .bind(to_i64(
-            authority.fence_token.get(),
-            "commit authority fence token",
-        )?)
-        .fetch_optional(&mut **transaction)
-        .await
-        .map_err(postgres_error)?;
-        if current.is_none() {
-            return Err(StoreError::leadership_lost(
-                "authoritative commit presented a stale database authority fence",
-            ));
-        }
+        lock_authority_for_write(transaction, authority).await?;
     } else {
         // Serialize the legacy, uninitialized path against first-time authority initialization.
         sqlx::query("LOCK TABLE aequora_authority_state IN SHARE MODE")
