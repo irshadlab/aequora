@@ -18,7 +18,7 @@ aequora-types = { version = "0.1.1", path = "../aequora-types" }
 axum.workspace = true
 async-trait.workspace = true
 bytes.workspace = true
-http.workspace = true
+governor.workspace = true
 http-body-util.workspace = true
 tokio.workspace = true
 

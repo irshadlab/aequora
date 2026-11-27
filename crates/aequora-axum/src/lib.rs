@@ -23,11 +23,18 @@ use axum::{
     routing::{get, post},
 };
 use bytes::BytesMut;
+use governor::{
+    Quota, RateLimiter,
+    clock::Clock,
+    state::{InMemoryState, NotKeyed},
+};
 use http_body_util::BodyExt as _;
 use std::{
+    cell::Cell,
     collections::HashMap,
     fmt,
     future::{Future, ready},
+    num::NonZeroU32,
     str::FromStr as _,
     sync::{Arc, Mutex, MutexGuard, PoisonError},
     time::{Duration, Instant},
@@ -141,9 +148,21 @@ struct TenantRateLimitConfig {
 
 #[derive(Debug)]
 struct TenantRateBucket {
-    tokens: f64,
-    updated_at: Instant,
+    limiter: Option<RateLimiter<NotKeyed, InMemoryState, AdmissionClock>>,
     last_seen: Instant,
+}
+
+// The lifecycle mutex serializes admission and supplies the same timestamp to
+// the limiter and tenant eviction policy.
+#[derive(Debug)]
+struct AdmissionClock(Cell<Instant>);
+
+impl Clock for AdmissionClock {
+    type Instant = Instant;
+
+    fn now(&self) -> Instant {
+        self.0.get()
+    }
 }
 
 /// Cloneable, irreversible accepting-to-draining lifecycle for one Axum router instance.
@@ -374,7 +393,7 @@ impl LifecycleState {
         if self.tenant_rate_buckets.len() >= config.maximum_tracked_tenants {
             return false;
         }
-        let mut bucket = TenantRateBucket::new(now, config.burst);
+        let mut bucket = TenantRateBucket::new(now, config);
         let allowed = bucket.try_consume(now, config);
         self.tenant_rate_buckets.insert(tenant_id, bucket);
         allowed
@@ -402,26 +421,31 @@ impl LifecycleState {
 }
 
 impl TenantRateBucket {
-    fn new(now: Instant, burst: u32) -> Self {
+    fn new(now: Instant, config: TenantRateLimitConfig) -> Self {
+        let limiter = NonZeroU32::new(config.burst).and_then(|burst| {
+            let period = Duration::from_nanos(
+                1_000_000_000_u64.div_ceil(u64::from(config.requests_per_second.max(1))),
+            );
+            let quota = Quota::with_period(period)?.allow_burst(burst);
+            Some(RateLimiter::direct_with_clock(
+                quota,
+                AdmissionClock(Cell::new(now)),
+            ))
+        });
         Self {
-            tokens: f64::from(burst),
-            updated_at: now,
+            limiter,
             last_seen: now,
         }
     }
 
     fn try_consume(&mut self, now: Instant, config: TenantRateLimitConfig) -> bool {
-        let elapsed = now.saturating_duration_since(self.updated_at);
-        let refill = elapsed.as_secs_f64() * f64::from(config.requests_per_second);
-        self.tokens = (self.tokens + refill).min(f64::from(config.burst));
-        self.updated_at = now;
         self.last_seen = now;
-        if self.tokens < 1.0 {
-            false
-        } else {
-            self.tokens -= 1.0;
-            true
-        }
+        self.limiter.as_ref().is_some_and(|limiter| {
+            if config.requests_per_second != 0 {
+                limiter.clock().0.set(now);
+            }
+            limiter.check().is_ok()
+        })
     }
 }
 
@@ -509,6 +533,7 @@ pub struct AxumConfig {
     /// Maximum exchange and bootstrap handlers executing for one authenticated tenant.
     pub max_in_flight_per_tenant: usize,
     /// Sustained admitted requests per second for one authenticated tenant.
+    /// The refill interval is rounded up to a whole nanosecond.
     pub tenant_requests_per_second: u32,
     /// Maximum immediately consumable request tokens for one authenticated tenant.
     pub tenant_request_burst: u32,
@@ -1397,7 +1422,7 @@ mod tests {
     fn token_bucket_enforces_burst_refills_and_caps_capacity() {
         let now = Instant::now();
         let config = rate_config();
-        let mut bucket = TenantRateBucket::new(now, config.burst);
+        let mut bucket = TenantRateBucket::new(now, config);
         assert!(bucket.try_consume(now, config));
         assert!(bucket.try_consume(now, config));
         assert!(!bucket.try_consume(now, config));
@@ -1406,6 +1431,22 @@ mod tests {
         assert!(bucket.try_consume(now + Duration::from_secs(10), config));
         assert!(bucket.try_consume(now + Duration::from_secs(10), config));
         assert!(!bucket.try_consume(now + Duration::from_secs(10), config));
+    }
+
+    #[test]
+    fn zero_burst_denies_all_and_zero_rate_never_refills() {
+        let now = Instant::now();
+        let mut config = rate_config();
+        config.requests_per_second = 0;
+        let mut burst_only = TenantRateBucket::new(now, config);
+        assert!(burst_only.try_consume(now, config));
+        assert!(burst_only.try_consume(now, config));
+        assert!(!burst_only.try_consume(now + Duration::from_secs(10), config));
+
+        config.burst = 0;
+        config.requests_per_second = 1;
+        let mut deny_all = TenantRateBucket::new(now, config);
+        assert!(!deny_all.try_consume(now + Duration::from_secs(10), config));
     }
 
     #[test]
