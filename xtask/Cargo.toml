@@ -7,6 +7,8 @@ license.workspace = true
 publish = false
 
 [dependencies]
+spdx-expression.workspace = true
+spdx-rs.workspace = true
 getrandom.workspace = true
 hex.workspace = true
 regex = "1.13.1"

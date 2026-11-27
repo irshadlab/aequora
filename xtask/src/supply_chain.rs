@@ -9,6 +9,11 @@ use std::{
 
 use serde_json::{Value, json};
 use sha2::{Digest, Sha256};
+use spdx_expression::SpdxExpression;
+use spdx_rs::models::{
+    Algorithm, Checksum, CreationInfo, DocumentCreationInformation, ExternalPackageReference,
+    ExternalPackageReferenceCategory, PackageInformation, Relationship, RelationshipType, SPDX,
+};
 
 use crate::{Result, cargo, ensure, failure, successful};
 
@@ -44,22 +49,6 @@ fn sha256(path: &Path) -> Result<String> {
     Ok(hex::encode(digest.finalize()))
 }
 
-fn spdx_id(value: &Value) -> String {
-    let suffix = value
-        .as_str()
-        .unwrap_or_default()
-        .chars()
-        .map(|ch| {
-            if ch.is_ascii_alphanumeric() || matches!(ch, '.' | '-') {
-                ch
-            } else {
-                '-'
-            }
-        })
-        .collect::<String>();
-    format!("SPDXRef-Package-{suffix}")
-}
-
 pub(super) fn generate(root: &Path, output: &Path, artifact: &Path) -> Result {
     generate_from(root, output, artifact, &metadata(root)?)
 }
@@ -83,53 +72,128 @@ fn generate_from(root: &Path, output: &Path, artifact: &Path, graph: &Value) -> 
         .and_then(|name| name.to_str())
         .ok_or_else(|| failure("the artifact needs a UTF-8 filename"))?;
     let packages = array(graph, "packages")?;
-    let mut sbom_packages = vec![json!({
-        "name": artifact_name, "SPDXID": "SPDXRef-AequoraArtifact", "versionInfo": commit,
-        "downloadLocation": "NOASSERTION", "filesAnalyzed": false,
-        "licenseConcluded": "NOASSERTION", "licenseDeclared": "MIT",
-        "checksums": [{"algorithm": "SHA256", "checksumValue": artifact_hash}],
-        "externalRefs": [{
-            "referenceCategory": "OTHER", "referenceType": "aequora-lockfile-sha256", "referenceLocator": lock_hash
-        }]
-    })];
-    sbom_packages.extend(packages.iter().map(|package| json!({
-        "name": package["name"], "SPDXID": spdx_id(&package["id"]), "versionInfo": package["version"],
-        "downloadLocation": package["source"].as_str().unwrap_or("NOASSERTION"), "filesAnalyzed": false,
-        "licenseConcluded": package["license"].as_str().unwrap_or("NOASSERTION"),
-        "licenseDeclared": package["license"].as_str().unwrap_or("NOASSERTION"),
-        "supplier": package["authors"][0].as_str().unwrap_or("NOASSERTION")
-    })));
-    let mut relationships = Vec::new();
-    for node in array(&graph["resolve"], "nodes")? {
-        for dependency in array(node, "deps")? {
-            relationships.push(json!({
-                "spdxElementId": spdx_id(&node["id"]), "relationshipType": "DEPENDS_ON",
-                "relatedSpdxElement": spdx_id(&dependency["pkg"])
-            }));
-        }
-    }
-    let spdx = json!({
-        "spdxVersion": "SPDX-2.3", "dataLicense": "CC0-1.0", "SPDXID": "SPDXRef-DOCUMENT",
-        "name": format!("aequora-{artifact_name}"),
-        "documentNamespace": format!("https://aequora.invalid/spdx/{commit}/{artifact_hash}"),
-        "creationInfo": { "created": "1970-01-01T00:00:00Z", "creators": ["Tool: cargo xtask supply-chain"] },
-        "documentDescribes": ["SPDXRef-AequoraArtifact"], "packages": sbom_packages, "relationships": relationships
-    });
-
+    let spdx = spdx_document(graph, artifact_name, &commit, &artifact_hash, &lock_hash)?;
     let (licenses, notices, report) = inventory(packages, &commit)?;
     fs::create_dir_all(output)?;
-    for (name, document) in [
-        ("aequora.spdx.json", spdx),
-        ("dependency-report.json", report),
-    ] {
-        fs::write(
-            output.join(name),
-            format!("{}\n", serde_json::to_string_pretty(&document)?),
-        )?;
-    }
+    fs::write(
+        output.join("aequora.spdx.json"),
+        format!("{}\n", serde_json::to_string_pretty(&spdx)?),
+    )?;
+    fs::write(
+        output.join("dependency-report.json"),
+        format!("{}\n", serde_json::to_string_pretty(&report)?),
+    )?;
     fs::write(output.join("THIRD_PARTY_LICENSES.txt"), licenses)?;
     fs::write(output.join("THIRD_PARTY_NOTICES.md"), notices)?;
     Ok(())
+}
+
+fn spdx_document(
+    graph: &Value,
+    artifact_name: &str,
+    commit: &str,
+    artifact_hash: &str,
+    lock_hash: &str,
+) -> Result<SPDX> {
+    const ARTIFACT_ID: &str = "SPDXRef-AequoraArtifact";
+    let mut packages = vec![PackageInformation {
+        package_name: artifact_name.to_owned(),
+        package_spdx_identifier: ARTIFACT_ID.to_owned(),
+        package_version: Some(commit.to_owned()),
+        files_analyzed: Some(false),
+        concluded_license: Some(SpdxExpression::parse("NOASSERTION")?),
+        declared_license: Some(SpdxExpression::parse("MIT")?),
+        package_checksum: vec![Checksum::new(Algorithm::SHA256, artifact_hash)],
+        external_reference: vec![ExternalPackageReference::new(
+            ExternalPackageReferenceCategory::Other,
+            "aequora-lockfile-sha256".to_owned(),
+            lock_hash.to_owned(),
+            None,
+        )],
+        ..PackageInformation::default()
+    }];
+    let mut references = BTreeMap::new();
+    for package in array(graph, "packages")? {
+        let field = |key: &str| {
+            package[key]
+                .as_str()
+                .ok_or_else(|| failure(format!("Cargo package is missing {key}")))
+        };
+        let (id, name, version) = (field("id")?, field("name")?, field("version")?);
+        let source = package["source"].as_str().unwrap_or("NOASSERTION");
+        // Cargo IDs for path dependencies contain absolute checkout paths.
+        let identity = format!("{name}\n{version}\n{source}");
+        let digest = hex::encode(Sha256::digest(identity.as_bytes()));
+        let reference = format!("SPDXRef-Package-{}-{digest}", name.replace('_', "-"));
+        references.insert(id, reference.clone());
+        let license = SpdxExpression::parse(
+            &package["license"]
+                .as_str()
+                .unwrap_or("NOASSERTION")
+                .replace('/', " OR "),
+        )?;
+        packages.push(PackageInformation {
+            package_name: name.to_owned(),
+            package_spdx_identifier: reference,
+            package_version: Some(version.to_owned()),
+            package_download_location: source.to_owned(),
+            files_analyzed: Some(false),
+            concluded_license: Some(SpdxExpression::parse("NOASSERTION")?),
+            declared_license: Some(license),
+            package_supplier: Some("NOASSERTION".to_owned()),
+            ..PackageInformation::default()
+        });
+    }
+    packages[1..]
+        .sort_unstable_by(|a, b| a.package_spdx_identifier.cmp(&b.package_spdx_identifier));
+    let reference = |id: &Value| {
+        id.as_str()
+            .and_then(|id| references.get(id))
+            .ok_or_else(|| failure("Cargo dependency references a missing SPDX package"))
+    };
+    let mut relationships = Vec::new();
+    for node in array(&graph["resolve"], "nodes")? {
+        for dependency in array(node, "deps")? {
+            relationships.push(Relationship::new(
+                reference(&node["id"])?,
+                reference(&dependency["pkg"])?,
+                RelationshipType::DependsOn,
+                None,
+            ));
+        }
+    }
+    relationships.sort_unstable_by(|a, b| {
+        (&a.spdx_element_id, &a.related_spdx_element)
+            .cmp(&(&b.spdx_element_id, &b.related_spdx_element))
+    });
+    relationships.dedup();
+    Ok(SPDX {
+        document_creation_information: DocumentCreationInformation {
+            spdx_version: "SPDX-2.3".to_owned(),
+            data_license: "CC0-1.0".to_owned(),
+            spdx_identifier: "SPDXRef-DOCUMENT".to_owned(),
+            document_name: format!("aequora-{artifact_name}"),
+            spdx_document_namespace: format!(
+                "https://aequora.invalid/spdx/{commit}/{artifact_hash}"
+            ),
+            external_document_references: Vec::new(),
+            creation_info: CreationInfo {
+                creators: vec!["Tool: cargo xtask supply-chain".to_owned()],
+                created: "1970-01-01T00:00:00Z".parse()?,
+                license_list_version: None,
+                creator_comment: None,
+            },
+            document_comment: None,
+            document_describes: vec![ARTIFACT_ID.to_owned()],
+        },
+        package_information: packages,
+        relationships,
+        other_licensing_information_detected: Vec::new(),
+        file_information: Vec::new(),
+        snippet_information: Vec::new(),
+        annotations: Vec::new(),
+        spdx_ref_counter: 0,
+    })
 }
 
 fn inventory(packages: &[Value], commit: &str) -> Result<(String, String, Value)> {
@@ -247,10 +311,17 @@ pub(super) fn check(root: &Path) -> Result {
     }
     let directory = tempfile::tempdir()?;
     generate_from(root, directory.path(), &root.join("Cargo.lock"), &graph)?;
-    let sbom: Value =
+    let sbom: SPDX =
         serde_json::from_reader(File::open(directory.path().join("aequora.spdx.json"))?)?;
     ensure(
-        sbom["spdxVersion"] == "SPDX-2.3" && array(&sbom, "packages")?.len() > 1,
+        sbom.document_creation_information.spdx_version == "SPDX-2.3"
+            && sbom.package_information.len() > 1
+            && sbom.package_information[0].package_checksum
+                == [Checksum::new(
+                    Algorithm::SHA256,
+                    &sha256(&root.join("Cargo.lock"))?,
+                )]
+            && !sbom.relationships.is_empty(),
         "invalid SPDX evidence",
     )?;
     for name in ["THIRD_PARTY_LICENSES.txt", "THIRD_PARTY_NOTICES.md"] {
