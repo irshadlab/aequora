@@ -47,6 +47,19 @@ async fn authoritative_transaction_snapshot_and_compaction_are_real() {
     )
     .await
     .unwrap_or_else(|error| panic!("{error}"));
+    let first = backend
+        .pool()
+        .acquire()
+        .await
+        .unwrap_or_else(|error| panic!("{error}"));
+    assert_eq!(backend.pool_pressure_permille(), 500);
+    let second = backend
+        .pool()
+        .acquire()
+        .await
+        .unwrap_or_else(|error| panic!("{error}"));
+    assert_eq!(backend.pool_pressure_permille(), 1_000);
+    drop((first, second));
     exercise_backend(&backend.with_commit_hook(DurableIntentHook)).await;
 }
 

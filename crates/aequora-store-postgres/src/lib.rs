@@ -984,6 +984,25 @@ impl SqlxPostgresBackend {
         &self.pool
     }
 
+    /// Samples busy PostgreSQL pool slots as permille of configured capacity.
+    ///
+    /// Hosts can supply this local observation as the database component of admission load
+    /// signals. Closing the pool reports full pressure.
+    #[must_use]
+    pub fn pool_pressure_permille(&self) -> u16 {
+        if self.pool.is_closed() {
+            return 1_000;
+        }
+        let idle = u64::try_from(self.pool.num_idle()).unwrap_or(u64::MAX);
+        let busy = u64::from(self.pool.size()).saturating_sub(idle);
+        let capacity = u64::from(self.pool.options().get_max_connections());
+        let pressure = busy
+            .saturating_mul(1_000)
+            .checked_div(capacity)
+            .unwrap_or(1_000);
+        u16::try_from(pressure.min(1_000)).unwrap_or(1_000)
+    }
+
     /// Borrows the payload-free adapter metric recorder.
     #[must_use]
     pub const fn metrics(&self) -> &PostgresMetrics {
