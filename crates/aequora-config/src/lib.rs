@@ -24,9 +24,11 @@ use aequora_server::ServerConfig;
 use aequora_types::ProtocolVersion;
 use aequora_types::coordination::{LocalProcessMode, ProcessInstanceId};
 use aequora_types::scheduler::{SchedulerPolicy, SyncProfile};
+use secrecy::{ExposeSecret, ExposeSecretMut, SecretBox};
 use serde::{Deserialize, Serialize};
 use std::{fmt, time::Duration};
 use thiserror::Error;
+use zeroize::Zeroize;
 
 const MAX_CONFIG_RON_BYTES: usize = 1024 * 1024;
 
@@ -100,29 +102,32 @@ pub enum DeploymentProfile {
 ///
 /// Secrets remain application-owned and deliberately do not implement serialization, preventing
 /// accidental inclusion in RON configuration or sanitized support output.
-pub struct Secret<T>(T);
+pub struct Secret<T: Zeroize>(SecretBox<T>);
 
-impl<T> Secret<T> {
+impl<T: Zeroize> Secret<T> {
     /// Wraps one value that must not appear in diagnostics.
     #[must_use]
-    pub const fn new(value: T) -> Self {
-        Self(value)
+    pub fn new(value: T) -> Self {
+        Self(SecretBox::new(Box::new(value)))
     }
 
     /// Explicitly exposes the value to the integration that consumes the secret.
     #[must_use]
-    pub const fn expose(&self) -> &T {
-        &self.0
+    pub fn expose(&self) -> &T {
+        self.0.expose_secret()
     }
 
     /// Consumes the wrapper when ownership must be transferred to a secret consumer.
     #[must_use]
-    pub fn into_inner(self) -> T {
-        self.0
+    pub fn into_inner(mut self) -> T
+    where
+        T: Default,
+    {
+        std::mem::take(self.0.expose_secret_mut())
     }
 }
 
-impl<T> fmt::Debug for Secret<T> {
+impl<T: Zeroize> fmt::Debug for Secret<T> {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter.write_str("Secret([REDACTED])")
     }
